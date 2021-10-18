@@ -73,6 +73,7 @@ export function participantIsKnockingOrUpdated(participant: Object) {
  * @returns {Function}
  */
 export function setKnockingParticipantApproval(id: string, approved: boolean) {
+    console.log('Participant admitted after knocking');
     return async (dispatch: Dispatch<any>, getState: Function) => {
         const conference = getCurrentConference(getState);
 
