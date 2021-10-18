@@ -62,8 +62,7 @@ import {
     selectParticipantInLargeVideo
 } from '../../react/features/large-video/actions.any';
 import {
-    approveKnockingParticipant,
-    startKnocking
+    approveKnockingParticipant
 } from '../../react/features/lobby/actions.any';
 import {
     captureLargeVideoScreenshot,
@@ -221,10 +220,8 @@ function initCommands() {
         },
         'set-knocking-participant-approval': participantId => {
             console.log('Participant admitted command');
-            APP.store.dispatch(startKnocking());
-            setTimeout(() => {
-                APP.store.dispatch(approveKnockingParticipant(participantId));                
-            }, 5000);
+            // APP.store.dispatch(startKnocking());
+            APP.store.dispatch(approveKnockingParticipant(participantId));
         },
         'set-large-video-participant': participantId => {
             logger.debug('Set large video participant command received');

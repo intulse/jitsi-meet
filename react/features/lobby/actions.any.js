@@ -109,7 +109,7 @@ export function admitMultiple(participants: Array<Object>) {
  * @returns {Function}
  */
 export function approveKnockingParticipant(id: string) {
-    console.log('Participant admitted after knocking');
+    console.log('Participant admitted after knocking', id);
     return (dispatch: Dispatch<any>, getState: Function) => {
         const conference = getCurrentConference(getState);
 
