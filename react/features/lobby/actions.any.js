@@ -200,9 +200,6 @@ export function startKnocking() {
 
         membersOnly.joinLobby(localParticipant.name, localParticipant.email);
         dispatch(setKnockingState(true));
-        const localParticipantAgain = getLocalParticipant(state);
-
-        console.log(localParticipantAgain);
     };
 }
 

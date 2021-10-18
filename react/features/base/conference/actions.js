@@ -364,11 +364,14 @@ export function _conferenceWillJoin(conference: Object) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const localTracks
             = getLocalTracks(getState()['features/base/tracks'])
-                .map(t => t.jitsiTrack);
+                .map(t => t.jitsiTrack);        
 
         if (localTracks.length) {
             _addLocalTracksToConference(conference, localTracks);
         }
+        
+        console.log("Tracks: ", localTracks);
+        console.log("Conference: ", conference);
 
         dispatch(conferenceWillJoin(conference));
     };
