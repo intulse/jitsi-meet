@@ -190,6 +190,8 @@ export function startKnocking() {
         const { membersOnly } = state['features/base/conference'];
         const localParticipant = getLocalParticipant(state);
 
+        console.log(localParticipant);
+
         dispatch(conferenceWillJoin(membersOnly));
 
         // We need to update the conference object with the current display name, if approved
