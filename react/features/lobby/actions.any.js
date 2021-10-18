@@ -73,7 +73,6 @@ export function participantIsKnockingOrUpdated(participant: Object) {
  * @returns {Function}
  */
 export function setKnockingParticipantApproval(id: string, approved: boolean) {
-    console.log('Participant admitted after knocking');
     return async (dispatch: Dispatch<any>, getState: Function) => {
         const conference = getCurrentConference(getState);
 
@@ -110,6 +109,7 @@ export function admitMultiple(participants: Array<Object>) {
  * @returns {Function}
  */
 export function approveKnockingParticipant(id: string) {
+    console.log('Participant admitted after knocking');
     return (dispatch: Dispatch<any>, getState: Function) => {
         const conference = getCurrentConference(getState);
 
