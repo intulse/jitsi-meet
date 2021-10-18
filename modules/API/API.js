@@ -62,6 +62,9 @@ import {
     selectParticipantInLargeVideo
 } from '../../react/features/large-video/actions.any';
 import {
+    setKnockingParticipantApproval
+} from '../../react/features/lobby/actions.any';
+import {
     captureLargeVideoScreenshot,
     resizeLargeVideo
 } from '../../react/features/large-video/actions.web';
@@ -214,6 +217,9 @@ function initCommands() {
             }
 
             APP.store.dispatch(setFollowMe(value));
+        },
+        'set-knocking-participant-approval': participantId => {
+            APP.store.dispatch(setKnockingParticipantApproval(participantId, true));
         },
         'set-large-video-participant': participantId => {
             logger.debug('Set large video participant command received');

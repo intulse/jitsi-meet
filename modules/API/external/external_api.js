@@ -50,6 +50,7 @@ const commands = {
     sendEndpointTextMessage: 'send-endpoint-text-message',
     sendTones: 'send-tones',
     setFollowMe: 'set-follow-me',
+    setKnockingParticipantApproval: 'set-knocking-participant-approval',
     setLargeVideoParticipant: 'set-large-video-participant',
     setParticipantVolume: 'set-participant-volume',
     setTileView: 'set-tile-view',
