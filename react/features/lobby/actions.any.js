@@ -28,6 +28,7 @@ import {
 export function joinWithPassword(password: string) {
     return async (dispatch: Dispatch<any>, getState: Function) => {
         const conference = getCurrentConference(getState);
+        console.log(conference);
 
         dispatch(setPassword(conference, conference.join, password));
     };
