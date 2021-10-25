@@ -1138,6 +1138,7 @@
         "header": "Help center"
     },
     "lobby": {
+        "accessCode": "",
         "admit": "Admit",
         "admitAll": "Admit all",
         "knockingParticipantList": "Knocking participant list",
