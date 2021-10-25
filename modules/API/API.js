@@ -541,7 +541,7 @@ function initCommands() {
             APP.store.dispatch(updateSettings({ userSelectedSkipPrejoin: skipPrejoin }));
         },
         'meeting-reconnect': () => {
-            APP.store.dispatch(joinWithPassword(""));
+            APP.store.dispatch(joinWithPassword('lobby.accessCode'));
         },
         'grant-moderator': id => {
             console.log("Granting moderator automatically: ", id);

@@ -126,7 +126,7 @@ function PasswordSection({
      * @returns {void}
      */
     function onPasswordRemove() {
-        onPasswordSubmit('');
+        onPasswordSubmit('lobby.accessCode');
     }
 
     /**
@@ -229,8 +229,7 @@ function PasswordSection({
             );
         }
 
-        if (locked) {
-            console.log(lobbyEnabled);
+        if (locked && password !== 'lobby.accessCode') {
             return (
                 <>
                     {
