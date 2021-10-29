@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { hasRaisedHand } from '../../../base/participants';
 import { ACTION_TRIGGER, MEDIA_STATE } from '../../constants';
 import { useLobbyActions } from '../../hooks';
 
@@ -45,15 +46,19 @@ export const LobbyParticipantItem = ({
             openDrawerForParticipant = { openDrawerForParticipant }
             overflowDrawer = { overflowDrawer }
             participantID = { id }
-            raisedHand = { p.raisedHand }
+            raisedHand = { hasRaisedHand(p) }
             videoMediaState = { MEDIA_STATE.NONE }
             youText = { t('chat.you') }>
             <ParticipantActionButton
+                aria-label = { `Reject ${p.name}` }
+                data-testid = { `reject-${id}` }
                 onClick = { reject }
                 primary = { false }>
                 {t('lobby.reject')}
             </ParticipantActionButton>
             <ParticipantActionButton
+                aria-label = { `Admit ${p.name}` }
+                data-testid = { `admit-${id}` }
                 onClick = { admit }
                 primary = { true }>
                 {t('lobby.admit')}
