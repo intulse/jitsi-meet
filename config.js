@@ -314,7 +314,7 @@ var config = {
     // 'SelectedEndpointsChangedEvent' and 'ReceiverVideoConstraint' into the new 'ReceiverVideoConstraints' message
     // that invokes the new bandwidth allocation algorithm in the bridge which is described here
     // - https://github.com/jitsi/jitsi-videobridge/blob/master/doc/allocation.md.
-    useNewBandwidthAllocationStrategy: true,
+    useNewBandwidthAllocationStrategy: false,
 
     // Specify the settings for video quality optimizations on the client.
     videoQuality: {
@@ -345,14 +345,14 @@ var config = {
     //    // This is currently not implemented on app based clients on mobile.
         maxBitratesVideo: {
             VP8: {
-                low: 200000,
-                standard: 500000,
-                high: 1500000
+                low: 400000,
+                standard: 1000000,
+                high: 3000000
             },
             VP9: {
-                low: 100000,
-                standard: 300000,
-                high: 1200000
+                low: 200000,
+                standard: 600000,
+                high: 2400000
             }
         },
     },
@@ -367,10 +367,11 @@ var config = {
     //    // With the default config value below the application will use 'low' quality until the thumbnails are
     //    // at least 360 pixels tall. If the thumbnail height reaches 720 pixels then the application will switch to
     //    // the high quality.
-    //    minHeightForQualityLvl: {
-    //        360: 'standard',
-    //        720: 'high'
-    //    },
+       minHeightForQualityLvl: {
+           180: 'low',
+           360: 'standard',
+           720: 'high'
+       },
     //
     //    // Provides a way to resize the desktop track to 720p (if it is greater than 720p) before creating a canvas
     //    // for the presenter mode (camera picture-in-picture mode with screenshare).
@@ -534,7 +535,7 @@ var config = {
     //    'livestreaming',
        'microphone',
        'mute-everyone',
-    //    'mute-video-everyone',
+       'mute-video-everyone',
        'participants-pane',
        'profile',
        'raisehand',
@@ -546,7 +547,7 @@ var config = {
     //    'sharedvideo',
        'shortcuts',
     //    'stats',
-    //    'tileview',
+       'tileview',
        'toggle-camera',
        'videoquality',
        '__end'
