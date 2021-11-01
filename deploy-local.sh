@@ -48,4 +48,6 @@ cp -r "${SRC_DIR}/static/." "${DST_DIR}/static/"
 
 cp "${SRC_DIR}/title.html" "${DST_DIR}/title.html"
 
+cp "${SRC_DIR}/config.js" "${DST_DIR}/config.js"
+
 echo "Publish Done!"
