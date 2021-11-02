@@ -188,13 +188,17 @@ var config = {
                 ideal: 1080,
                 max: 1080,
                 min: 720
+            },
+            width: {
+                ideal: 1920,
+                max: 1920,
+                min: 1280
             }
-
         }
     },
 
     // Enable / disable simulcast support.
-    disableSimulcast: false,
+    disableSimulcast: true,
 
     // Enable / disable layer suspension.  If enabled, endpoints whose HD layers are not in use will be suspended
     // (no longer sent) until they are requested again. This is enabled by default. This must be enabled for screen
