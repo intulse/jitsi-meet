@@ -198,7 +198,7 @@ var config = {
     },
 
     // Enable / disable simulcast support.
-    disableSimulcast: true,
+    disableSimulcast: false,
 
     // Enable / disable layer suspension.  If enabled, endpoints whose HD layers are not in use will be suspended
     // (no longer sent) until they are requested again. This is enabled by default. This must be enabled for screen
