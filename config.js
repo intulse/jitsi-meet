@@ -187,18 +187,18 @@ var config = {
             height: {
                 ideal: 1080,
                 max: 1080,
-                min: 720
+                min: 480
             },
             width: {
                 ideal: 1920,
                 max: 1920,
-                min: 1280
+                min: 848
             }
         }
     },
 
     // Enable / disable simulcast support.
-    disableSimulcast: false,
+    disableSimulcast: true,
 
     // Enable / disable layer suspension.  If enabled, endpoints whose HD layers are not in use will be suspended
     // (no longer sent) until they are requested again. This is enabled by default. This must be enabled for screen
@@ -318,7 +318,7 @@ var config = {
     // 'SelectedEndpointsChangedEvent' and 'ReceiverVideoConstraint' into the new 'ReceiverVideoConstraints' message
     // that invokes the new bandwidth allocation algorithm in the bridge which is described here
     // - https://github.com/jitsi/jitsi-videobridge/blob/master/doc/allocation.md.
-    useNewBandwidthAllocationStrategy: false,
+    useNewBandwidthAllocationStrategy: true,
 
     // Specify the settings for video quality optimizations on the client.
     videoQuality: {
