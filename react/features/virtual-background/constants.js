@@ -60,5 +60,10 @@ export const IMAGES: Array<Image> = [
         tooltip: 'image7',
         id: '7',
         src: 'images/virtual-background/background-7.jpg'
+    },
+    {
+        tooltip: 'image8',
+        id: '8',
+        src: 'images/virtual-background/intulse-background-1.jpg'
     }
 ];
