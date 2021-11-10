@@ -146,7 +146,7 @@ var config = {
     // startSilent: false
 
     // Enables support for opus-red (redundancy for Opus).
-    // enableOpusRed: false,
+    enableOpusRed: true,
 
     // Specify audio quality stereo and opusMaxAverageBitrate values in order to enable HD audio.
     // Beware, by doing so, you are disabling echo cancellation, noise suppression and AGC.
