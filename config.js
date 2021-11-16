@@ -102,7 +102,7 @@ var config = {
     //
 
     // Enable unified plan implementation support on Chromium based browsers.
-    enableUnifiedOnChrome: true,
+    enableUnifiedOnChrome: false,
 
     // Audio
 
@@ -146,7 +146,7 @@ var config = {
     // startSilent: false
 
     // Enables support for opus-red (redundancy for Opus).
-    enableOpusRed: true,
+    // enableOpusRed: false,
 
     // Specify audio quality stereo and opusMaxAverageBitrate values in order to enable HD audio.
     // Beware, by doing so, you are disabling echo cancellation, noise suppression and AGC.
@@ -204,7 +204,7 @@ var config = {
     // (no longer sent) until they are requested again. This is enabled by default. This must be enabled for screen
     // sharing to work as expected on Chrome. Disabling this might result in low resolution screenshare being sent
     // by the client.
-    enableLayerSuspension: false,
+    enableLayerSuspension: true,
 
     // Every participant after the Nth will start video muted.
     // startVideoMuted: 10,
