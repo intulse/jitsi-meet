@@ -1,10 +1,10 @@
 // @flow
 
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 import { getFeatureFlag, REACTIONS_ENABLED } from '../base/flags';
 import { getLocalParticipant } from '../base/participants';
-import { extractFqnFromPath } from '../dynamic-branding/functions';
+import { extractFqnFromPath } from '../dynamic-branding';
 
 import { REACTIONS, SOUNDS_THRESHOLDS } from './constants';
 import logger from './logger';
@@ -39,7 +39,7 @@ export function getReactionsWithId(buffer: Array<string>) {
     return buffer.map<Object>(reaction => {
         return {
             reaction,
-            uid: uuid.v4()
+            uid: uuidv4()
         };
     });
 }
@@ -60,7 +60,7 @@ export async function sendReactionsWebhook(state: Object, reactions: Array<?stri
     const localParticipant = getLocalParticipant(state);
 
     const headers = {
-        'Authorization': `Bearer ${jwt}`,
+        ...jwt ? { 'Authorization': `Bearer ${jwt}` } : {},
         'Content-Type': 'application/json'
     };
 

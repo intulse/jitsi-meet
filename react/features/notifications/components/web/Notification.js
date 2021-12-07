@@ -27,7 +27,7 @@ const ICON_COLOR = {
 /**
  * Implements a React {@link Component} to display a notification.
  *
- * @extends Component
+ * @augments Component
  */
 class Notification extends AbstractNotification<Props> {
     /**
@@ -57,9 +57,9 @@ class Notification extends AbstractNotification<Props> {
         );
     }
 
-    _getDescription: () => Array<string>
+    _getDescription: () => Array<string>;
 
-    _getDescriptionKey: () => string
+    _getDescriptionKey: () => string;
 
     _onDismissed: () => void;
 
@@ -128,17 +128,17 @@ class Notification extends AbstractNotification<Props> {
             ];
 
         default:
-            if (this.props.customActionNameKey && this.props.customActionHandler) {
-                return [
-                    {
-                        content: this.props.t(this.props.customActionNameKey),
+            if (this.props.customActionNameKey?.length && this.props.customActionHandler?.length) {
+                return this.props.customActionNameKey.map((customAction: string, customActionIndex: number) => {
+                    return {
+                        content: this.props.t(customAction),
                         onClick: () => {
-                            if (this.props.customActionHandler()) {
+                            if (this.props.customActionHandler[customActionIndex]()) {
                                 this._onDismissed();
                             }
                         }
-                    }
-                ];
+                    };
+                });
             }
 
             return [];
@@ -157,13 +157,13 @@ class Notification extends AbstractNotification<Props> {
         const secIconColor = ICON_COLOR[this.props.appearance];
         const iconSize = 'medium';
 
-        return <>
+        return (<>
             <div className = { `ribbon ${appearance}` } />
             <EditorInfoIcon
                 label = { appearance }
                 secondaryColor = { secIconColor }
                 size = { iconSize } />
-        </>;
+        </>);
     }
 }
 

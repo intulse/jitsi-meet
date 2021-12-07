@@ -10,6 +10,7 @@ import Video from '../../base/media/components/Video';
 import { connect, equals } from '../../base/redux';
 import { getCurrentCameraDeviceId } from '../../base/settings';
 import { createLocalTracksF } from '../../base/tracks/functions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications';
 import { showWarningNotification } from '../../notifications/actions';
 import { toggleBackgroundEffect } from '../actions';
 import { VIRTUAL_BACKGROUND_TYPE } from '../constants';
@@ -74,7 +75,7 @@ type State = {
  * Implements a React {@link PureComponent} which displays the virtual
  * background preview.
  *
- * @extends PureComponent
+ * @augments PureComponent
  */
 class VirtualBackgroundPreview extends PureComponent<Props, State> {
     _componentWasUnmounted: boolean;
@@ -140,7 +141,7 @@ class VirtualBackgroundPreview extends PureComponent<Props, State> {
                 showWarningNotification({
                     titleKey: 'virtualBackground.backgroundEffectError',
                     description: 'Failed to access camera device.'
-                })
+                }, NOTIFICATION_TIMEOUT_TYPE.LONG)
             );
             logger.error('Failed to access camera device. Error on apply background effect.');
 

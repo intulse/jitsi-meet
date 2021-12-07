@@ -17,6 +17,7 @@ import {
  */
 const INITIAL_STATE = {
     stats: {},
+    isOpen: false,
     pendingReorder: true,
     criteria: null
 };
@@ -56,7 +57,7 @@ function _updateCriteria(state, { criteria }) {
     return _.assign(
         {},
         state,
-        { criteria },
+        { criteria }
     );
 }
 
@@ -98,7 +99,7 @@ function _updateStats(state, { stats }) {
         {
             stats: { ...finalStats },
             pendingReorder: false
-        },
+        }
     );
 }
 
@@ -114,6 +115,6 @@ function _initReorderStats(state) {
     return _.assign(
         {},
         state,
-        { pendingReorder: true },
+        { pendingReorder: true }
     );
 }

@@ -6,10 +6,11 @@ import { getLocalParticipant, getParticipantDisplayName } from '../base/particip
 import { copyText } from '../base/util/helpers';
 import { getVpaasTenant, isVpaasMeeting } from '../jaas/functions';
 import {
-    NOTIFICATION_TIMEOUT,
+    NOTIFICATION_TIMEOUT_TYPE,
     hideNotification,
     showErrorNotification,
-    showNotification
+    showNotification,
+    showWarningNotification
 } from '../notifications';
 
 import {
@@ -97,7 +98,7 @@ export function showPendingRecordingNotification(streamType: string) {
         const notification = await dispatch(showNotification({
             isDismissAllowed: false,
             ...dialogProps
-        }));
+        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
 
         if (notification) {
             dispatch(_setPendingRecordingNotificationUid(notification.uid, streamType));
@@ -112,7 +113,17 @@ export function showPendingRecordingNotification(streamType: string) {
  * @returns {showErrorNotification}
  */
 export function showRecordingError(props: Object) {
-    return showErrorNotification(props);
+    return showErrorNotification(props, NOTIFICATION_TIMEOUT_TYPE.LONG);
+}
+
+/**
+ * Signals that the recording warning notification should be shown.
+ *
+ * @param {Object} props - The Props needed to render the notification.
+ * @returns {showWarningNotification}
+ */
+export function showRecordingWarning(props: Object) {
+    return showWarningNotification(props);
 }
 
 /**
@@ -138,7 +149,7 @@ export function showStoppedRecordingNotification(streamType: string, participant
         titleKey: 'dialog.recording'
     };
 
-    return showNotification(dialogProps, NOTIFICATION_TIMEOUT);
+    return showNotification(dialogProps, NOTIFICATION_TIMEOUT_TYPE.SHORT);
 }
 
 /**
@@ -159,7 +170,6 @@ export function showStartedRecordingNotification(
         const initiatorId = getResourceId(initiator);
         const participantName = getParticipantDisplayName(state, initiatorId);
         let dialogProps = {
-            customActionNameKey: undefined,
             descriptionKey: participantName ? 'liveStreaming.onBy' : 'liveStreaming.on',
             descriptionArguments: { name: participantName },
             isDismissAllowed: true,
@@ -188,29 +198,30 @@ export function showStartedRecordingNotification(
                 const tenant = getVpaasTenant(state);
 
                 try {
-                    const link = await getRecordingLink(recordingSharingUrl, sessionId, region, tenant);
+                    const response = await getRecordingLink(recordingSharingUrl, sessionId, region, tenant);
+                    const { url: link, urlExpirationTimeMillis: ttl } = response;
 
                     if (typeof APP === 'object') {
-                        APP.API.notifyRecordingLinkAvailable(link);
+                        APP.API.notifyRecordingLinkAvailable(link, ttl);
                     }
 
                     // add the option to copy recording link
-                    dialogProps.customActionNameKey = 'recording.copyLink';
-                    dialogProps.customActionHandler = () => copyText(link);
+                    dialogProps.customActionNameKey = [ 'recording.copyLink' ];
+                    dialogProps.customActionHandler = [ () => copyText(link) ];
                     dialogProps.titleKey = 'recording.on';
                     dialogProps.descriptionKey = 'recording.linkGenerated';
                     dialogProps.isDismissAllowed = false;
                 } catch (err) {
                     dispatch(showErrorNotification({
                         titleKey: 'recording.errorFetchingLink'
-                    }));
+                    }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
 
                     return logger.error('Could not fetch recording link', err);
                 }
             }
         }
 
-        dispatch(showNotification(dialogProps, NOTIFICATION_TIMEOUT));
+        dispatch(showNotification(dialogProps, NOTIFICATION_TIMEOUT_TYPE.SHORT));
     };
 }
 
