@@ -1,5 +1,5 @@
-import rtcstatsInit from 'rtcstats/rtcstats';
-import traceInit from 'rtcstats/trace-ws';
+import rtcstatsInit from '@jitsi/rtcstats/rtcstats';
+import traceInit from '@jitsi/rtcstats/trace-ws';
 
 import {
     createRTCStatsTraceCloseEvent,
@@ -93,6 +93,16 @@ class RTCStats {
      */
     sendDominantSpeakerData(dominantSpeakerData) {
         this.trace && this.trace.statsEntry('dominantSpeaker', null, dominantSpeakerData);
+    }
+
+    /**
+     * Send facial expression data, the data will be processed by rtcstats-server and saved in the dump file.
+     *
+     * @param {Object} facialExpressionData - Facial expression data to be saved in the rtcstats dump.
+     * @returns {void}
+     */
+    sendFacialExpressionData(facialExpressionData) {
+        this.trace && this.trace.statsEntry('facialExpression', null, facialExpressionData);
     }
 
     /**

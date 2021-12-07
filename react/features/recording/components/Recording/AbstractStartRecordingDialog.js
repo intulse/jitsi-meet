@@ -13,7 +13,7 @@ import {
     getNewAccessToken,
     updateDropboxToken
 } from '../../../dropbox';
-import { showErrorNotification } from '../../../notifications';
+import { NOTIFICATION_TIMEOUT_TYPE, showErrorNotification } from '../../../notifications';
 import { toggleRequestingSubtitles } from '../../../subtitles';
 import { setSelectedRecordingService } from '../../actions';
 import { RECORDING_TYPES } from '../../constants';
@@ -42,7 +42,7 @@ type Props = {
     _fileRecordingsServiceEnabled: boolean,
 
     /**
-     * Whether to show the possibility to share file recording with other people (e.g. meeting participants), based on
+     * Whether to show the possibility to share file recording with other people (e.g. Meeting participants), based on
      * the actual implementation on the backend.
      */
     _fileRecordingsServiceSharingEnabled: boolean,
@@ -298,7 +298,7 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
             } else {
                 dispatch(showErrorNotification({
                     titleKey: 'dialog.noDropboxToken'
-                }));
+                }, NOTIFICATION_TIMEOUT_TYPE.LONG));
 
                 return;
             }
@@ -333,7 +333,7 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
      * @protected
      * @returns {React$Component}
      */
-    _renderDialogContent: () => React$Component<*>
+    _renderDialogContent: () => React$Component<*>;
 }
 
 /**

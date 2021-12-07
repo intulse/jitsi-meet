@@ -17,6 +17,7 @@ import Tabs from './Tabs';
 
 /**
  * The pattern used to validate room name.
+ *
  * @type {string}
  */
 export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[^?&:\u0022\u0027%#]+$';
@@ -24,7 +25,7 @@ export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[^?&:\u0022\u0027%#]+$';
 /**
  * The Web container rendering the welcome page.
  *
- * @extends AbstractWelcomePage
+ * @augments AbstractWelcomePage
  */
 class WelcomePage extends AbstractWelcomePage {
     /**

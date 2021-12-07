@@ -1,9 +1,21 @@
 import { ColorSchemeRegistry, schemeColor } from '../../../base/color-scheme';
-import { BoxModel, ColorPalette, fixAndroidViewClipping } from '../../../base/styles';
+import { BoxModel, fixAndroidViewClipping } from '../../../base/styles';
+import BaseTheme from '../../../base/ui/components/BaseTheme.native';
 
-export const INSECURE_ROOM_NAME_LABEL_COLOR = ColorPalette.warning;
+export const INSECURE_ROOM_NAME_LABEL_COLOR = BaseTheme.palette.warning03;
 
 const NAVBAR_BUTTON_SIZE = 24;
+
+
+/**
+ * The styles of the safe area view that contains the navigation bar.
+ */
+const navBarSafeView = {
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0
+};
 
 /**
  * The styles of the feature conference.
@@ -11,11 +23,11 @@ const NAVBAR_BUTTON_SIZE = 24;
 export default {
 
     /**
-     * {@code Conference} style.
+     * {@code Conference} Style.
      */
     conference: fixAndroidViewClipping({
         alignSelf: 'stretch',
-        backgroundColor: '#040404',
+        backgroundColor: BaseTheme.palette.uiBackground,
         flex: 1
     }),
 
@@ -23,8 +35,14 @@ export default {
         margin: 10
     },
 
-    headerNavigationButton: {
+    headerNavigationIcon: {
         marginLeft: 12
+    },
+
+    headerNavigationButton: {
+        height: BaseTheme.spacing[6],
+        marginTop: BaseTheme.spacing[3],
+        width: BaseTheme.spacing[6]
     },
 
     /**
@@ -36,26 +54,31 @@ export default {
     },
 
     inviteButtonContainer: {
+        borderRadius: 3,
+        height: BaseTheme.spacing[7],
         position: 'absolute',
+        marginTop: BaseTheme.spacing[1],
+        marginRight: BaseTheme.spacing[1],
         top: 0,
         right: 0,
-        zIndex: 1
+        zIndex: 1,
+        width: BaseTheme.spacing[7]
     },
 
     inviteButton: {
         iconStyle: {
-            padding: 10,
-            color: ColorPalette.white,
+            color: BaseTheme.palette.icon01,
+            padding: 12,
             fontSize: NAVBAR_BUTTON_SIZE
         },
-        underlayColor: ColorPalette.buttonUnderlay
+        underlayColor: BaseTheme.spacing.underlay01
     },
 
     lonelyButton: {
         alignItems: 'center',
         borderRadius: 24,
         flexDirection: 'row',
-        height: 48,
+        height: BaseTheme.spacing[6],
         justifyContent: 'space-around',
         paddingHorizontal: 12
     },
@@ -75,55 +98,60 @@ export default {
     },
 
     pipButtonContainer: {
+        borderRadius: 3,
+        height: BaseTheme.spacing[7],
         position: 'absolute',
+        marginTop: BaseTheme.spacing[1],
+        marginLeft: BaseTheme.spacing[1],
         top: 0,
         left: 0,
-        zIndex: 1
+        zIndex: 1,
+        width: BaseTheme.spacing[7]
     },
 
     pipButton: {
         iconStyle: {
-            padding: 10,
-            color: ColorPalette.white,
+            color: BaseTheme.palette.icon01,
+            padding: 12,
             fontSize: NAVBAR_BUTTON_SIZE
         },
-        underlayColor: ColorPalette.buttonUnderlay
+        underlayColor: BaseTheme.spacing.underlay01
     },
 
-    navBarSafeView: {
-        left: 0,
-        position: 'absolute',
-        right: 0,
-        top: 0
+    navBarSafeViewColor: {
+        ...navBarSafeView,
+        backgroundColor: BaseTheme.palette.uiBackground
+    },
+
+    navBarSafeViewTransparent: {
+        ...navBarSafeView
     },
 
     navBarWrapper: {
         alignItems: 'center',
         flex: 1,
         flexDirection: 'row',
-        height: 44,
-        justifyContent: 'center',
-        paddingHorizontal: 14
+        height: BaseTheme.spacing[8],
+        justifyContent: 'center'
     },
 
     roomTimer: {
-        color: ColorPalette.white,
+        color: BaseTheme.palette.text01,
         fontSize: 12,
         fontWeight: '400',
         paddingHorizontal: 8
     },
 
     roomTimerView: {
-        backgroundColor: 'rgba(0,0,0,0.8)',
-        borderBottomRightRadius: 3,
-        borderTopRightRadius: 3,
+        backgroundColor: BaseTheme.palette.action02,
+        borderRadius: 3,
         height: 28,
         justifyContent: 'center',
         minWidth: 50
     },
 
     roomName: {
-        color: ColorPalette.white,
+        color: BaseTheme.palette.text01,
         fontSize: 14,
         fontWeight: '400'
     },
@@ -135,7 +163,8 @@ export default {
         flexShrink: 1,
         height: 28,
         justifyContent: 'center',
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+        maxWidth: 168
     },
 
     roomNameWrapper: {

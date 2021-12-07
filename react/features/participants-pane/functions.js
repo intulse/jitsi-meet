@@ -17,6 +17,7 @@ import {
     getRaiseHandsQueue
 } from '../base/participants/functions';
 import { toState } from '../base/redux';
+import { isInBreakoutRoom } from '../breakout-rooms/functions';
 
 import { QUICK_ACTION_BUTTON, REDUCER_KEY, MEDIA_STATE } from './constants';
 
@@ -28,20 +29,19 @@ import { QUICK_ACTION_BUTTON, REDUCER_KEY, MEDIA_STATE } from './constants';
  */
 export const classList = (...args: Array<string | boolean>) => args.filter(Boolean).join(' ');
 
-
 /**
  * Find the first styled ancestor component of an element.
  *
  * @param {Element} target - Element to look up.
- * @param {StyledComponentClass} component - Styled component reference.
+ * @param {string} cssClass - Styled component reference.
  * @returns {Element|null} Ancestor.
  */
-export const findStyledAncestor = (target: Object, component: any) => {
-    if (!target || target.matches(`.${component.styledComponentId}`)) {
+export const findAncestorByClass = (target: Object, cssClass: string) => {
+    if (!target || target.classList.contains(cssClass)) {
         return target;
     }
 
-    return findStyledAncestor(target.parentElement, component);
+    return findAncestorByClass(target.parentElement, cssClass);
 };
 
 /**
@@ -188,8 +188,9 @@ export function getQuickActionButtonType(participant: Object, isAudioMuted: Bool
 export const shouldRenderInviteButton = (state: Object) => {
     const { disableInviteFunctions } = toState(state)['features/base/config'];
     const flagEnabled = getFeatureFlag(state, INVITE_ENABLED, true);
+    const inBreakoutRoom = isInBreakoutRoom(state);
 
-    return flagEnabled && !disableInviteFunctions;
+    return flagEnabled && !disableInviteFunctions && !inBreakoutRoom;
 };
 
 /**

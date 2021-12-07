@@ -290,6 +290,7 @@ var config = {
     //     autoHide: true,
     //     autoHideTimeout: 5000,
     //     disabled: false,
+    //     disableDetails: false,
     //     inactiveDisabled: false
     // },
 
@@ -382,6 +383,13 @@ var config = {
     //    resizeDesktopForPresenter: false
     // },
 
+    // Notification timeouts
+    // notificationTimeouts: {
+    //     short: 2500,
+    //     medium: 5000,
+    //     long: 10000
+    // },
+
     // // Options for the recording limit notification.
     // recordingLimit: {
     //
@@ -399,6 +407,9 @@ var config = {
 
     // Disables or enables RTX (RFC 4588) (defaults to false).
     // disableRtx: false,
+
+    // Moves all Jitsi Meet 'beforeunload' logic (cleanup, leaving, disconnecting, etc) to the 'unload' event.
+    // disableBeforeUnloadHandlers: true,
 
     // Disables or enables TCC support in this client (default: enabled).
     // enableTcc: true,
@@ -437,6 +448,12 @@ var config = {
     // Hides lobby button
     // hideLobbyButton: false,
 
+    // If Lobby is enabled starts knocking automatically.
+    // autoKnockLobby: false,
+
+    // Hides add breakout room button
+    // hideAddRoomButton: false,
+
     // Require users to always specify a display name.
     // requireDisplayName: true,
 
@@ -459,6 +476,12 @@ var config = {
     // Setting this to null, will also disable showing the remote videos
     // when the toolbar is shown on mouse movements
     // disable1On1Mode: null | false | true,
+
+    // Default local name to be displayed
+    // defaultLocalDisplayName: 'me',
+
+    // Default remote name to be displayed
+    // defaultRemoteDisplayName: 'Fellow Jitster',
 
     // Default language for the user interface.
     // defaultLanguage: 'en',
@@ -656,6 +679,9 @@ var config = {
     // Enables sending participants' emails (if available) to callstats and other analytics
     // enableEmailInStats: false,
 
+    // Enables detecting faces of participants and get their expression and send it to other participants
+    // enableFacialRecognition: true,
+
     // Controls the percentage of automatic feedback shown to participants when callstats is enabled.
     // The default value is 100%. If set to 0, no automatic feedback will be requested
     // feedbackPercentage: 100,
@@ -738,7 +764,7 @@ var config = {
         // module connects to the provided rtcstatsEndpoint and sends statistics regarding
         // PeerConnection states along with getStats metrics polled at the specified
         // interval.
-        // rtcstatsEnabled: true,
+        // rtcstatsEnabled: false,
 
         // In order to enable rtcstats one needs to provide a endpoint url.
         // rtcstatsEndpoint: wss://rtcstats-server-pilot.jitsi.net/,
@@ -834,6 +860,10 @@ var config = {
     //
 
     // },
+    // e2ee: {
+    //   labels,
+    //   externallyManagedKey: false
+    // },
 
     // Options related to end-to-end (participant to participant) ping.
     e2eping: {
@@ -903,31 +933,64 @@ var config = {
      If there is no url set or there are missing fields, the defaults are applied.
      The config file should be in JSON.
      None of the fields are mandatory and the response must have the shape:
-     {
-         // The domain url to apply (will replace the domain in the sharing conference link/embed section)
-         inviteDomain: 'example-company.org,
-         // The hex value for the colour used as background
-         backgroundColor: '#fff',
-         // The url for the image used as background
-         backgroundImageUrl: 'https://example.com/background-img.png',
-         // The anchor url used when clicking the logo image
-         logoClickUrl: 'https://example-company.org',
-         // The url used for the image used as logo
-         logoImageUrl: 'https://example.com/logo-img.png',
-         // Overwrite for pool of background images for avatars
-         avatarBackgrounds: ['url(https://example.com/avatar-background-1.png)', '#FFF'],
-         // The lobby/prejoin screen background
-         premeetingBackground: 'url(https://example.com/premeeting-background.png)',
-         // A list of images that can be used as video backgrounds.
-         // When this field is present, the default images will be replaced with those provided.
-         virtualBackgrounds: ['https://example.com/img.jpg']
-     }
+    {
+        // The domain url to apply (will replace the domain in the sharing conference link/embed section)
+        inviteDomain: 'example-company.org,
+        // The hex value for the colour used as background
+        backgroundColor: '#fff',
+        // The url for the image used as background
+        backgroundImageUrl: 'https://example.com/background-img.png',
+        // The anchor url used when clicking the logo image
+        logoClickUrl: 'https://example-company.org',
+        // The url used for the image used as logo
+        logoImageUrl: 'https://example.com/logo-img.png',
+        // Overwrite for pool of background images for avatars
+        avatarBackgrounds: ['url(https://example.com/avatar-background-1.png)', '#FFF'],
+        // The lobby/prejoin screen background
+        premeetingBackground: 'url(https://example.com/premeeting-background.png)',
+        // A list of images that can be used as video backgrounds.
+        // When this field is present, the default images will be replaced with those provided.
+        virtualBackgrounds: ['https://example.com/img.jpg'],
+        // Object containing a theme's properties. It also supports partial overwrites of the main theme.
+        // For a list of all possible theme tokens and their current defaults, please check:
+        // https://github.com/jitsi/jitsi-meet/tree/master/resources/custom-theme/custom-theme.json
+        // For a short explanations on each of the tokens, please check:
+        // https://github.com/jitsi/jitsi-meet/blob/master/react/features/base/ui/Tokens.js
+        // IMPORTANT!: This is work in progress so many of the various tokens are not yet applied in code
+        // or they are partially applied.
+        customTheme: {
+            palette: {
+                ui01: "orange !important",
+                ui02: "maroon",
+                surface02: 'darkgreen',
+                ui03: "violet",
+                ui04: "magenta",
+                ui05: "blueviolet",
+                field02Hover: 'red',
+                action01: 'green',
+                action01Hover: 'lightgreen',
+                action02Disabled: 'beige',
+                success02: 'cadetblue',
+                action02Hover: 'aliceblue'
+            },
+            typography: {
+                labelRegular: {
+                    fontSize: 25,
+                    lineHeight: 30,
+                    fontWeight: 500
+                }
+            }
+        }
+    }
     */
     // dynamicBrandingUrl: '',
 
     // When true the user cannot add more images to be used as virtual background.
     // Only the default ones from will be available.
     // disableAddingBackgroundImages: false,
+
+    // Disables using screensharing as virtual background.
+    // disableScreensharingVirtualBackground: false,
 
     // Sets the background transparency level. '0' is fully transparent, '1' is opaque.
     // backgroundAlpha: 1,
@@ -939,6 +1002,9 @@ var config = {
 
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
     // disableTileView: true,
+
+    // If true, the tiles will be displayed contained within the available space rather than enlarged to cover it.
+    // disableTileEnlargement: true,
 
     // Controls the visibility and behavior of the top header conference info labels.
     // If a label's id is not in any of the 2 arrays, it will not be visible at all on the header.

@@ -113,12 +113,7 @@ function getConfig(options = {}) {
                     // presets when lib-jitsi-meet, for example, is npm linked in
                     // jitsi-meet.
                     plugins: [
-                        require.resolve('@babel/plugin-transform-flow-strip-types'),
-                        require.resolve('@babel/plugin-proposal-class-properties'),
-                        require.resolve('@babel/plugin-proposal-export-default-from'),
-                        require.resolve('@babel/plugin-proposal-export-namespace-from'),
-                        require.resolve('@babel/plugin-proposal-nullish-coalescing-operator'),
-                        require.resolve('@babel/plugin-proposal-optional-chaining')
+                        require.resolve('@babel/plugin-proposal-export-default-from')
                     ],
                     presets: [
                         [
@@ -133,10 +128,10 @@ function getConfig(options = {}) {
                                 // done unnecessarily. For browsers not specified
                                 // here, the ES2015+ profile will be used.
                                 targets: {
-                                    chrome: 58,
-                                    electron: 2,
-                                    firefox: 54,
-                                    safari: 11
+                                    chrome: 80,
+                                    electron: 10,
+                                    firefox: 68,
+                                    safari: 14
                                 }
 
                             }
@@ -203,7 +198,7 @@ function getConfig(options = {}) {
             filename: `[name]${minimize ? '.min' : ''}.js`,
             path: `${__dirname}/build`,
             publicPath: '/libs/',
-            sourceMapFilename: `[name].${minimize ? 'min' : 'js'}.map`
+            sourceMapFilename: '[file].map'
         },
         plugins: [
             detectCircularDeps
@@ -243,6 +238,7 @@ function getConfig(options = {}) {
  * Webpack 5 because only one devServer entry is supported, so we attach it to
  * the main bundle.
  *
+
  * @returns {Object} the dev server configuration.
  */
 function getDevServerConfig() {
@@ -255,6 +251,7 @@ function getDevServerConfig() {
         },
         https: true,
         host: '127.0.0.1',
+        hot: true,
         proxy: {
             '/': {
                 bypass: devServerProxyBypass,
@@ -386,6 +383,16 @@ module.exports = (_env, argv) => {
                 ...getBundleAnalyzerPlugin(analyzeBundle, 'external_api')
             ],
             performance: getPerformanceHints(perfHintOptions, 35 * 1024)
+        }),
+        Object.assign({}, config, {
+            entry: {
+                'facial-expressions-worker': './react/features/facial-recognition/facialExpressionsWorker.js'
+            },
+            plugins: [
+                ...config.plugins,
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'facial-expressions-worker')
+            ],
+            performance: getPerformanceHints(perfHintOptions, 1024 * 1024)
         })
     ];
 };
