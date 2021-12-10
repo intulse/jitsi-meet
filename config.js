@@ -158,7 +158,7 @@ var config = {
     // Video
 
     // Sets the preferred resolution (height) for local video. Defaults to 720.
-    resolution: 1080,
+    resolution: 720,
 
     // Specifies whether the raised hand will hide when someone becomes a dominant speaker or not
     // disableRemoveRaisedHandOnFocus: false,
@@ -185,20 +185,20 @@ var config = {
     constraints: {
         video: {
             height: {
-                ideal: 1080,
-                max: 1080,
-                min: 480
+                ideal: 720,
+                max: 720,
+                min: 180
             },
             width: {
-                ideal: 1920,
-                max: 1920,
-                min: 848
+                ideal: 1280,
+                max: 1280,
+                min: 320
             }
         }
     },
 
     // Enable / disable simulcast support.
-    disableSimulcast: true,
+    disableSimulcast: false,
 
     // Enable / disable layer suspension.  If enabled, endpoints whose HD layers are not in use will be suspended
     // (no longer sent) until they are requested again. This is enabled by default. This must be enabled for screen
@@ -350,17 +350,19 @@ var config = {
     //    // This is currently not implemented on app based clients on mobile.
         maxBitratesVideo: {
             VP8: {
-                low: 400000,
-                standard: 1000000,
-                high: 3000000
+                low: 200000,
+                standard: 500000,
+                high: 1500000
             },
             VP9: {
-                low: 200000,
-                standard: 600000,
-                high: 2400000
+                low: 100000,
+                standard: 300000,
+                high: 1200000
             }
         },
     },
+    // New start bitrate setting found on the Jitsi Meet production instance
+    startBitrate: "800",
     //
     //    // The options can be used to override default thresholds of video thumbnail heights corresponding to
     //    // the video quality levels used in the application. At the time of this writing the allowed levels are:
@@ -372,11 +374,11 @@ var config = {
     //    // With the default config value below the application will use 'low' quality until the thumbnails are
     //    // at least 360 pixels tall. If the thumbnail height reaches 720 pixels then the application will switch to
     //    // the high quality.
-       minHeightForQualityLvl: {
-           180: 'low',
-           360: 'standard',
-           720: 'high'
-       },
+    //    minHeightForQualityLvl: {
+    //        180: 'low',
+    //        360: 'standard',
+    //        720: 'high'
+    //    },
     //
     //    // Provides a way to resize the desktop track to 720p (if it is greater than 720p) before creating a canvas
     //    // for the presenter mode (camera picture-in-picture mode with screenshare).
