@@ -1,6 +1,6 @@
 // @flow
 
-import Logger from 'jitsi-meet-logger';
+import Logger from '@jitsi/logger';
 
 import {
     createApiEvent,
@@ -56,7 +56,7 @@ import {
     processExternalDeviceRequest
 } from '../../react/features/device-selection/functions';
 import { isEnabled as isDropboxEnabled } from '../../react/features/dropbox';
-import { toggleE2EE } from '../../react/features/e2ee/actions';
+import { setMediaEncryptionKey, toggleE2EE } from '../../react/features/e2ee/actions';
 import { setVolume } from '../../react/features/filmstrip';
 import { invite } from '../../react/features/invite';
 import {
@@ -401,6 +401,9 @@ function initCommands() {
         'toggle-e2ee': enabled => {
             logger.debug('Toggle E2EE key command received');
             APP.store.dispatch(toggleE2EE(enabled));
+        },
+        'set-media-encryption-key': keyInfo => {
+            APP.store.dispatch(setMediaEncryptionKey(JSON.parse(keyInfo)));
         },
         'set-video-quality': frameHeight => {
             logger.debug('Set video quality command received');
@@ -1528,12 +1531,14 @@ class API {
      * available.
      *
      * @param {string} link - The recording download link.
+     * @param {number} ttl - The recording download link time to live.
      * @returns {void}
      */
-    notifyRecordingLinkAvailable(link: string) {
+    notifyRecordingLinkAvailable(link: string, ttl: number) {
         this._sendEvent({
             name: 'recording-link-available',
-            link
+            link,
+            ttl
         });
     }
 

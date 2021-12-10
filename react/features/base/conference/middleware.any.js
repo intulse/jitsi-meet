@@ -9,7 +9,7 @@ import {
 } from '../../analytics';
 import { reloadNow } from '../../app/actions';
 import { openDisplayNamePrompt } from '../../display-name';
-import { showErrorNotification } from '../../notifications';
+import { NOTIFICATION_TIMEOUT_TYPE, showErrorNotification } from '../../notifications';
 import { CONNECTION_ESTABLISHED, CONNECTION_FAILED, connectionDisconnected } from '../connection';
 import { validateJwt } from '../jwt';
 import { JitsiConferenceErrors } from '../lib-jitsi-meet';
@@ -79,7 +79,7 @@ MiddlewareRegistry.register(store => next => action => {
         return _conferenceSubjectChanged(store, next, action);
 
     case CONFERENCE_WILL_LEAVE:
-        _conferenceWillLeave();
+        _conferenceWillLeave(store);
         break;
 
     case PARTICIPANT_UPDATED:
@@ -101,7 +101,6 @@ MiddlewareRegistry.register(store => next => action => {
 
     return next(action);
 });
-
 
 /**
  * Makes sure to leave a failed conference in order to release any allocated
@@ -129,7 +128,7 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
         dispatch(showErrorNotification({
             description: reason,
             titleKey: 'dialog.sessTerminated'
-        }));
+        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
 
         break;
     }
@@ -138,7 +137,7 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
             dispatch(showErrorNotification({
                 description: 'Restart initiated because of a bridge failure',
                 titleKey: 'dialog.sessionRestarted'
-            }));
+            }, NOTIFICATION_TIMEOUT_TYPE.LONG));
         }
 
         break;
@@ -151,7 +150,7 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
             descriptionArguments: { msg },
             descriptionKey: msg ? 'dialog.connectErrorWithMsg' : 'dialog.connectError',
             titleKey: 'connection.CONNFAIL'
-        }));
+        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
 
         break;
     }
@@ -168,12 +167,11 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
             // good to know that it happen, so log it (on the info level).
             logger.info('JitsiConference.leave() rejected with:', reason);
         });
-    } else if (typeof beforeUnloadHandler !== 'undefined') {
+    } else {
         // FIXME: Workaround for the web version. Currently, the creation of the
         // conference is handled by /conference.js and appropriate failure handlers
         // are set there.
-        window.removeEventListener('beforeunload', beforeUnloadHandler);
-        beforeUnloadHandler = undefined;
+        _removeUnloadHandler(getState);
     }
 
     if (enableForcedReload && error?.name === JitsiConferenceErrors.CONFERENCE_RESTARTED) {
@@ -201,7 +199,7 @@ function _conferenceJoined({ dispatch, getState }, next, action) {
     const result = next(action);
     const { conference } = action;
     const { pendingSubjectChange } = getState()['features/base/conference'];
-    const { requireDisplayName } = getState()['features/base/config'];
+    const { requireDisplayName, disableBeforeUnloadHandlers = false } = getState()['features/base/config'];
 
     pendingSubjectChange && dispatch(setSubject(pendingSubjectChange));
 
@@ -213,7 +211,7 @@ function _conferenceJoined({ dispatch, getState }, next, action) {
     beforeUnloadHandler = () => {
         dispatch(conferenceWillLeave(conference));
     };
-    window.addEventListener('beforeunload', beforeUnloadHandler);
+    window.addEventListener(disableBeforeUnloadHandlers ? 'unload' : 'beforeunload', beforeUnloadHandler);
 
     if (requireDisplayName
         && !getLocalParticipant(getState)?.name
@@ -287,10 +285,7 @@ function _connectionFailed({ dispatch, getState }, next, action) {
 
     const result = next(action);
 
-    if (typeof beforeUnloadHandler !== 'undefined') {
-        window.removeEventListener('beforeunload', beforeUnloadHandler);
-        beforeUnloadHandler = undefined;
-    }
+    _removeUnloadHandler(getState);
 
     // FIXME: Workaround for the web version. Currently, the creation of the
     // conference is handled by /conference.js and appropriate failure handlers
@@ -367,13 +362,11 @@ function _conferenceSubjectChanged({ dispatch, getState }, next, action) {
  * store.
  *
  * @private
+ * @param {Object} store - The redux store.
  * @returns {void}
  */
-function _conferenceWillLeave() {
-    if (typeof beforeUnloadHandler !== 'undefined') {
-        window.removeEventListener('beforeunload', beforeUnloadHandler);
-        beforeUnloadHandler = undefined;
-    }
+function _conferenceWillLeave({ getState }: { getState: Function }) {
+    _removeUnloadHandler(getState);
 }
 
 /**
@@ -423,6 +416,21 @@ function _pinParticipant({ getState }, next, action) {
         }));
 
     return next(action);
+}
+
+/**
+ * Removes the unload handler.
+ *
+ * @param {Function} getState - The redux getState function.
+ * @returns {void}
+ */
+function _removeUnloadHandler(getState) {
+    if (typeof beforeUnloadHandler !== 'undefined') {
+        const { disableBeforeUnloadHandlers = false } = getState()['features/base/config'];
+
+        window.removeEventListener(disableBeforeUnloadHandlers ? 'unload' : 'beforeunload', beforeUnloadHandler);
+        beforeUnloadHandler = undefined;
+    }
 }
 
 /**

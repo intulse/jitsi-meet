@@ -24,6 +24,11 @@ type Props = {
     dispatch: Function,
 
     /**
+     * Click handler executed aside from the main action.
+     */
+    onClick?: Function,
+
+    /**
      * Invoked to obtain translated strings.
      */
     t: Function
@@ -32,7 +37,7 @@ type Props = {
 /**
  * Implements a React {@link Component} which displays a button for flipping the local viedo.
  *
- * @extends Component
+ * @augments Component
  */
 class FlipLocalVideoButton extends PureComponent<Props> {
     /**
@@ -77,8 +82,9 @@ class FlipLocalVideoButton extends PureComponent<Props> {
      * @returns {void}
      */
     _onClick() {
-        const { _localFlipX, dispatch } = this.props;
+        const { _localFlipX, dispatch, onClick } = this.props;
 
+        onClick && onClick();
         dispatch(updateSettings({
             localFlipX: !_localFlipX
         }));

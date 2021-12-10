@@ -10,7 +10,15 @@ import { endpointMessageReceived } from '../../subtitles';
 import { getReplaceParticipant } from '../config/functions';
 import { JITSI_CONNECTION_CONFERENCE_KEY } from '../connection';
 import { JitsiConferenceEvents } from '../lib-jitsi-meet';
-import { MEDIA_TYPE, setAudioMuted, setVideoMuted } from '../media';
+import {
+    MEDIA_TYPE,
+    isAudioMuted,
+    isVideoMuted,
+    setAudioMuted,
+    setAudioUnmutePermissions,
+    setVideoMuted,
+    setVideoUnmutePermissions
+} from '../media';
 import {
     dominantSpeakerChanged,
     getNormalizedDisplayName,
@@ -37,6 +45,7 @@ import {
     DATA_CHANNEL_OPENED,
     KICKED_OUT,
     LOCK_STATE_CHANGED,
+    NON_PARTICIPANT_MESSAGE_RECEIVED,
     P2P_STATUS_CHANGED,
     SEND_TONES,
     SET_FOLLOW_ME,
@@ -44,7 +53,8 @@ import {
     SET_PASSWORD_FAILED,
     SET_ROOM,
     SET_PENDING_SUBJECT_CHANGE,
-    SET_START_MUTED_POLICY
+    SET_START_MUTED_POLICY,
+    SET_START_REACTIONS_MUTED
 } from './actionTypes';
 import {
     AVATAR_URL_COMMAND,
@@ -145,6 +155,27 @@ function _addConferenceListeners(conference, dispatch, state) {
             }
         });
 
+    conference.on(
+        JitsiConferenceEvents.AUDIO_UNMUTE_PERMISSIONS_CHANGED,
+        disableAudioMuteChange => {
+            const muted = isAudioMuted(state);
+
+            // Disable the mute button only if its muted.
+            if (!disableAudioMuteChange || (disableAudioMuteChange && muted)) {
+                dispatch(setAudioUnmutePermissions(disableAudioMuteChange));
+            }
+        });
+    conference.on(
+        JitsiConferenceEvents.VIDEO_UNMUTE_PERMISSIONS_CHANGED,
+        disableVideoMuteChange => {
+            const muted = isVideoMuted(state);
+
+            // Disable the mute button only if its muted.
+            if (!disableVideoMuteChange || (disableVideoMuteChange && muted)) {
+                dispatch(setVideoUnmutePermissions(disableVideoMuteChange));
+            }
+        });
+
     // Dispatches into features/base/tracks follow:
 
     conference.on(
@@ -178,6 +209,10 @@ function _addConferenceListeners(conference, dispatch, state) {
     conference.on(
         JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED,
         (...args) => dispatch(endpointMessageReceived(...args)));
+
+    conference.on(
+        JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED,
+        (...args) => dispatch(nonParticipantMessageReceived(...args)));
 
     conference.on(
         JitsiConferenceEvents.PARTICIPANT_CONN_STATUS_CHANGED,
@@ -415,9 +450,11 @@ export function conferenceWillLeave(conference: Object) {
 /**
  * Initializes a new conference.
  *
+ * @param {string} overrideRoom - Override the room to join, instead of taking it
+ * from Redux.
  * @returns {Function}
  */
-export function createConference() {
+export function createConference(overrideRoom?: string) {
     return (dispatch: Function, getState: Function) => {
         const state = getState();
         const { connection, locationURL } = state['features/base/connection'];
@@ -432,7 +469,20 @@ export function createConference() {
             throw new Error('Cannot join a conference without a room name!');
         }
 
-        const conference = connection.initJitsiConference(getBackendSafeRoomName(room), getConferenceOptions(state));
+        // XXX: revisit this.
+        // Hide the custom domain in the room name.
+        const tmp = overrideRoom || room;
+        let _room = getBackendSafeRoomName(tmp);
+
+        if (tmp.domain) {
+            // eslint-disable-next-line no-new-wrappers
+            _room = new String(tmp);
+
+            // $FlowExpectedError
+            _room.domain = tmp.domain;
+        }
+
+        const conference = connection.initJitsiConference(_room, getConferenceOptions(state));
 
         connection[JITSI_CONNECTION_CONFERENCE_KEY] = conference;
 
@@ -526,6 +576,25 @@ export function lockStateChanged(conference: Object, locked: boolean) {
 }
 
 /**
+ * Signals that a non participant endpoint message has been received.
+ *
+ * @param {string} id - The resource id of the sender.
+ * @param {Object} json - The json carried by the endpoint message.
+ * @returns {{
+ *      type: NON_PARTICIPANT_MESSAGE_RECEIVED,
+ *      id: Object,
+ *      json: Object
+ * }}
+ */
+export function nonParticipantMessageReceived(id: String, json: Object) {
+    return {
+        type: NON_PARTICIPANT_MESSAGE_RECEIVED,
+        id,
+        json
+    };
+}
+
+/**
  * Updates the known state of start muted policies.
  *
  * @param {boolean} audioMuted - Whether or not members will join the conference
@@ -598,6 +667,22 @@ export function setFollowMe(enabled: boolean) {
     return {
         type: SET_FOLLOW_ME,
         enabled
+    };
+}
+
+/**
+ * Enables or disables the Mute reaction sounds feature.
+ *
+ * @param {boolean} muted - Whether or not reaction sounds should be muted for all participants.
+ * @returns {{
+ *     type: SET_START_REACTIONS_MUTED,
+ *     muted: boolean
+ * }}
+ */
+export function setStartReactionsMuted(muted: boolean) {
+    return {
+        type: SET_START_REACTIONS_MUTED,
+        muted
     };
 }
 
