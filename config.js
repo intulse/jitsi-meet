@@ -102,7 +102,7 @@ var config = {
     //
 
     // Enable unified plan implementation support on Chromium based browsers.
-    enableUnifiedOnChrome: false,
+    enableUnifiedOnChrome: true,
 
     // Audio
 
@@ -186,12 +186,12 @@ var config = {
         video: {
             height: {
                 ideal: 720,
-                max: 720,
+                max: 1080,
                 min: 180
             },
             width: {
                 ideal: 1280,
-                max: 1280,
+                max: 1920,
                 min: 320
             }
         }
@@ -454,7 +454,7 @@ var config = {
     // autoKnockLobby: false,
 
     // Hides add breakout room button
-    // hideAddRoomButton: false,
+    hideAddRoomButton: false,
 
     // Require users to always specify a display name.
     // requireDisplayName: true,
