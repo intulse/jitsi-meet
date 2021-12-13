@@ -20,6 +20,8 @@ import { PasswordRequiredPrompt } from './components';
 import { LOCKED_REMOTELY } from './constants';
 import logger from './logger';
 
+declare var interfaceConfig: Object;
+
 declare var APP: Object;
 
 /**
@@ -111,7 +113,13 @@ function _conferenceFailed({ dispatch }, next, action) {
             error.recoverable = true;
         }
         if (error.recoverable) {
-            dispatch(_openPasswordRequiredPrompt(conference));
+            console.log("Conference p: ", store.getState()['features/base/conference'].password);
+            console.log("Access c: ", interfaceConfig.ACCESS_CODE);
+            if (store.getState()['features/base/conference'].password != interfaceConfig.ACCESS_CODE) {
+                dispatch(_openPasswordRequiredPrompt(conference));
+            } else {
+                dispatch(hideDialog(PasswordRequiredPrompt));
+            }
         }
     } else {
         dispatch(hideDialog(PasswordRequiredPrompt));
