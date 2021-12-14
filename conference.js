@@ -382,6 +382,20 @@ class ConferenceConnector {
             APP.store.dispatch(reloadWithStoredParams());
             break;
 
+        case JitsiConferenceErrors.PASSWORD_REQUIRED:
+            // This typically only happens when a user is coming out of a breakout room.
+            // However, it could technically be triggered in other ways.
+            // So, when it is triggered, we can simply check the password.
+            // If it is the access code password, refresh the page and users will either have a saved password or can go through the lobby.
+            const { password }
+                = APP.store.getState()['features/base/conference'];
+            if (password == interfaceConfig.ACCESS_CODE) {
+                window.location.reload();
+            } else {
+                this._handleConferenceFailed(err, ...params);                
+            }
+            break;  
+
         default:
             this._handleConferenceFailed(err, ...params);
         }

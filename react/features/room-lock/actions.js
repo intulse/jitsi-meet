@@ -96,7 +96,6 @@ export function endRoomLockRequest(
  * }}
  */
 export function _openPasswordRequiredPrompt(conference: Object) {
-    console.log("Conference: ", conference);
     return openDialog(PasswordRequiredPrompt, { conference });
 }
 
