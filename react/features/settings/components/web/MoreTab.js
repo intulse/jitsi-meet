@@ -410,7 +410,6 @@ class MoreTab extends AbstractDialogTab<Props, State> {
             <div
                 className = 'settings-sub-pane left'
                 key = 'settings-sub-pane-left'>
-                { showPrejoinSettings && this._renderPrejoinScreenSettings() }
                 { this._renderKeyboardShortcutCheckbox() }
             </div>
         );
