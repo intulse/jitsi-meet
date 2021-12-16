@@ -389,9 +389,14 @@ class ConferenceConnector {
             // If it is the access code password, refresh the page and users will either have a saved password or can go through the lobby.
             const { password }
                 = APP.store.getState()['features/base/conference'];
-            console.log("PW: ", password);
-            console.log("Config: ", interfaceConfig);
-            console.log("Code: ", interfaceConfig.ACCESS_CODE);
+            console.log("State: ");
+            console.log(APP.store.getState()['features/base/conference']);
+            console.log("PW: ");
+            console.log(password);
+            console.log("Config: ");
+            console.log(interfaceConfig);
+            console.log("Code: ");
+            console.log(interfaceConfig.ACCESS_CODE);
             if (password == interfaceConfig.ACCESS_CODE) {
                 window.location.reload();
             } else {

@@ -123,7 +123,6 @@ class PasswordForm extends Component<Props, State> {
      * @returns {ReactElement}
      */
     _renderPasswordField() {
-        console.log("Props: ", this.props);
         if (this.props.editEnabled) {
             let digitPattern, placeHolderText;
 
