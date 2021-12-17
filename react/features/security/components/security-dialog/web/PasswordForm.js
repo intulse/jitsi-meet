@@ -101,15 +101,6 @@ class PasswordForm extends Component<Props, State> {
      */
     render() {
         const { t } = this.props;
-        
-        console.log("Props:");
-        console.log(this.props);
-        console.log("T:");
-        console.log(t);
-        console.log("PW:");
-        console.log(this.props.password);
-        console.log("Locked:");
-        console.log(this.props.locked);
 
         return (
             <div className = 'info-password'>
@@ -120,6 +111,10 @@ class PasswordForm extends Component<Props, State> {
                 <span className = 'info-password-field info-value'>
                     { this._renderPasswordField() }
                 </span>
+                <p>Props: { this.props }</p>
+                <p>T: { t }</p>
+                <p>PW: { this.props.password }</p>
+                <p>Locked: { this.props.locked }</p>
             </div>
         );
     }
@@ -167,6 +162,9 @@ class PasswordForm extends Component<Props, State> {
             );
         } else if (this.props.locked && this.props.password !== interfaceConfig.ACCESS_CODE) {
             return (
+                <p>Access code: { interfaceConfig.ACCESS_CODE }</p>
+                <p>Password: { this.props.password }</p>
+                <p>Props: { this.props }</p>
                 <div className = 'info-password-remote'>
                     { this.props.t('passwordSetRemotely') }
                 </div>
