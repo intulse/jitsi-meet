@@ -162,10 +162,10 @@ class PasswordForm extends Component<Props, State> {
             );
         } else if (this.props.locked && this.props.password !== interfaceConfig.ACCESS_CODE) {
             return (
-                <p>Access code: { interfaceConfig.ACCESS_CODE }</p>
-                <p>Password: { this.props.password }</p>
-                <p>Props: { this.props }</p>
                 <div className = 'info-password-remote'>
+                    <p>Access code: { interfaceConfig.ACCESS_CODE }</p>
+                    <p>Password: { this.props.password }</p>
+                    <p>Props: { this.props }</p>
                     { this.props.t('passwordSetRemotely') }
                 </div>
             );
