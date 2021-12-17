@@ -101,6 +101,15 @@ class PasswordForm extends Component<Props, State> {
      */
     render() {
         const { t } = this.props;
+        
+        console.log("Props:");
+        console.log(this.props);
+        console.log("T:");
+        console.log(t);
+        console.log("PW:");
+        console.log(this.props.password);
+        console.log("Locked:");
+        console.log(this.props.locked);
 
         return (
             <div className = 'info-password'>
