@@ -111,8 +111,6 @@ class PasswordForm extends Component<Props, State> {
                 <span className = 'info-password-field info-value'>
                     { this._renderPasswordField() }
                 </span>
-                <p>PW: { this.props.password }</p>
-                <p>Locked: { this.props.locked }</p>
             </div>
         );
     }
@@ -161,9 +159,6 @@ class PasswordForm extends Component<Props, State> {
         } else if (this.props.locked && this.props.password !== interfaceConfig.ACCESS_CODE) {
             return (
                 <div className = 'info-password-remote'>
-                    <p>Access code: { interfaceConfig.ACCESS_CODE }</p>
-                    <p>Password: { this.props.password }</p>
-                    <p>Locked: { this.props.locked }</p>
                     { this.props.t('passwordSetRemotely') }
                 </div>
             );
