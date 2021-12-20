@@ -746,10 +746,12 @@ export function setPassword(
                             method,
                             password
                             });
+                            console.log(interfaceConfig.USING_ACCESS_CODE);
                             console.log("LOCKED!");
                             console.log(password);
                             console.log(interfaceConfig.ACCESS_CODE);
                             interfaceConfig.USING_ACCESS_CODE = password == interfaceConfig.ACCESS_CODE;
+                            console.log(interfaceConfig.USING_ACCESS_CODE);
                         })
                         .catch(error => dispatch({
                             type: SET_PASSWORD_FAILED,
