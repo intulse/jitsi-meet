@@ -154,12 +154,14 @@ class PasswordForm extends Component<Props, State> {
             return (
                 <div className = 'info-password-local'>
                     { this.props.password }
+                    { interfaceConfig.USING_ACCESS_CODE }
                 </div>
             );
         } else if (this.props.locked && !interfaceConfig.USING_ACCESS_CODE) {
             return (
                 <div className = 'info-password-remote'>
                     { this.props.t('passwordSetRemotely') }
+                    { interfaceConfig.USING_ACCESS_CODE }
                 </div>
             );
         }
