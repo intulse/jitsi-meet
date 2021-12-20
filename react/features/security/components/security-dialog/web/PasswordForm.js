@@ -161,7 +161,6 @@ class PasswordForm extends Component<Props, State> {
             return (
                 <div className = 'info-password-remote-test'>
                     { this.props.t('passwordSetRemotely') }
-                    <p>{ interfaceConfig.USING_ACCESS_CODE }</p>
                 </div>
             );
         }

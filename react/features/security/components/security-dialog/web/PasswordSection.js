@@ -232,7 +232,7 @@ function PasswordSection({
             );
         }
 
-        if (locked && password !== interfaceConfig.ACCESS_CODE) {
+        if (locked && interfaceConfig.USING_ACCESS_CODE) {
             return (
                 <>
                     {
