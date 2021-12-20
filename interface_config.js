@@ -9,6 +9,8 @@
  */
 
 var interfaceConfig = {
+    // Specifies if the access code is being used to lock the meeting
+    USING_ACCESS_CODE: false,
     
     // Add an access code to lock all meetings
     ACCESS_CODE: '',

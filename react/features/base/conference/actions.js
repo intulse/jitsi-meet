@@ -71,6 +71,8 @@ import {
 } from './functions';
 import logger from './logger';
 
+declare var interfaceConfig: Object;
+
 declare var APP: Object;
 
 /**
@@ -722,6 +724,7 @@ export function setPassword(
                     // Make sure that the application still wants the
                     // conference joined.
                     && !state.conference) {
+                interfaceConfig.USING_ACCESS_CODE = password == interfaceConfig.ACCESS_CODE;
                 method.call(conference, password);
             }
             break;
@@ -733,12 +736,15 @@ export function setPassword(
             if (state.conference === conference) {
                 return (
                     method.call(conference, password)
-                        .then(() => dispatch({
+                        .then(() => {
+                            dispatch({
                             type: SET_PASSWORD,
                             conference,
                             method,
                             password
-                        }))
+                            });
+                            interfaceConfig.USING_ACCESS_CODE = password == interfaceConfig.ACCESS_CODE;
+                        })
                         .catch(error => dispatch({
                             type: SET_PASSWORD_FAILED,
                             error
