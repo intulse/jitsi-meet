@@ -713,7 +713,11 @@ export function setPassword(
                 conference,
                 method,
                 password
-            });
+            });            
+            console.log("JOINED!");
+            console.log(password);
+            console.log(interfaceConfig.ACCESS_CODE);
+            interfaceConfig.USING_ACCESS_CODE = password == interfaceConfig.ACCESS_CODE;
 
             // Join the conference with the newly-set password.
 
@@ -724,10 +728,6 @@ export function setPassword(
                     // Make sure that the application still wants the
                     // conference joined.
                     && !state.conference) {
-                console.log("JOINED!");
-                console.log(password);
-                console.log(interfaceConfig.ACCESS_CODE);
-                interfaceConfig.USING_ACCESS_CODE = password == interfaceConfig.ACCESS_CODE;
                 method.call(conference, password);
             }
             break;
