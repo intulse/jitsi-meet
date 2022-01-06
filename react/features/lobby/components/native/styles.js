@@ -130,8 +130,7 @@ export default {
     knockingParticipantList: {
         alignSelf: 'stretch',
         backgroundColor: 'rgba(22, 38, 55, 0.8)',
-        flexDirection: 'column',
-        z-index: 1100
+        flexDirection: 'column'
     },
 
     knockingParticipantListButton: {
