@@ -52,7 +52,7 @@
     overflow-y: auto;
     position: fixed;
     top: 30px;
-    z-index: $toolbarZ + 1;
+    z-index: $sideToolbarContainerZ + 1;
 
     &:empty {
         border: none;
