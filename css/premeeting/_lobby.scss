@@ -102,8 +102,6 @@
 .knocking-participants-container {
     list-style-type: none;
     padding: 0 15px 15px 15px;
-    position: relative;
-    z-index: 1100;
 }
 
 .knocking-participant {
@@ -111,8 +109,6 @@
     display: flex;
     flex-direction: row;
     margin: 8px 0;
-    position: relative;
-    z-index: 1100;
 
     .details {
         display: flex;
@@ -133,8 +129,6 @@
         margin: 0;
         text-align: center;
         width: 100%;
-        position: relative;
-        z-index: 1100;
 
         .avatar {
             display: none;
@@ -143,8 +137,6 @@
 
     .knocking-participant {
         flex-direction: column;
-        position: relative;
-        z-index: 1100;
 
         .details {
             margin: 0;
