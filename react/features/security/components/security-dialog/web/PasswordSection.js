@@ -232,7 +232,7 @@ function PasswordSection({
             );
         }
 
-        if (locked && !interfaceConfig.USING_ACCESS_CODE) {
+        if (locked && !APP.store.getState()['features/base/settings']['usingAccessCode']) {
             return (
                 <>
                     {

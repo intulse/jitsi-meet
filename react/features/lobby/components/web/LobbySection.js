@@ -110,7 +110,7 @@ class LobbySection extends PureComponent<Props, State> {
                             id = 'lobby-section-switch'
                             onValueChange = { this._onToggleLobby }
                             value = { this.state.lobbyEnabled }
-                            disabled = { !interfaceConfig.USING_ACCESS_CODE } />
+                            disabled = { !APP.store.getState()['features/base/settings']['usingAccessCode'] } />
                     </div>
                 </div>
                 <div className = 'separator-line' />
