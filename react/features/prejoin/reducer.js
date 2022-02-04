@@ -32,7 +32,8 @@ const DEFAULT_STATE = {
     showPrejoin: true,
     skipPrejoinOnReload: false,
     showJoinByPhoneDialog: false,
-    userSelectedSkipPrejoin: false
+    userSelectedSkipPrejoin: false,
+    usingAccessCode: true
 };
 
 /**

@@ -146,7 +146,7 @@ function initCommands() {
         },
 		// Intulse added: set-start-muted-policy.
 		'set-start-muted-policy': policy => {
-            APP.store.dispatch(setStartMutedPolicy(policy.video, policy.audio));
+            APP.store.dispatch(setStartMutedPolicy( policy.audio, policy.video));
         },
         'mute-everyone': mediaType => {
             const muteMediaType = mediaType ? mediaType : MEDIA_TYPE.AUDIO;
@@ -564,6 +564,9 @@ function initCommands() {
         },
         'skip-prejoin': skipPrejoin => {
             APP.store.dispatch(updateSettings({ userSelectedSkipPrejoin: skipPrejoin }));
+        },
+        'set-access-code-setting': useAccessCode => {
+            APP.store.dispatch(updateSettings({ usingAccessCode: useAccessCode }));
         },
         'meeting-reconnect': () => {
             APP.store.dispatch(joinWithPassword(interfaceConfig.ACCESS_CODE));

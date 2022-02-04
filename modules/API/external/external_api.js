@@ -40,6 +40,7 @@ const commands = {
     initiatePrivateChat: 'initiate-private-chat',
     joinWithPassword: 'join-with-password',
     skipPrejoin: 'skip-prejoin',
+    accessCodeSetting: 'set-access-code-setting',
     meetingReconnect: 'meeting-reconnect',
     grantModerator: 'grant-moderator',
     kickParticipant: 'kick-participant',

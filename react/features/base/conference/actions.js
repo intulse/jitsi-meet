@@ -742,7 +742,6 @@ export function setPassword(
                             method,
                             password
                             });
-                            interfaceConfig.USING_ACCESS_CODE = password == interfaceConfig.ACCESS_CODE;
                         })
                         .catch(error => dispatch({
                             type: SET_PASSWORD_FAILED,

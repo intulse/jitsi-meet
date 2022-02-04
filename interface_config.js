@@ -8,10 +8,7 @@
  * config.js, and no new options should be added here.
  */
 
-var interfaceConfig = {
-    // Specifies if the access code is being used to lock the meeting
-    USING_ACCESS_CODE: true,
-    
+var interfaceConfig = {    
     // Add an access code to lock all meetings
     ACCESS_CODE: '',
     
