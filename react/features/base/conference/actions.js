@@ -714,7 +714,6 @@ export function setPassword(
                 method,
                 password
             });
-            interfaceConfig.USING_ACCESS_CODE = password == interfaceConfig.ACCESS_CODE;
 
             // Join the conference with the newly-set password.
 
