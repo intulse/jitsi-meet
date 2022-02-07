@@ -390,7 +390,7 @@ class ConferenceConnector {
             const { password }
                 = APP.store.getState()['features/base/conference'];
             if (APP.store.getState()['features/base/settings']['usingAccessCode']) {
-                window.location.reload();
+                window.top.location.reload();
             } else {
                 this._handleConferenceFailed(err, ...params);
             }
