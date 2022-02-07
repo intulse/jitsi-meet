@@ -9,6 +9,10 @@ import { copyText } from '../../../../base/util';
 
 import PasswordForm from './PasswordForm';
 
+import {
+    updateSettings
+} from './react/features/base/settings';
+
 declare var interfaceConfig: Object;
 
 type Props = {
