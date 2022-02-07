@@ -1,6 +1,6 @@
 // @flow
 
-import React, { Component, useState } from 'react';
+import React, { Component } from 'react';
 
 import { translate } from '../../../../base/i18n';
 import { LOCKED_LOCALLY } from '../../../../room-lock';
@@ -74,7 +74,7 @@ class PasswordForm extends Component<Props, State> {
     }
 
     state = {
-        enteredPassword: useState('')
+        enteredPassword: ''
     };
 
     /**
@@ -151,19 +151,11 @@ class PasswordForm extends Component<Props, State> {
                 </form>
             );
         } else if (this.props.locked === LOCKED_LOCALLY && !APP.store.getState()['features/base/settings']['usingAccessCode']) {
-            if (this.state.enteredPassword !== '') {
-                return (
-                    <div className = 'info-password-local'>
-                        { this.state.enteredPassword }
-                    </div>
-                );
-            } else {
-                return (
-                    <div className = 'info-password-local'>
-                        { this.props.password }
-                    </div>
-                );
-            }
+            return (
+                <div className = 'info-password-local'>
+                    { this.props.password }
+                </div>
+            );
         } else if (this.props.locked && !APP.store.getState()['features/base/settings']['usingAccessCode']) {
             return (
                 <div className = 'info-password-remote'>
