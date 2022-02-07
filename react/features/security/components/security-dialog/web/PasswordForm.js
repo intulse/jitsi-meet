@@ -1,6 +1,6 @@
 // @flow
 
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 
 import { translate } from '../../../../base/i18n';
 import { LOCKED_LOCALLY } from '../../../../room-lock';
@@ -74,7 +74,7 @@ class PasswordForm extends Component<Props, State> {
     }
 
     state = {
-        enteredPassword: ''
+        enteredPassword: useState('')
     };
 
     /**
