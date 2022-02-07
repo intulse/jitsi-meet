@@ -156,7 +156,7 @@ class PasswordForm extends Component<Props, State> {
                     { this.props.password }
                 </div>
             );
-        } else if (this.props.locked && APP.store.getState()['features/base/settings']['usingAccessCode']) {
+        } else if (this.props.locked && !APP.store.getState()['features/base/settings']['usingAccessCode']) {
             return (
                 <div className = 'info-password-remote'>
                     { this.props.t('passwordSetRemotely') }
