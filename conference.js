@@ -150,6 +150,8 @@ import { createPresenterEffect } from './react/features/stream-effects/presenter
 import { createRnnoiseProcessor } from './react/features/stream-effects/rnnoise';
 import { endpointMessageReceived } from './react/features/subtitles';
 import UIEvents from './service/UI/UIEvents';
+import { useSelector } from 'react-redux';
+import { getLobbyEnabled } from '../../../lobby/functions';
 
 const logger = Logger.getLogger(__filename);
 
@@ -390,6 +392,9 @@ class ConferenceConnector {
             const { password }
                 = APP.store.getState()['features/base/conference'];
             if (APP.store.getState()['features/base/settings']['usingAccessCode']) {
+                window.top.location.reload();
+            } else if (useSelector(getLobbyEnabled)) {
+                // If the lobby is enabled then they will only hit this dialog when coming back from a breakout room so it is safe to reload the page and them back in automatically
                 window.top.location.reload();
             } else {
                 this._handleConferenceFailed(err, ...params);
