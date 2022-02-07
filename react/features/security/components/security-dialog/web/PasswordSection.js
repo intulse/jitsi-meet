@@ -11,7 +11,7 @@ import PasswordForm from './PasswordForm';
 
 import {
     updateSettings
-} from './react/features/base/settings';
+} from '../../../../base/settings';
 
 declare var interfaceConfig: Object;
 
