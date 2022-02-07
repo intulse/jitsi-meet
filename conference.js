@@ -151,7 +151,7 @@ import { createRnnoiseProcessor } from './react/features/stream-effects/rnnoise'
 import { endpointMessageReceived } from './react/features/subtitles';
 import UIEvents from './service/UI/UIEvents';
 import { useSelector } from 'react-redux';
-import { getLobbyEnabled } from '../../../lobby/functions';
+import { getLobbyEnabled } from './react/features/lobby/functions';
 
 const logger = Logger.getLogger(__filename);
 
