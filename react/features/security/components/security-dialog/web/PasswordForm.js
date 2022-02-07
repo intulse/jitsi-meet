@@ -152,13 +152,13 @@ class PasswordForm extends Component<Props, State> {
             );
         } else if (this.props.locked === LOCKED_LOCALLY && !APP.store.getState()['features/base/settings']['usingAccessCode']) {
             return (
-                <div className = 'info-password-local-test'>
+                <div className = 'info-password-local'>
                     { this.props.password }
                 </div>
             );
         } else if (this.props.locked && !APP.store.getState()['features/base/settings']['usingAccessCode']) {
             return (
-                <div className = 'info-password-remote-test'>
+                <div className = 'info-password-remote'>
                     { this.props.t('passwordSetRemotely') }
                 </div>
             );
