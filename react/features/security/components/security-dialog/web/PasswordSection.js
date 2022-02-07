@@ -96,7 +96,7 @@ function PasswordSection({
     function onPasswordSubmit(enteredPassword) {
         setPassword(conference, conference.lock, enteredPassword);
         // Intulse needs the following so that the settings for the moderator modifying the password is updated
-        APP.store.dispatch(updateSettings({ usingAccessCode: enteredPassword == interfaceConfig.ACCESS_CODE });
+        APP.store.dispatch(updateSettings({ usingAccessCode: enteredPassword == interfaceConfig.ACCESS_CODE }));
     }
 
     /**
