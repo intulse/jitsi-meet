@@ -3,6 +3,7 @@
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import Logger from '@jitsi/logger';
 import EventEmitter from 'events';
+import { useSelector } from 'react-redux';
 
 import { openConnection } from './connection';
 import { ENDPOINT_TEXT_MESSAGE_NAME } from './modules/API/constants';
@@ -149,9 +150,8 @@ import { AudioMixerEffect } from './react/features/stream-effects/audio-mixer/Au
 import { createPresenterEffect } from './react/features/stream-effects/presenter';
 import { createRnnoiseProcessor } from './react/features/stream-effects/rnnoise';
 import { endpointMessageReceived } from './react/features/subtitles';
-import UIEvents from './service/UI/UIEvents';
-import { useSelector } from 'react-redux';
 import { getLobbyEnabled } from './react/features/lobby/functions';
+import UIEvents from './service/UI/UIEvents';
 
 const logger = Logger.getLogger(__filename);
 
