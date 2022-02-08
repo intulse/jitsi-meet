@@ -394,13 +394,13 @@ class ConferenceConnector {
             if (APP.store.getState()['features/base/settings']['usingAccessCode']) {
                 var parent = window.parent;
                 if (parent && parent.postMessage) {
-                    parent.postMessage("refresh");
+                    parent.postMessage("refresh", "*");
                 }
             } else if (useSelector(getLobbyEnabled)) {
                 // If the lobby is enabled then they will only hit this dialog when coming back from a breakout room so it is safe to reload the page and them back in automatically
                 var parent = window.parent;
                 if (parent && parent.postMessage) {
-                    parent.postMessage("refresh");
+                    parent.postMessage("refresh", "*");
                 }
             } else {
                 this._handleConferenceFailed(err, ...params);
