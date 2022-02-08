@@ -392,7 +392,7 @@ class ConferenceConnector {
             const { password }
                 = APP.store.getState()['features/base/conference'];
             if (APP.store.getState()['features/base/settings']['usingAccessCode']) {
-                var parent = window.parent;
+                var parent = window.top;
                 console.log(parent);
                 if (parent && parent.postMessage) {
                     console.log("Trying to refresh!");
