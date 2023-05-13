@@ -1,10 +1,12 @@
 /* application specific logic */
 
-import 'jquery';
-import 'jquery-contextmenu';
-import 'jQuery-Impromptu';
+// Re-export jQuery
+// FIXME: Remove this requirement from torture tests.
+import $ from 'jquery';
 
-import 'olm';
+window.$ = window.jQuery = $;
+
+import '@matrix-org/olm';
 
 import 'focus-visible';
 
@@ -16,7 +18,6 @@ import './react/features/base/jitsi-local-storage/setup';
 import conference from './conference';
 import API from './modules/API';
 import UI from './modules/UI/UI';
-import keyboardshortcut from './modules/keyboardshortcut/keyboardshortcut';
 import translation from './modules/translation/translation';
 
 // Initialize Olm as early as possible.
@@ -31,23 +32,11 @@ window.APP = {
     API,
     conference,
 
-    // Used by do_external_connect.js if we receive the attach data after
-    // connect was already executed. status property can be 'initialized',
-    // 'ready', or 'connecting'. We are interested in 'ready' status only which
-    // means that connect was executed but we have to wait for the attach data.
-    // In status 'ready' handler property will be set to a function that will
-    // finish the connect process when the attach data or error is received.
-    connect: {
-        handler: null,
-        status: 'initialized'
-    },
-
     // Used for automated performance tests.
     connectionTimes: {
         'index.loaded': window.indexLoadedTime
     },
 
-    keyboardshortcut,
     translation,
     UI
 };

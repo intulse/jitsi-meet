@@ -57,7 +57,20 @@
             openURL:(NSURL *_Nonnull)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *_Nonnull)options;
 
+- (UIInterfaceOrientationMask)application:(UIApplication *_Nonnull)application
+  supportedInterfaceOrientationsForWindow:(UIWindow *_Nonnull)window;
+
 #pragma mark - Utility methods
+
+/**
+ * Once  the react native bridge is destroyed you are responsible for reinstantiating it back. Use this method to do so.
+ */
+- (void)instantiateReactNativeBridge;
+
+/**
+ * Helper method to destroy the react native bridge, cleaning up resources in the process. Once the react native bridge is destroyed you are responsible for reinstantiating it back using `instantiateReactNativeBridge` method.
+ */
+- (void)destroyReactNativeBridge;
 
 - (JitsiMeetConferenceOptions *_Nonnull)getInitialConferenceOptions;
 

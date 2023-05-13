@@ -1,5 +1,6 @@
 module.exports = {
     'extends': [
-        'eslint-config-jitsi'
-    ]
+        '@jitsi/eslint-config'
+    ],
+    'ignorePatterns': [ '*.d.ts' ]
 };

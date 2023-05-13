@@ -59,6 +59,16 @@ class RNConnectionService extends ReactContextBaseJavaModule {
         super(reactContext);
     }
 
+    @ReactMethod
+    public void addListener(String eventName) {
+        // Keep: Required for RN built in Event Emitter Calls.
+    }
+
+    @ReactMethod
+    public void removeListeners(Integer count) {
+        // Keep: Required for RN built in Event Emitter Calls.
+    }
+
     /**
      * Starts a new outgoing call.
      *
@@ -183,7 +193,7 @@ class RNConnectionService extends ReactContextBaseJavaModule {
      * Called by the JS side to update the call's state.
      *
      * @param callUUID - the call's UUID.
-     * @param callState - the map which carries infor about the current call's
+     * @param callState - the map which carries info about the current call's
      * state. See static fields in {@link ConnectionService.ConnectionImpl}
      * prefixed with "KEY_" for the values supported by the Android
      * implementation.

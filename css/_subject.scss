@@ -1,35 +1,73 @@
 .subject {
-    top: -120px;
-    transition: top .3s ease-in;
-    height: 95px;
-    width: 100%;
-    pointer-events: none;
-    position: absolute;
-    padding: 25px 140px 0 140px;
-    text-align: center;
-    font-size: 17px;
     color: #fff;
-    z-index: $zindex10;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    box-sizing: border-box;
-    white-space: nowrap;
+    transition: opacity .6s ease-in-out;
+    z-index: $toolbarZ + 2;
+    margin-top: 20px;
+    opacity: 0;
 
     &.visible {
-        top: 0px;
+        opacity: 1;
     }
 
-    &.gradient {
-        background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0));
+    &#autoHide.with-always-on {
+        overflow: hidden;
+        animation: hideSubject forwards .6s ease-out;
+
+        & > .subject-info-container {
+            justify-content: flex-start;
+        }
+
+        &.visible {
+            animation: showSubject forwards .6s ease-out;
+        }
+    }
+}
+
+.subject-info-container {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    height: 28px;
+
+    @media (max-width: 500px) {
+        flex-wrap: wrap;
+    }
+}
+
+.subject-info {
+    align-items: center;
+    display: flex;
+    margin-bottom: 4px;
+    max-width: 80%;
+    height: 28px;
+}
+
+.details-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    height: 48px;
+    max-width: calc(100% - 24px);
+}
+
+@keyframes hideSubject {
+    0% {
+        max-width: 100%;
     }
 
-    &-text {
-        vertical-align: middle;
+    100% {
+        max-width: 0;
+    }
+}
+
+@keyframes showSubject {
+    0% {
+        max-width: 0%;
     }
 
-    &-conference-timer {
-        display: block;
-        font-size: 15px;
-        opacity: 0.6;
+    100% {
+        max-width: 100%;
     }
 }

@@ -1,6 +1,7 @@
 local jid = require "util.jid";
 local timer = require "util.timer";
 local http = require "net.http";
+local cache = require "util.cache";
 
 local http_timeout = 30;
 local have_async, async = pcall(require, "util.async");
@@ -8,39 +9,41 @@ local http_headers = {
     ["User-Agent"] = "Prosody ("..prosody.version.."; "..prosody.platform..")"
 };
 
-local muc_domain_prefix
-    = module:get_option_string("muc_mapper_domain_prefix", "conference");
+local muc_domain_prefix = module:get_option_string("muc_mapper_domain_prefix", "conference");
 
 -- defaults to module.host, the module that uses the utility
-local muc_domain_base
-    = module:get_option_string("muc_mapper_domain_base", module.host);
+local muc_domain_base = module:get_option_string("muc_mapper_domain_base", module.host);
 
 -- The "real" MUC domain that we are proxying to
-local muc_domain = module:get_option_string(
-    "muc_mapper_domain", muc_domain_prefix.."."..muc_domain_base);
+local muc_domain = module:get_option_string("muc_mapper_domain", muc_domain_prefix.."."..muc_domain_base);
 
 local escaped_muc_domain_base = muc_domain_base:gsub("%p", "%%%1");
 local escaped_muc_domain_prefix = muc_domain_prefix:gsub("%p", "%%%1");
 -- The pattern used to extract the target subdomain
 -- (e.g. extract 'foo' from 'conference.foo.example.com')
-local target_subdomain_pattern
-    = "^"..escaped_muc_domain_prefix..".([^%.]+)%."..escaped_muc_domain_base;
+local target_subdomain_pattern = "^"..escaped_muc_domain_prefix..".([^%.]+)%."..escaped_muc_domain_base;
 
--- table to store all incoming iqs without roomname in it, like discoinfo to the muc compoent
+-- table to store all incoming iqs without roomname in it, like discoinfo to the muc component
 local roomless_iqs = {};
+
+local split_subdomain_cache = cache.new(1000);
+local extract_subdomain_cache = cache.new(1000);
+local internal_room_jid_cache = cache.new(1000);
 
 -- Utility function to split room JID to include room name and subdomain
 -- (e.g. from room1@conference.foo.example.com/res returns (room1, example.com, res, foo))
 local function room_jid_split_subdomain(room_jid)
-    local node, host, resource = jid.split(room_jid);
-
-    -- optimization, skip matching if there is no subdomain or it is not the muc component address at all
-    if host == muc_domain or not starts_with(host, muc_domain_prefix) then
-        return node, host, resource;
+    local ret = split_subdomain_cache:get(room_jid);
+    if ret then
+        return ret.node, ret.host, ret.resource, ret.subdomain;
     end
 
+    local node, host, resource = jid.split(room_jid);
+
     local target_subdomain = host and host:match(target_subdomain_pattern);
-    return node, host, resource, target_subdomain
+    local cache_value = {node=node, host=host, resource=resource, subdomain=target_subdomain};
+    split_subdomain_cache:set(room_jid, cache_value);
+    return node, host, resource, target_subdomain;
 end
 
 --- Utility function to check and convert a room JID from
@@ -67,37 +70,42 @@ local function room_jid_match_rewrite(room_jid, stanza)
             roomless_iqs[stanza.attr.id] = stanza.attr.to;
         end
     end
-    room_jid = jid.join(new_node, new_host, new_resource);
-    -- module:log("debug", "Rewrote to %s", room_jid);
-    return room_jid
+
+    return jid.join(new_node, new_host, new_resource);
 end
 
 -- Utility function to check and convert a room JID from real [foo]room1@muc.example.com to virtual room1@muc.foo.example.com
 local function internal_room_jid_match_rewrite(room_jid, stanza)
+    -- first check for roomless_iqs
+    if (stanza and stanza.attr and stanza.attr.id and roomless_iqs[stanza.attr.id]) then
+        local result = roomless_iqs[stanza.attr.id];
+        roomless_iqs[stanza.attr.id] = nil;
+        return result;
+    end
+
+    local ret = internal_room_jid_cache:get(room_jid);
+    if ret then
+        return ret;
+    end
+
     local node, host, resource = jid.split(room_jid);
     if host ~= muc_domain or not node then
         -- module:log("debug", "No need to rewrite %s (not from the MUC host)", room_jid);
-
-        if (stanza and stanza.attr and stanza.attr.id and roomless_iqs[stanza.attr.id]) then
-            local result = roomless_iqs[stanza.attr.id];
-            roomless_iqs[stanza.attr.id] = nil;
-            return result;
-        end
-
+        internal_room_jid_cache:set(room_jid, room_jid);
         return room_jid;
     end
 
     local target_subdomain, target_node = extract_subdomain(node);
     if not (target_node and target_subdomain) then
         -- module:log("debug", "Not rewriting... unexpected node format: %s", node);
+        internal_room_jid_cache:set(room_jid, room_jid);
         return room_jid;
     end
 
     -- Ok, rewrite room_jid address to pretty format
-    local new_node, new_host, new_resource = target_node, muc_domain_prefix..".".. target_subdomain.."."..muc_domain_base, resource;
-    room_jid = jid.join(new_node, new_host, new_resource);
-    -- module:log("debug", "Rewrote to %s", room_jid);
-    return room_jid
+    ret = jid.join(target_node, muc_domain_prefix..".".. target_subdomain.."."..muc_domain_base, resource);
+    internal_room_jid_cache:set(room_jid, ret);
+    return ret;
 end
 
 --- Finds and returns room by its jid
@@ -118,6 +126,23 @@ function get_room_from_jid(room_jid)
             return
         end
     end
+end
+
+-- Returns the room if available, work and in multidomain mode
+-- @param room_name the name of the room
+-- @param group name of the group (optional)
+-- @return returns room if found or nil
+function get_room_by_name_and_subdomain(room_name, subdomain)
+    local room_address;
+
+    -- if there is a subdomain we are in multidomain mode and that subdomain is not our main host
+    if subdomain and subdomain ~= "" and subdomain ~= muc_domain_base then
+        room_address = jid.join("["..subdomain.."]"..room_name, muc_domain);
+    else
+        room_address = jid.join(room_name, muc_domain);
+    end
+
+    return get_room_from_jid(room_address);
 end
 
 function async_handler_wrapper(event, handler)
@@ -186,8 +211,6 @@ function update_presence_identity(
             return tag
         end
     )
-    module:log("debug",
-        "Presence after previous identity stripped: %s", tostring(stanza));
 
     stanza:tag("identity"):tag("user");
     for k, v in pairs(user) do
@@ -216,8 +239,6 @@ function update_presence_identity(
         stanza:up();
     end
 
-    module:log("debug",
-        "Presence with identity inserted %s", tostring(stanza))
 end
 
 -- Utility function to check whether feature is present and enabled. Allow
@@ -237,38 +258,47 @@ end
 --- Extracts the subdomain and room name from internal jid node [foo]room1
 -- @return subdomain(optional, if extracted or nil), the room name
 function extract_subdomain(room_node)
-    -- optimization, skip matching if there is no subdomain, no [subdomain] part in the beginning of the node
-    if not starts_with(room_node, '[') then
-        return nil,room_node;
+    local ret = extract_subdomain_cache:get(room_node);
+    if ret then
+        return ret.subdomain, ret.room;
     end
 
-    return room_node:match("^%[([^%]]+)%](.+)$");
+    local subdomain, room_name = room_node:match("^%[([^%]]+)%](.+)$");
+    local cache_value = {subdomain=subdomain, room=room_name};
+    extract_subdomain_cache:set(room_node, cache_value);
+    return subdomain, room_name;
 end
 
 function starts_with(str, start)
     return str:sub(1, #start) == start
 end
 
+function ends_with(str, ending)
+    return ending == "" or str:sub(-#ending) == ending
+end
+
 -- healthcheck rooms in jicofo starts with a string '__jicofo-health-check'
 function is_healthcheck_room(room_jid)
-    if starts_with(room_jid, "__jicofo-health-check") then
-        return true;
-    end
-
-    return false;
+    return starts_with(room_jid, "__jicofo-health-check");
 end
 
 --- Utility function to make an http get request and
 --- retry @param retry number of times
 -- @param url endpoint to be called
 -- @param retry nr of retries, if retry is
+-- @param auth_token value to be passed as auth Bearer
 -- nil there will be no retries
 -- @returns result of the http call or nil if
 -- the external call failed after the last retry
-function http_get_with_retry(url, retry)
+function http_get_with_retry(url, retry, auth_token)
     local content, code;
     local timeout_occurred;
     local wait, done = async.waiter();
+    local request_headers = http_headers or {}
+    if auth_token ~= nil then
+        request_headers['Authorization'] = 'Bearer ' .. auth_token
+    end
+
     local function cb(content_, code_, response_, request_)
         if timeout_occurred == nil then
             code = code_;
@@ -276,7 +306,7 @@ function http_get_with_retry(url, retry)
                 module:log("debug", "External call was successful, content %s", content_);
                 content = content_
             else
-                module:log("warn", "Error on public key request: Code %s, Content %s",
+                module:log("warn", "Error on GET request: Code %s, Content %s",
                     code_, content_);
             end
             done();
@@ -287,7 +317,7 @@ function http_get_with_retry(url, retry)
 
     local function call_http()
         return http.request(url, {
-            headers = http_headers or {},
+            headers = request_headers,
             method = "GET"
         }, cb);
     end
@@ -321,18 +351,47 @@ function http_get_with_retry(url, retry)
     timer.add_task(http_timeout, cancel);
     wait();
 
-    return content;
+    return content, code;
+end
+
+-- Checks whether there is status in the <x node
+-- @param muc_x the <x element from presence
+-- @param status checks for this status
+-- @returns true if the status is found, false otherwise or if no muc_x is provided.
+function presence_check_status(muc_x, status)
+    if not muc_x then
+        return false;
+    end
+
+    for statusNode in muc_x:childtags('status') do
+        if statusNode.attr.code == status then
+            return true;
+        end
+    end
+
+    return false;
+end
+
+-- Retrieves the focus from the room and cache it in the room object
+-- @param room The room name for which to find the occupant
+local function get_focus_occupant(room)
+    return room:get_occupant_by_nick(room.jid..'/focus');
 end
 
 return {
     extract_subdomain = extract_subdomain;
     is_feature_allowed = is_feature_allowed;
     is_healthcheck_room = is_healthcheck_room;
+    get_focus_occupant = get_focus_occupant;
     get_room_from_jid = get_room_from_jid;
+    get_room_by_name_and_subdomain = get_room_by_name_and_subdomain;
     async_handler_wrapper = async_handler_wrapper;
+    presence_check_status = presence_check_status;
     room_jid_match_rewrite = room_jid_match_rewrite;
     room_jid_split_subdomain = room_jid_split_subdomain;
     internal_room_jid_match_rewrite = internal_room_jid_match_rewrite;
     update_presence_identity = update_presence_identity;
     http_get_with_retry = http_get_with_retry;
+    ends_with = ends_with;
+    starts_with = starts_with;
 };

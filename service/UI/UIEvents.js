@@ -12,14 +12,12 @@ export default {
     AUDIO_MUTED: 'UI.audio_muted',
     VIDEO_MUTED: 'UI.video_muted',
     ETHERPAD_CLICKED: 'UI.etherpad_clicked',
-    SHARED_VIDEO_CLICKED: 'UI.start_shared_video',
 
     /**
      * Updates shared video with params: url, state, time(optional)
      * Where url is the video link, state is stop/start/pause and time is the
      * current video playing time.
      */
-    UPDATE_SHARED_VIDEO: 'UI.update_shared_video',
     TOGGLE_FULLSCREEN: 'UI.toogle_fullscreen',
     FULLSCREEN_TOGGLED: 'UI.fullscreen_toggled',
     AUTH_CLICKED: 'UI.auth_clicked',
@@ -42,16 +40,10 @@ export default {
      */
     TOGGLE_FILMSTRIP: 'UI.toggle_filmstrip',
 
-    TOGGLE_SCREENSHARING: 'UI.toggle_screensharing',
     HANGUP: 'UI.hangup',
     LOGOUT: 'UI.logout',
     VIDEO_DEVICE_CHANGED: 'UI.video_device_changed',
     AUDIO_DEVICE_CHANGED: 'UI.audio_device_changed',
-
-    /**
-     * Notifies that flipX property of the local video is changed.
-     */
-    LOCAL_FLIPX_CHANGED: 'UI.local_flipx_changed',
 
     /**
      * Notifies that the side toolbar container has been toggled. The actual
@@ -63,15 +55,5 @@ export default {
     /**
      * Notifies that the raise hand has been changed.
      */
-    LOCAL_RAISE_HAND_CHANGED: 'UI.local_raise_hand_changed',
-
-    /**
-     * Notifies that the avatar is displayed or not on the largeVideo.
-     */
-    LARGE_VIDEO_AVATAR_VISIBLE: 'UI.large_video_avatar_visible',
-
-    /**
-     * Notifies that the displayed particpant id on the largeVideo is changed.
-     */
-    LARGE_VIDEO_ID_CHANGED: 'UI.large_video_id_changed'
+    LOCAL_RAISE_HAND_CHANGED: 'UI.local_raise_hand_changed'
 };

@@ -6,12 +6,8 @@
 }
 
 .horizontal-filmstrip .filmstrip {
-    position: absolute;
-    bottom: 0;
-    right: 0;
     padding: 10px 5px;
     @extend %align-right;
-    transition: bottom .3s;
     z-index: $filmstripVideosZ;
     box-sizing: border-box;
     width: 100%;
@@ -34,68 +30,55 @@
     }
 
     &__videos {
-        @extend %align-right;
         position:relative;
         padding: 0;
         /* The filmstrip should not be covered by the left toolbar. */
         bottom: 0;
         width:auto;
-        overflow: visible !important;
 
         &#remoteVideos {
             border: $thumbnailsBorder solid transparent;
             transition: bottom 2s;
             flex-grow: 1;
+            display: flex;
+            flex-direction: row-reverse;
             @include minHWAutoFix()
         }
 
         /**
          * The local video identifier.
          */
-        &#filmstripLocalVideo {
+        &#filmstripLocalVideo,
+        &#filmstripLocalScreenShare {
             align-self: flex-end;
             display: block;
             margin-bottom: 8px;
         }
 
         &.hidden {
-            bottom: calc(-196px - #{$newToolbarSizeWithPadding});
-        }
-
-        .remote-videos-container {
-            display: flex;
+            bottom: calc(-196px - #{$newToolbarSizeWithPadding} + 50px);
         }
     }
 
-    .remote-videos-container {
-        transition: opacity 1s;
+    .remote-videos {
+        overscroll-behavior: contain;
+
+        & > div {
+            transition: opacity 1s;
+            position: absolute;
+        }
+
+        &.is-not-overflowing > div {
+            right: 2px;
+        }
     }
 
     &.hide-videos {
-        .remote-videos-container {
-            opacity: 0;
-            pointer-events: none;
-        }
-    }
-
-    #filmstripRemoteVideos {
-        @include minHWAutoFix();
-
-        display: flex;
-        flex: 1;
-        width: auto;
-        justify-content: flex-end;
-        flex-direction: row;
-
-        #filmstripRemoteVideosContainer {
-            flex-direction: row-reverse;
-            /**
-             * Add padding as a hack for Firefox not to show scrollbars when
-             * unnecessary.
-             */
-            padding: 1px 0;
-            overflow-y: hidden;
-            overflow-x: scroll;
+        .remote-videos  {
+            & > div {
+                opacity: 0;
+                pointer-events: none;
+            }
         }
     }
 
@@ -104,25 +87,3 @@
     }
 }
 
-
-/**
- * Workarounds for Edge and Firefox not handling scrolling properly with
- * flex-direction: row-reverse.
- */
- @mixin undoRowReverseVideos() {
-    .horizontal-filmstrip {
-        #remoteVideos #filmstripRemoteVideos #filmstripRemoteVideosContainer {
-            flex-direction: row;
-        }
-    }
-}
-
-/** Firefox detection hack **/
-@-moz-document url-prefix() {
-    @include undoRowReverseVideos();
-}
-
-/** Edge detection hack **/
-@supports (-ms-ime-align:auto) {
-    @include undoRowReverseVideos();
-}

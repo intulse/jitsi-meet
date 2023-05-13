@@ -12,6 +12,13 @@ import { parseURLParams } from '../../react/features/base/util/parseURLParams';
 export const API_ID = parseURLParams(window.location).jitsi_meet_external_api_id;
 
 /**
- * The payload name for the datachannel/endpoint text message event
+ * The payload name for the datachannel/endpoint text message event.
  */
 export const ENDPOINT_TEXT_MESSAGE_NAME = 'endpoint-text-message';
+
+/**
+ * The min value that can be set for the assumed bandwidth.
+ * Setting it to this value means not assuming any bandwidth,
+ * but rather allowing the estimations to take place.
+ */
+export const ASSUMED_BANDWIDTH_BPS = -1;

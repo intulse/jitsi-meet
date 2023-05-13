@@ -4,17 +4,12 @@
  * Style variables
  */
 $baseFontFamily: -apple-system, BlinkMacSystemFont, 'open_sanslight', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-$hangupColor: #bf2117;
-$hangupFontSize: 2em;
 
 /**
  * Size variables.
  */
 
 // Video layout.
-$thumbnailToolbarHeight: 22px;
-$thumbnailIndicatorBorder: 2px;
-$thumbnailIndicatorSize: $thumbnailToolbarHeight;
 $thumbnailVideoMargin: 2px;
 $thumbnailsBorder: 2px;
 $thumbnailVideoBorder: 2px;
@@ -29,45 +24,33 @@ $defaultSideBarFontColor: #44A5FF;
 $defaultSemiDarkColor: #ACACAC;
 $defaultDarkColor: #2b3d5c;
 $defaultWarningColor: rgb(215, 121, 118);
-$presence-available: rgb(110, 176, 5);
-$presence-away: rgb(250, 201, 20);
-$presence-busy: rgb(233, 0, 27);
-$presence-idle: rgb(172, 172, 172);
+$participantsPaneBgColor: #141414;
 
 /**
  * Toolbar
  */
-$newToolbarBackgroundColor: rgba(22, 38, 55, 0.8);
-$newToolbarButtonHoverColor: rgba(255, 255, 255, 0.15);
-$newToolbarButtonToggleColor: rgba(255, 255, 255, 0.2);
-$AOTToolbarButtonHoverColor: rgba(14, 20, 35, 0.6);
-$AOTToolbarButtonToggleColor: rgba(14, 20, 35, 1);
+$newToolbarBackgroundColor: #131519;
+$newToolbarButtonHoverColor: rgba(255, 255, 255, 0.2);
+$newToolbarButtonToggleColor: rgba(255, 255, 255, 0.15);
+$menuBG:#242528;
 $newToolbarFontSize: 24px;
 $newToolbarHangupFontSize: 32px;
-$newToolbarSize: 40px;
+$newToolbarSize: 48px;
+$newToolbarSizeMobile: 60px;
 $newToolbarSizeWithPadding: calc(#{$newToolbarSize} + 24px);
 $toolbarTitleFontSize: 19px;
-$overflowMenuBG: initial;
-$overflowMenuItemHoverBG: #313D52;
-$overflowMenuItemHoverColor: #B8C7E0;
-$overflowMenuItemColor: #B8C7E0;
+$overflowMenuItemColor: #fff;
+
 
 /**
  * Video layout
  */
-$videoThumbnailHovered: rgba(22, 94, 204, .4);
-$videoThumbnailSelected: #165ECC;
 $participantNameColor: #fff;
-$thumbnailPictogramColor: #fff;
-$dominantSpeakerBg: #165ecc;
-$raiseHandBg: #D6D61E;
 $audioLevelBg: #44A5FF;
-$connectionIndicatorBg: #165ecc;
 $audioLevelShadow: rgba(9, 36, 77, 0.9);
 $videoStateIndicatorColor: $defaultColor;
 $videoStateIndicatorBackground: $toolbarBackground;
 $videoStateIndicatorSize: 40px;
-$remoteVideoMenuIconMargin: initial;
 
 /**
  * Feedback Modal
@@ -90,18 +73,18 @@ $modalTextColor: #333;
  * Chat
  */
 $chatActionsSeparatorColor: rgb(173, 105, 112);
-$chatHeaderBackgroundColor: rgba(42, 58, 75, 0.9);
+$chatBackgroundColor: #131519;
 $chatInputSeparatorColor: #A4B8D1;
-$chatLocalMessageBackgroundColor: rgb(4, 98, 178);
+$chatLobbyActionsSeparatorColor: #6A50D3;
+$chatLocalMessageBackgroundColor: #484A4F;
 $chatPrivateMessageBackgroundColor: rgb(153, 69, 77);
-$chatRemoteMessageBackgroundColor:  rgb(86, 101, 114);
-$sidebarWidth: 375px;
+$chatRemoteMessageBackgroundColor:  #242528;
+$sidebarWidth: 315px;
 
- /**
+/**
  * Misc.
  */
 $borderRadius: 4px;
-$popoverMenuPadding: 13px;
 $happySoftwareBackground: transparent;
 $desktopAppDragBarHeight: 25px;
 $scrollHeight: 7px;
@@ -113,21 +96,19 @@ $zindex0: 0;
 $zindex1: 1;
 $zindex2: 2;
 $zindex3: 3;
-$toolbarBackgroundZ: 4;
-$filmstripVideosZ: 5;
-$zindex10: 10;
+$subtitlesZ: 7;
+$popoverZ: 8;
 $reloadZ: 20;
 $poweredByZ: 100;
 $ringingZ: 300;
 $sideToolbarContainerZ: 300;
-$toolbarZ: 350;
+$toolbarZ: 250;
 $drawerZ: 351;
-$tooltipsZ: 401;
-$dropdownMaskZ: 900;
 $dropdownZ: 901;
-$centeredVideoLabelZ: 1010;
-$popoverZ: 1015;
 $overlayZ: 1016;
+// Place filmstrip videos over toolbar in order
+// to make connection info visible.
+$filmstripVideosZ: $toolbarZ + 1;
 
 
 /**
@@ -180,12 +161,13 @@ $welcomePageHeaderBackground: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 
 $welcomePageHeaderBackgroundPosition: center;
 $welcomePageHeaderBackgroundRepeat: none;
 $welcomePageHeaderBackgroundSize: cover;
-$welcomePageHeaderPaddingBottom: 0px;
+$welcomePageHeaderPaddingBottom: 15px;
 $welcomePageHeaderTitleMaxWidth: initial;
 $welcomePageHeaderTextAlign: center;
 
+$welcomePageHeaderContainerMarginTop: 104px;
 $welcomePageHeaderContainerDisplay: flex;
-$welcomePageHeaderContainerMargin: 104px 32px 0 32px;
+$welcomePageHeaderContainerMargin: $welcomePageHeaderContainerMarginTop auto 0;
 
 $welcomePageHeaderTextTitleMarginBottom: 0;
 $welcomePageHeaderTextTitleFontSize: 42px;
@@ -218,11 +200,6 @@ $deepLinkingDialInConferenceIdMargin: 10px 0 10px 0;
 $deepLinkingDialInConferenceIdPadding: inherit;
 $deepLinkingDialInConferenceIdBackgroundColor: inherit;
 $deepLinkingDialInConferenceIdBorderRadius: inherit;
-
-$deepLinkingDialInConferenceNameFontSize: inherit;
-$deepLinkingDialInConferenceNameLineHeight: inherit;
-$deepLinkingDialInConferenceNameMarginBottom: none;
-$deepLinkingDialInConferenceNameFontWeight: inherit;
 
 $deepLinkingDialInConferenceDescriptionFontSize: 0.8em;
 $deepLinkingDialInConferenceDescriptionLineHeight: inherit;
@@ -257,5 +234,10 @@ $chromeExtensionBannerRightInMeeeting: 10px;
 /**
 * media type thresholds
 */
-$smallScreen: 700px;
 $verySmallScreen: 500px;
+
+/**
+* Prejoin / premeeting screen
+*/
+
+$prejoinDefaultContentWidth: 336px;

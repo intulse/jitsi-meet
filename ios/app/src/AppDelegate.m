@@ -34,14 +34,15 @@
     jitsiMeet.universalLinkDomains = @[@"meet.jit.si", @"alpha.jitsi.net", @"beta.meet.jit.si"];
 
     jitsiMeet.defaultConferenceOptions = [JitsiMeetConferenceOptions fromBuilder:^(JitsiMeetConferenceOptionsBuilder *builder) {
+        [builder setFeatureFlag:@"welcomepage.enabled" withBoolean:YES];
         [builder setFeatureFlag:@"resolution" withValue:@(360)];
-        builder.serverURL = [NSURL URLWithString:@"https://meet.jit.si"];
-        builder.welcomePageEnabled = YES;
-
-        // Apple rejected our app because they claim requiring a
-        // Dropbox account for recording is not acceptable.
-#if DEBUG
+        [builder setFeatureFlag:@"ios.screensharing.enabled" withBoolean:YES];
         [builder setFeatureFlag:@"ios.recording.enabled" withBoolean:YES];
+        builder.serverURL = [NSURL URLWithString:@"https://meet.jit.si"];
+#if TARGET_IPHONE_SIMULATOR
+        // CallKit has started to create problems starting with the iOS 16 simulator.
+        // Disable it since it never worked in the simulator anyway.
+        [builder setFeatureFlag:@"call-integration.enabled" withBoolean:NO];
 #endif
     }];
 
@@ -51,7 +52,7 @@
   if ([FIRUtilities appContainsRealServiceInfoPlist]) {
         NSLog(@"Enabling Firebase");
         [FIRApp configure];
-        // Crashlytics defaults to disabled wirth the FirebaseCrashlyticsCollectionEnabled Info.plist key.
+        // Crashlytics defaults to disabled with the FirebaseCrashlyticsCollectionEnabled Info.plist key.
         [[FIRCrashlytics crashlytics] setCrashlyticsCollectionEnabled:![jitsiMeet isCrashReportingDisabled]];
     }
 
@@ -126,6 +127,12 @@
     return [[JitsiMeet sharedInstance] application:app
                                            openURL:openUrl
                                            options:options];
+}
+
+- (UIInterfaceOrientationMask)application:(UIApplication *)application
+  supportedInterfaceOrientationsForWindow:(UIWindow *)window {
+    return [[JitsiMeet sharedInstance] application:application 
+           supportedInterfaceOrientationsForWindow:window];
 }
 
 @end

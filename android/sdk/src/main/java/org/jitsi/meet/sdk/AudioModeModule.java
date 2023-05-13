@@ -16,6 +16,7 @@
 
 package org.jitsi.meet.sdk;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
@@ -25,10 +26,13 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.annotations.ReactModule;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+
 
 import org.jitsi.meet.sdk.log.JitsiMeetLogger;
 
@@ -54,6 +58,7 @@ import java.util.concurrent.Executors;
  * Before a call has started and after it has ended the
  * {@code AudioModeModule.DEFAULT} mode should be used.
  */
+@SuppressLint("AnnotateVersionCheck")
 @ReactModule(name = AudioModeModule.NAME)
 class AudioModeModule extends ReactContextBaseJavaModule {
     public static final String NAME = "AudioMode";
@@ -79,7 +84,6 @@ class AudioModeModule extends ReactContextBaseJavaModule {
     /**
      * Whether or not the ConnectionService is used for selecting audio devices.
      */
-
     private static final boolean supportsConnectionService = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     private static boolean useConnectionService_ = supportsConnectionService;
 
@@ -148,6 +152,16 @@ class AudioModeModule extends ReactContextBaseJavaModule {
         audioManager = (AudioManager)reactContext.getSystemService(Context.AUDIO_SERVICE);
     }
 
+    @ReactMethod
+    public void addListener(String eventName) {
+        // Keep: Required for RN built in Event Emitter Calls.
+    }
+
+    @ReactMethod
+    public void removeListeners(Integer count) {
+        // Keep: Required for RN built in Event Emitter Calls.
+    }
+
     /**
      * Gets a mapping with the constants this module is exporting.
      *
@@ -185,7 +199,7 @@ class AudioModeModule extends ReactContextBaseJavaModule {
                     deviceInfo.putBoolean("selected", device.equals(selectedDevice));
                     data.pushMap(deviceInfo);
                 }
-                ReactInstanceManagerHolder.emitEvent(DEVICE_CHANGE_EVENT, data);
+                getContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(DEVICE_CHANGE_EVENT, data);
                 JitsiMeetLogger.i(TAG + " Updating audio device list");
             }
         });
@@ -199,6 +213,10 @@ class AudioModeModule extends ReactContextBaseJavaModule {
     @Override
     public String getName() {
         return NAME;
+    }
+
+    public ReactContext getContext(){
+        return this.getReactApplicationContext();
     }
 
     /**
