@@ -35,8 +35,6 @@ import { showToolbox } from '../toolbox/actions';
 
 import { ADD_MESSAGE, CLOSE_CHAT, OPEN_CHAT, SEND_MESSAGE, SET_IS_POLL_TAB_FOCUSED } from './actionTypes';
 import { addMessage, clearMessages, closeChat } from './actions.any';
-// eslint-disable-next-line lines-around-comment
-// @ts-ignore
 import { ChatPrivacyDialog } from './components';
 import {
     INCOMING_MSG_SOUND_ID,
@@ -132,7 +130,10 @@ MiddlewareRegistry.register(store => next => action => {
             // recipient. This logic tries to mitigate this risk.
             const shouldSendPrivateMessageTo = _shouldSendPrivateMessageTo(state, action);
 
-            if (shouldSendPrivateMessageTo) {
+            const participantExists = shouldSendPrivateMessageTo
+                && getParticipantById(state, shouldSendPrivateMessageTo);
+
+            if (shouldSendPrivateMessageTo && participantExists) {
                 dispatch(openDialog(ChatPrivacyDialog, {
                     message: action.message,
                     participantID: shouldSendPrivateMessageTo

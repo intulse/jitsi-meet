@@ -23,6 +23,12 @@ export interface IProps extends AbstractDialogTabProps, WithTranslation {
     classes: any;
 
     /**
+     * The currently selected language to display in the language select
+     * dropdown.
+     */
+    currentLanguage: string;
+
+    /**
      * Whether to show hide self view setting.
      */
     disableHideSelfView: boolean;
@@ -43,9 +49,19 @@ export interface IProps extends AbstractDialogTabProps, WithTranslation {
     iAmVisitor: boolean;
 
     /**
+     * All available languages to display in the language select dropdown.
+     */
+    languages: Array<string>;
+
+    /**
      * The number of max participants to display on stage.
      */
     maxStageParticipants: number;
+
+    /**
+     * Whether or not to display the language select dropdown.
+     */
+    showLanguageSettings: boolean;
 
     /**
      * Whether or not to display moderator-only settings.
@@ -72,7 +88,8 @@ const styles = (theme: Theme) => {
     return {
         container: {
             display: 'flex',
-            flexDirection: 'column' as const
+            flexDirection: 'column' as const,
+            padding: '0 2px'
         },
 
         divider: {
@@ -109,6 +126,7 @@ class MoreTab extends AbstractDialogTab<IProps, any> {
         this._renderMaxStageParticipantsSelect = this._renderMaxStageParticipantsSelect.bind(this);
         this._onMaxStageParticipantsSelect = this._onMaxStageParticipantsSelect.bind(this);
         this._onHideSelfViewChanged = this._onHideSelfViewChanged.bind(this);
+        this._onLanguageItemSelect = this._onLanguageItemSelect.bind(this);
     }
 
     /**
@@ -118,7 +136,14 @@ class MoreTab extends AbstractDialogTab<IProps, any> {
      * @returns {ReactElement}
      */
     render() {
-        const { showPrejoinSettings, classes, disableHideSelfView, iAmVisitor, hideSelfView, t } = this.props;
+        const {
+            showPrejoinSettings,
+            classes,
+            disableHideSelfView,
+            iAmVisitor,
+            hideSelfView,
+            showLanguageSettings,
+            t } = this.props;
 
         return (
             <div
@@ -137,6 +162,7 @@ class MoreTab extends AbstractDialogTab<IProps, any> {
                         name = 'hide-self-view'
                         onChange = { this._onHideSelfViewChanged } />
                 )}
+                {showLanguageSettings && this._renderLanguageSelect()}
             </div>
         );
     }
@@ -178,6 +204,19 @@ class MoreTab extends AbstractDialogTab<IProps, any> {
     }
 
     /**
+     * Callback invoked to select a language from select dropdown.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onLanguageItemSelect(e: React.ChangeEvent<HTMLSelectElement>) {
+        const language = e.target.value;
+
+        super._onChange({ currentLanguage: language });
+    }
+
+    /**
      * Returns the React Element for modifying prejoin screen settings.
      *
      * @private
@@ -216,10 +255,44 @@ class MoreTab extends AbstractDialogTab<IProps, any> {
 
         return (
             <Select
+                id = 'more-maxStageParticipants-select'
                 label = { t('settings.maxStageParticipants') }
                 onChange = { this._onMaxStageParticipantsSelect }
                 options = { maxParticipantsItems }
                 value = { maxStageParticipants } />
+        );
+    }
+
+    /**
+     * Returns the menu item for changing displayed language.
+     *
+     * @private
+     * @returns {ReactElement}
+     */
+    _renderLanguageSelect() {
+        const {
+            classes,
+            currentLanguage,
+            languages,
+            t
+        } = this.props;
+
+        const languageItems
+            = languages.map((language: string) => {
+                return {
+                    value: language,
+                    label: t(`languages:${language}`)
+                };
+            });
+
+        return (
+            <Select
+                className = { classes.bottomMargin }
+                id = 'more-language-select'
+                label = { t('settings.language') }
+                onChange = { this._onLanguageItemSelect }
+                options = { languageItems }
+                value = { currentLanguage } />
         );
     }
 }

@@ -1,14 +1,18 @@
+/* eslint-disable lines-around-comment */
+
 import debounce from 'lodash/debounce';
 import { NativeEventEmitter, NativeModules } from 'react-native';
 import { AnyAction } from 'redux';
 
 // @ts-expect-error
 import { ENDPOINT_TEXT_MESSAGE_NAME } from '../../../../modules/API/constants';
-import { appNavigate } from '../../app/actions';
+import { appNavigate } from '../../app/actions.native';
 import { IStore } from '../../app/types';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../../base/app/actionTypes';
 import {
+    CONFERENCE_BLURRED,
     CONFERENCE_FAILED,
+    CONFERENCE_FOCUSED,
     CONFERENCE_JOINED,
     CONFERENCE_LEFT,
     CONFERENCE_WILL_JOIN,
@@ -30,30 +34,31 @@ import { getURLWithoutParams } from '../../base/connection/utils';
 import {
     JitsiConferenceEvents } from '../../base/lib-jitsi-meet';
 import { SET_AUDIO_MUTED, SET_VIDEO_MUTED } from '../../base/media/actionTypes';
-import { MEDIA_TYPE } from '../../base/media/constants';
+import { toggleCameraFacingMode } from '../../base/media/actions';
+import { MEDIA_TYPE, VIDEO_TYPE } from '../../base/media/constants';
 import { PARTICIPANT_JOINED, PARTICIPANT_LEFT } from '../../base/participants/actionTypes';
 import {
     getLocalParticipant,
     getParticipantById,
     getRemoteParticipants,
-    isScreenShareParticipant
+    isScreenShareParticipantById
 } from '../../base/participants/functions';
-import { IParticipant } from '../../base/participants/types';
 import MiddlewareRegistry from '../../base/redux/MiddlewareRegistry';
 import StateListenerRegistry from '../../base/redux/StateListenerRegistry';
 import { toggleScreensharing } from '../../base/tracks/actions.native';
 import { getLocalTracks, isLocalTrackMuted } from '../../base/tracks/functions.native';
 import { ITrack } from '../../base/tracks/types';
 import { CLOSE_CHAT, OPEN_CHAT } from '../../chat/actionTypes';
-import { openChat } from '../../chat/actions';
-import { closeChat, sendMessage, setPrivateMessageRecipient } from '../../chat/actions.any';
+import { closeChat, openChat, sendMessage, setPrivateMessageRecipient } from '../../chat/actions.native';
 import { setRequestingSubtitles } from '../../subtitles/actions.any';
-import { muteLocal } from '../../video-menu/actions';
+import { muteLocal } from '../../video-menu/actions.native';
 import { ENTER_PICTURE_IN_PICTURE } from '../picture-in-picture/actionTypes';
+// @ts-ignore
+import { isExternalAPIAvailable } from '../react-native-sdk/functions';
 
 import { READY_TO_CLOSE } from './actionTypes';
 import { setParticipantsWithScreenShare } from './actions';
-import { sendEvent } from './functions';
+import { participantToParticipantInfo, sendEvent } from './functions';
 import logger from './logger';
 
 /**
@@ -90,8 +95,15 @@ const SCREEN_SHARE_TOGGLED = 'SCREEN_SHARE_TOGGLED';
  */
 const PARTICIPANTS_INFO_RETRIEVED = 'PARTICIPANTS_INFO_RETRIEVED';
 
+const externalAPIEnabled = isExternalAPIAvailable();
+
+let eventEmitter: any;
+
 const { ExternalAPI } = NativeModules;
-const eventEmitter = new NativeEventEmitter(ExternalAPI);
+
+if (externalAPIEnabled) {
+    eventEmitter = new NativeEventEmitter(ExternalAPI);
+}
 
 /**
  * Middleware that captures Redux actions and uses the ExternalAPI module to
@@ -100,7 +112,7 @@ const eventEmitter = new NativeEventEmitter(ExternalAPI);
  * @param {Store} store - Redux store.
  * @returns {Function}
  */
-MiddlewareRegistry.register(store => next => action => {
+externalAPIEnabled && MiddlewareRegistry.register(store => next => action => {
     const oldAudioMuted = store.getState()['features/base/media'].audio.muted;
     const result = next(action);
     const { type } = action;
@@ -142,9 +154,18 @@ MiddlewareRegistry.register(store => next => action => {
         _registerForEndpointTextMessages(store);
         break;
 
+    case CONFERENCE_BLURRED:
+        sendEvent(store, CONFERENCE_BLURRED, {});
+        break;
+
+    case CONFERENCE_FOCUSED:
+        sendEvent(store, CONFERENCE_FOCUSED, {});
+        break;
+
     case CONNECTION_DISCONNECTED: {
         // FIXME: This is a hack. See the description in the JITSI_CONNECTION_CONFERENCE_KEY constant definition.
-        // Check if this connection was attached to any conference. If it wasn't, fake a CONFERENCE_TERMINATED event.
+        // Check if this connection was attached to any conference.
+        // If it wasn't, fake a CONFERENCE_TERMINATED event.
         const { connection } = action;
         const conference = connection[JITSI_CONNECTION_CONFERENCE_KEY];
 
@@ -189,14 +210,16 @@ MiddlewareRegistry.register(store => next => action => {
 
         const { participant } = action;
 
-        if (isScreenShareParticipant(participant)) {
+        const isVirtualScreenshareParticipant = isScreenShareParticipantById(store.getState(), participant.id);
+
+        if (isVirtualScreenshareParticipant) {
             break;
         }
 
         sendEvent(
             store,
             action.type,
-            _participantToParticipantInfo(participant) /* data */
+            participantToParticipantInfo(participant) /* data */
         );
         break;
     }
@@ -239,12 +262,12 @@ MiddlewareRegistry.register(store => next => action => {
  * The listener is debounced to avoid state thrashing that might occur,
  * especially when switching in or out of p2p.
  */
-StateListenerRegistry.register(
+externalAPIEnabled && StateListenerRegistry.register(
     /* selector */ state => state['features/base/tracks'],
     /* listener */ debounce((tracks: ITrack[], store: IStore) => {
         const oldScreenShares = store.getState()['features/mobile/external-api'].screenShares || [];
         const newScreenShares = tracks
-            .filter(track => track.mediaType === 'video' && track.videoType === 'desktop')
+            .filter(track => track.mediaType === MEDIA_TYPE.SCREENSHARE || track.videoType === VIDEO_TYPE.DESKTOP)
             .map(track => track.participantId);
 
         oldScreenShares.forEach(participantId => {
@@ -276,24 +299,6 @@ StateListenerRegistry.register(
     }, 100));
 
 /**
- * Returns a participant info object based on the passed participant object from redux.
- *
- * @param {Participant} participant - The participant object from the redux store.
- * @returns {Object} - The participant info object.
- */
-function _participantToParticipantInfo(participant: IParticipant) {
-    return {
-        isLocal: participant.local,
-        email: participant.email,
-        name: participant.name,
-        participantId: participant.id,
-        displayName: participant.displayName,
-        avatarUrl: participant.avatarURL,
-        role: participant.role
-    };
-}
-
-/**
  * Registers for events sent from the native side via NativeEventEmitter.
  *
  * @param {Store} store - The redux store.
@@ -307,15 +312,15 @@ function _registerForNativeEvents(store: IStore) {
         dispatch(appNavigate(undefined));
     });
 
-    eventEmitter.addListener(ExternalAPI.SET_AUDIO_MUTED, ({ muted }) => {
+    eventEmitter.addListener(ExternalAPI.SET_AUDIO_MUTED, ({ muted }: any) => {
         dispatch(muteLocal(muted, MEDIA_TYPE.AUDIO));
     });
 
-    eventEmitter.addListener(ExternalAPI.SET_VIDEO_MUTED, ({ muted }) => {
+    eventEmitter.addListener(ExternalAPI.SET_VIDEO_MUTED, ({ muted }: any) => {
         dispatch(muteLocal(muted, MEDIA_TYPE.VIDEO));
     });
 
-    eventEmitter.addListener(ExternalAPI.SEND_ENDPOINT_TEXT_MESSAGE, ({ to, message }) => {
+    eventEmitter.addListener(ExternalAPI.SEND_ENDPOINT_TEXT_MESSAGE, ({ to, message }: any) => {
         const conference = getCurrentConference(getState());
 
         try {
@@ -328,20 +333,20 @@ function _registerForNativeEvents(store: IStore) {
         }
     });
 
-    eventEmitter.addListener(ExternalAPI.TOGGLE_SCREEN_SHARE, ({ enabled }) => {
+    eventEmitter.addListener(ExternalAPI.TOGGLE_SCREEN_SHARE, ({ enabled }: any) => {
         dispatch(toggleScreensharing(enabled));
     });
 
-    eventEmitter.addListener(ExternalAPI.RETRIEVE_PARTICIPANTS_INFO, ({ requestId }) => {
+    eventEmitter.addListener(ExternalAPI.RETRIEVE_PARTICIPANTS_INFO, ({ requestId }: any) => {
 
         const participantsInfo = [];
         const remoteParticipants = getRemoteParticipants(store);
         const localParticipant = getLocalParticipant(store);
 
-        localParticipant && participantsInfo.push(_participantToParticipantInfo(localParticipant));
+        localParticipant && participantsInfo.push(participantToParticipantInfo(localParticipant));
         remoteParticipants.forEach(participant => {
             if (!participant.fakeParticipant) {
-                participantsInfo.push(_participantToParticipantInfo(participant));
+                participantsInfo.push(participantToParticipantInfo(participant));
             }
         });
 
@@ -354,7 +359,7 @@ function _registerForNativeEvents(store: IStore) {
             });
     });
 
-    eventEmitter.addListener(ExternalAPI.OPEN_CHAT, ({ to }) => {
+    eventEmitter.addListener(ExternalAPI.OPEN_CHAT, ({ to }: any) => {
         const participant = getParticipantById(store, to);
 
         dispatch(openChat(participant));
@@ -364,7 +369,7 @@ function _registerForNativeEvents(store: IStore) {
         dispatch(closeChat());
     });
 
-    eventEmitter.addListener(ExternalAPI.SEND_CHAT_MESSAGE, ({ message, to }) => {
+    eventEmitter.addListener(ExternalAPI.SEND_CHAT_MESSAGE, ({ message, to }: any) => {
         const participant = getParticipantById(store, to);
 
         if (participant) {
@@ -374,8 +379,12 @@ function _registerForNativeEvents(store: IStore) {
         dispatch(sendMessage(message));
     });
 
-    eventEmitter.addListener(ExternalAPI.SET_CLOSED_CAPTIONS_ENABLED, ({ enabled }) => {
+    eventEmitter.addListener(ExternalAPI.SET_CLOSED_CAPTIONS_ENABLED, ({ enabled }: any) => {
         dispatch(setRequestingSubtitles(enabled));
+    });
+
+    eventEmitter.addListener(ExternalAPI.TOGGLE_CAMERA, () => {
+        dispatch(toggleCameraFacingMode());
     });
 }
 
@@ -396,6 +405,7 @@ function _unregisterForNativeEvents() {
     eventEmitter.removeAllListeners(ExternalAPI.CLOSE_CHAT);
     eventEmitter.removeAllListeners(ExternalAPI.SEND_CHAT_MESSAGE);
     eventEmitter.removeAllListeners(ExternalAPI.SET_CLOSED_CAPTIONS_ENABLED);
+    eventEmitter.removeAllListeners(ExternalAPI.TOGGLE_CAMERA);
 }
 
 /**

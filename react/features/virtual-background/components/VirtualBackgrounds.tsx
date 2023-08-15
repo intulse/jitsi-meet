@@ -1,14 +1,14 @@
-// @ts-expect-error
-import Bourne from '@hapi/bourne';
-// eslint-disable-next-line lines-around-comment
-// @ts-expect-error
+// @ts-ignore
 import { jitsiLocalStorage } from '@jitsi/js-utils/jitsi-local-storage';
+// eslint-disable-next-line lines-around-comment
+// @ts-ignore
+import { safeJsonParse } from '@jitsi/js-utils/json';
 import React, { useCallback, useEffect, useState } from 'react';
 import { WithTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
-import { IReduxState } from '../../app/types';
+import { IReduxState, IStore } from '../../app/types';
 import { getMultipleVideoSendingSupportFeatureFlag } from '../../base/config/functions.any';
 import { translate } from '../../base/i18n/functions';
 import Icon from '../../base/icons/components/Icon';
@@ -54,7 +54,7 @@ interface IProps extends WithTranslation {
     /**
      * The redux {@code dispatch} function.
      */
-    dispatch: Function;
+    dispatch: IStore['dispatch'];
 
     /**
      * The initial options copied in the state for the {@code VirtualBackground} component.
@@ -217,7 +217,7 @@ function VirtualBackgrounds({
     const { classes, cx } = useStyles();
     const [ previewIsLoaded, setPreviewIsLoaded ] = useState(false);
     const localImages = jitsiLocalStorage.getItem('virtualBackgrounds');
-    const [ storedImages, setStoredImages ] = useState<Array<Image>>((localImages && Bourne.parse(localImages)) || []);
+    const [ storedImages, setStoredImages ] = useState<Array<Image>>((localImages && safeJsonParse(localImages)) || []);
     const [ loading, setLoading ] = useState(false);
 
     useEffect(() => {
@@ -360,6 +360,24 @@ function VirtualBackgrounds({
         await setPreviewIsLoaded(loaded);
     }, []);
 
+    // create a full list of {backgroundId: backgroundLabel} to easily retrieve label of selected background
+    const labelsMap: Record<string, string> = {
+        none: t('virtualBackground.none'),
+        'slight-blur': t('virtualBackground.slightBlur'),
+        blur: t('virtualBackground.blur'),
+        ..._images.reduce<Record<string, string>>((acc, image) => {
+            acc[image.id] = image.tooltip ? t(`virtualBackground.${image.tooltip}`) : '';
+
+            return acc;
+        }, {}),
+        ...storedImages.reduce<Record<string, string>>((acc, image, index) => {
+            acc[image.id] = t('virtualBackground.uploadedImage', { index: index + 1 });
+
+            return acc;
+        }, {})
+    };
+    const currentBackgroundLabel = labelsMap[selectedThumbnail] || labelsMap.none;
+
     return (
         <>
             <VirtualBackgroundPreview
@@ -372,6 +390,13 @@ function VirtualBackgrounds({
                 </div>
             ) : (
                 <div className = { classes.container }>
+                    <span
+                        className = 'sr-only'
+                        id = 'virtual-background-current-info'>
+                        { t('virtualBackground.accessibilityLabel.currentBackground', {
+                            background: currentBackgroundLabel
+                        }) }
+                    </span>
                     {_showUploadButton
                     && <UploadImageButton
                         setLoading = { setLoading }
@@ -380,6 +405,8 @@ function VirtualBackgrounds({
                         showLabel = { previewIsLoaded }
                         storedImages = { storedImages } />}
                     <div
+                        aria-describedby = 'virtual-background-current-info'
+                        aria-label = { t('virtualBackground.accessibilityLabel.selectBackground') }
                         className = { classes.thumbnailContainer }
                         role = 'radiogroup'
                         tabIndex = { -1 }>

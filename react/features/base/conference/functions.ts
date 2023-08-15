@@ -304,10 +304,7 @@ export function getVisitorOptions(stateful: IStateful, params: Array<string>) {
         // and the visitor will be redirected back to a vnode from jicofo
         if (config.oldConfig && username) {
             return {
-                hosts: {
-                    domain: config.oldConfig.hosts.domain,
-                    muc: config.oldConfig.hosts.muc
-                },
+                hosts: config.oldConfig.hosts,
                 focusUserJid: focusJid,
                 disableLocalStats: false,
                 bosh: config.oldConfig.bosh && appendURLParam(config.oldConfig.bosh, 'customusername', username),
@@ -323,14 +320,16 @@ export function getVisitorOptions(stateful: IStateful, params: Array<string>) {
 
     const oldConfig = {
         hosts: {
-            domain: config.hosts.domain,
-            muc: config.hosts.muc
+            domain: ''
         },
         focusUserJid: config.focusUserJid,
         bosh: config.bosh,
         p2p: config.p2p,
         websocket: config.websocket
     };
+
+    // copy original hosts, to make sure we do not use a modified one later
+    Object.assign(oldConfig.hosts, config.hosts);
 
     const domain = `${vnode}.meet.jitsi`;
 
@@ -386,6 +385,24 @@ export function getCurrentConference(stateful: IStateful): IJitsiConference | un
     }
 
     return joining || passwordRequired || membersOnly;
+}
+
+/**
+ * Returns whether the current conference is a P2P connection.
+ * Will return `false` if it's a JVB one, and `null` if there is no conference.
+ *
+ * @param {IStateful} stateful - The redux store, state, or
+ * {@code getState} function.
+ * @returns {boolean|null}
+ */
+export function isP2pActive(stateful: IStateful): boolean | null {
+    const conference = getCurrentConference(toState(stateful));
+
+    if (!conference) {
+        return null;
+    }
+
+    return conference.isP2PActive();
 }
 
 /**

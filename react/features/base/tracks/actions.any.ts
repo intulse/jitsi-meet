@@ -139,9 +139,10 @@ export function createLocalTracksA(options: ITrackOptions = {}) {
             dispatch,
             getState
         };
+        const promises = [];
 
         // The following executes on React Native only at the time of this
-        // writing. The effort to port Web's createInitialLocalTracksAndConnect
+        // writing. The effort to port Web's createInitialLocalTracks
         // is significant and that's where the function createLocalTracksF got
         // born. I started with the idea a porting so that we could inherit the
         // ability to getUserMedia for audio only or video only if getUserMedia
@@ -196,6 +197,8 @@ export function createLocalTracksA(options: ITrackOptions = {}) {
                                     reason,
                                     device)));
 
+            promises.push(gumProcess.catch(() => undefined));
+
             /**
              * Cancels the {@code getUserMedia} process represented by this
              * {@code Promise}.
@@ -217,6 +220,8 @@ export function createLocalTracksA(options: ITrackOptions = {}) {
                 }
             });
         }
+
+        return Promise.all(promises);
     };
 }
 

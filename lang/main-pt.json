@@ -1,5 +1,8 @@
 {
     "addPeople": {
+        "accessibilityLabel": {
+            "meetingLink": "Link da reunião: {{url}}"
+        },
         "add": "Convidar",
         "addContacts": "Convidar os seus contactos",
         "contacts": "contactos",
@@ -39,6 +42,18 @@
     "audioOnly": {
         "audioOnly": "Largura de banda baixa"
     },
+    "bandwidthSettings": {
+        "assumedBandwidthBps": "p. ex. 10000000 para 10 Mbps",
+        "assumedBandwidthBpsWarning": "Valores mais elevados podem causar problemas na rede.",
+        "customValue": "valor personalizado",
+        "customValueEffect": "para definir o valor actual de bps",
+        "leaveEmpty": "deixar em branco",
+        "leaveEmptyEffect": "para permitir a realização de estimativas",
+        "possibleValues": "Valores possíveis",
+        "setAssumedBandwidthBps": "Largura de banda presumida (bps)",
+        "title": "Definições de largura de banda",
+        "zeroEffect": "para desligar o vídeo"
+    },
     "breakoutRooms": {
         "actions": {
             "add": "Adicionar salas simultâneas",
@@ -48,6 +63,8 @@
             "leaveBreakoutRoom": "Sair da sala",
             "more": "Mais",
             "remove": "Eliminar sala",
+            "rename": "Renomear",
+            "renameBreakoutRoom": "Renomear sala",
             "sendToBreakoutRoom": "Enviar participante para:"
         },
         "defaultName": "Sala #{{index}}",
@@ -156,6 +173,7 @@
         "localport_plural": "Portas locais:",
         "maxEnabledResolution": "enviar máx",
         "more": "Mostrar mais",
+        "no": "não",
         "packetloss": "Perda de pacote:",
         "participant_id": "Participante id:",
         "quality": {
@@ -174,7 +192,8 @@
         "status": "Ligação:",
         "transport": "Transporte:",
         "transport_plural": "Transportes:",
-        "video_ssrc": "Vídeo SSRC:"
+        "video_ssrc": "Vídeo SSRC:",
+        "yes": "sim"
     },
     "dateUtils": {
         "earlier": "Mais cedo",
@@ -240,6 +259,8 @@
         "WaitingForHostTitle": "À espera do anfitrião ...",
         "Yes": "Sim",
         "accessibilityLabel": {
+            "Cancel": "Cancelar (sair da caixa de diálogo)",
+            "Ok": "OK (guardar e sair da caixa de diálogo)",
             "close": "Fechar caixa de diálogo",
             "liveStreaming": "Transmissão em direto",
             "sharingTabs": "Opções de partilha"
@@ -319,13 +340,13 @@
         "micPermissionDeniedError": "Não concedeu autorização para utilizar o seu microfone. Ainda pode participar na conferência, mas outros não o ouvirão. Use o botão da câmara na barra de endereço para corrigir isto.",
         "micTimeoutError": "Não foi possível iniciar a fonte de áudio. Tempo limite expirado!",
         "micUnknownError": "Não pode usar microfone por uma razão desconhecida.",
-        "moderationAudioLabel": "Permitir aos participantes reativar o som",
-        "moderationVideoLabel": "Permitir aos participantes reativar o vídeo",
-        "muteEveryoneDialog": "Os participantes podem reativar o som a qualquer momento.",
+        "moderationAudioLabel": "Permitir aos participantes ligar o som",
+        "moderationVideoLabel": "Permitir aos participantes ligar a câmara",
+        "muteEveryoneDialog": "Os participantes podem ligar o som a qualquer momento.",
         "muteEveryoneDialogModerationOn": "Os participantes podem enviar um pedido para falar a qualquer momento.",
-        "muteEveryoneElseDialog": "Uma vez silenciados, não poderá reativá-los, mas eles podem reativar-se a qualquer momento.",
+        "muteEveryoneElseDialog": "Uma vez silenciados, não poderá reativá-los, mas eles podem ligar o microfone a qualquer momento.",
         "muteEveryoneElseTitle": "Silenciar todos excepto {{whom}}?",
-        "muteEveryoneElsesVideoDialog": "Quando a câmara for desativada, não poderá voltar a ligá-la, mas eles podem voltar a ligá-la em qualquer momento.",
+        "muteEveryoneElsesVideoDialog": "Quando a câmara for desligada, não poderá voltar a ligá-la, mas eles podem voltar a ligá-la em qualquer momento.",
         "muteEveryoneElsesVideoTitle": "Parar o vídeo de todos excepto {{whom}}?",
         "muteEveryoneSelf": "você mesmo",
         "muteEveryoneStartMuted": "A partir de agora, toda a gente começa a ficar calada",
@@ -351,8 +372,6 @@
         "permissionCameraRequiredError": "É necessária a autorização da câmara para participar em conferências com vídeo. Por favor, conceda-a em Definições",
         "permissionErrorTitle": "Permissão necessária",
         "permissionMicRequiredError": "É necessária a permissão do microfone para participar em conferências com áudio. Por favor, conceda-a em Definições",
-        "popupError": "O seu navegador está a bloquear janelas pop-up a partir deste site. Por favor, active os pop-ups nas definições de segurança do seu browser e tente novamente.",
-        "popupErrorTitle": "Pop-up bloqueado",
         "readMore": "mais",
         "recentlyUsedObjects": "Os seus objetos recentemente utilizados",
         "recording": "A gravar",
@@ -369,6 +388,8 @@
         "removePassword": "Remover $t(lockRoomPassword)",
         "removeSharedVideoMsg": "Tem a certeza de que gostaria de remover o seu vídeo partilhado?",
         "removeSharedVideoTitle": "Remover vídeo partilhado",
+        "renameBreakoutRoomLabel": "Nome da sala",
+        "renameBreakoutRoomTitle": "Mudar o nome da sala",
         "reservationError": "Erro no sistema de reservas",
         "reservationErrorMsg": "Código de erro: {{code}}, mensagem: {{msg}}",
         "retry": "Tentativa",
@@ -420,6 +441,7 @@
         "token": "token",
         "tokenAuthFailed": "Desculpe, não está autorizado a juntar-se a esta chamada.",
         "tokenAuthFailedTitle": "A autenticação falhou",
+        "tokenAuthUnsupported": "O URL de token não é suportado.",
         "transcribing": "Transcrição",
         "unlockRoom": "Retirar reunião $t(lockRoomPassword)",
         "user": "Utilizador",
@@ -445,6 +467,9 @@
         "title": "Incorporar esta reunião"
     },
     "feedback": {
+        "accessibilityLabel": {
+            "yourChoice": "A sua escolha: {{rating}}"
+        },
         "average": "Média",
         "bad": "Má",
         "detailsLabel": "Conte-nos mais sobre isso.",
@@ -652,6 +677,8 @@
         "sessionToken": "Token de Sessão",
         "start": "Iniciar gravação",
         "stop": "Parar gravação",
+        "stopping": "A parar a gravação",
+        "wait": "Aguarde enquanto guardamos a sua gravação",
         "yes": "Sim"
     },
     "lockRoomPassword": "senha",
@@ -673,8 +700,10 @@
         "connectedTwoMembers": "{{first}} e {{second}} entraram na reunião",
         "dataChannelClosed": "Deficiência na qualidade do vídeo",
         "dataChannelClosedDescription": "O canal de ponte foi desconectado e, portanto, a qualidade do vídeo está limitada à sua configuração mais baixa.",
+        "disabledIframe": "A incorporação destina-se apenas a fins de demonstração, pelo que esta chamada será desligada em {{timeout}} minutos.",
         "disconnected": "desconectado",
         "displayNotifications": "Mostrar notificações para",
+        "dontRemindMe": "Não me lembre",
         "focus": "Foco da conferência",
         "focusFail": "{{component}} não disponĩvel - tente em {{ms}} seg.",
         "gifsMenu": "GIPHY",
@@ -718,7 +747,6 @@
         "newDeviceCameraTitle": "Nova câmara detetada",
         "noiseSuppressionDesktopAudioDescription": "A supressão de ruído não pode ser ativada enquanto se partilha o áudio do ambiente de trabalho, por favor desative-o e tente novamente.",
         "noiseSuppressionFailedTitle": "Falha ao iniciar a supressão de ruído",
-        "noiseSuppressionNoTrackDescription": "Por favor, ligue primeiro o seu microfone.",
         "noiseSuppressionStereoDescription": "A supressão do ruído de áudio estéreo não é atualmente suportada.",
         "oldElectronClientDescription1": "Parece estar a utilizar uma versão antiga do cliente Jitsi Meet que tem vulnerabilidades de segurança conhecidas. Por favor, certifique-se de que actualiza a nossa ",
         "oldElectronClientDescription2": "compilação mais recente",
@@ -754,8 +782,8 @@
         "actions": {
             "allow": "Permitir aos participantes:",
             "allowVideo": "Permitir vídeo",
-            "askUnmute": "Pedir para ligar o microfone",
-            "audioModeration": "Ativar o microfone deles",
+            "askUnmute": "Pedir para ligar o som",
+            "audioModeration": "Ligar o microfone deles",
             "blockEveryoneMicCamera": "Bloquear o microfone e a câmara de todos",
             "invite": "Convidar alguém",
             "moreModerationActions": "Mais opções de moderação",
@@ -866,9 +894,11 @@
         "lookGood": "O seu microfone funciona corretamente",
         "or": "ou",
         "premeeting": "Pré-reunião",
+        "proceedAnyway": "Continuar na mesma",
         "screenSharingError": "Erro de partilha de ecrã:",
         "showScreen": "Ativar o ecrã de pré-reunião",
         "startWithPhone": "Iniciar com o áudio do telefone",
+        "unsafeRoomConsent": "Compreendo os riscos, quero participar na reunião",
         "videoOnlyError": "Erro de vídeo:",
         "videoTrackError": "Não foi possível criar a pista de vídeo.",
         "viewAllNumbers": "ver todos os números"
@@ -944,7 +974,7 @@
         "noStreams": "Não foi detetado nenhum sinal áudio ou vídeo.",
         "off": "Gravação parada",
         "offBy": "{{name}} parou a gravação",
-        "on": "Gravando",
+        "on": "Começou a gravação",
         "onBy": "{{name}} iniciou a gravação",
         "onlyRecordSelf": "Gravar apenas as minhas transmissões áudio e vídeo",
         "pending": "Preparando para gravar a reunião...",
@@ -970,8 +1000,14 @@
     "security": {
         "about": "Pode adicionar uma $t(lockRoomPassword) à sua reunião. Os participantes terão de fornecer a $t(lockRoomPassword) antes de serem autorizados a participar na reunião.",
         "aboutReadOnly": "Os participantes moderadores podem acrescentar uma $t(lockRoomPassword) à reunião. Os participantes terão de fornecer a $t(lockRoomPassword) antes de serem autorizados a participar na reunião.",
-        "insecureRoomNameWarning": "O nome da sala é inseguro. Participantes indesejados podem juntar-se à sua conferência. Considere proteger a sua reunião utilizando o botão de segurança.",
-        "title": "Opções de segurança"
+        "insecureRoomNameWarningNative": "O nome da sala não é seguro. Participantes indesejados podem juntar-se à sua reunião. {{recommendAction}} Saiba mais sobre como proteger a sua reunião ",
+        "insecureRoomNameWarningWeb": "O nome da sala não é seguro. Participantes indesejados podem juntar-se à sua reunião. {{recommendAction}} Saiba mais sobre como proteger a sua reunião <a href=\"{{securityUrl}}\" rel=\"security\" target=\"_blank\">here</a>.",
+        "title": "Opções de Segurança",
+        "unsafeRoomActions": {
+            "meeting": "Considere a possibilidade de proteger a sua reunião utilizando o botão de segurança.",
+            "prejoin": "Considere a utilização de um nome de reunião mais personalizado.",
+            "welcome": "Considere utilizar um nome de reunião mais personalizado ou selecione uma das sugestões."
+        }
     },
     "settings": {
         "audio": "Áudio",
@@ -1041,13 +1077,14 @@
         "links": "Links",
         "privacy": "Privacidade",
         "profileSection": "Perfil",
+        "sdkVersion": "Versão do SDK",
         "serverURL": "URL do servidor",
         "showAdvanced": "Mostrar definições avançadas",
         "startCarModeInLowBandwidthMode": "Iniciar o modo de condução em modo de baixa largura de banda",
         "startWithAudioMuted": "Iniciar sem áudio",
         "startWithVideoMuted": "Iniciar sem vídeo",
         "terms": "Termos",
-        "version": "Versão"
+        "version": "Versão da App"
     },
     "share": {
         "dialInfoText": "\n\n=====\n\nDeseja apenas discar no seu telefone?\n\n{{defaultDialInNumber}}Clique neste link para ver os números de telefone para esta reunião\n{{dialInfoPageUrl}}",
@@ -1092,7 +1129,7 @@
             "audioOnly": "Mudar para apenas áudio",
             "audioRoute": "Selecionar o dispositivo de som",
             "boo": "Vaia",
-            "breakoutRoom": "Entrar/Sair salas instantâneas",
+            "breakoutRoom": "Entrar/Sair da sala",
             "callQuality": "Gerir a qualidade do vídeo",
             "carmode": "Modo de condução",
             "cc": "Mudar legendas",
@@ -1139,6 +1176,7 @@
             "muteEveryoneElse": "Silenciar todos os outros",
             "muteEveryoneElsesVideo": "Parar o vídeo de todos os outros",
             "muteEveryonesVideo": "Parar o vídeo de todos",
+            "muteGUMPending": "A ligar o seu microfone",
             "noiseSuppression": "Supressão de ruído",
             "openChat": "Abrir chat",
             "participants": "Abrir painel de participantes",
@@ -1146,6 +1184,7 @@
             "privateMessage": "Enviar mensagem privada",
             "profile": "Editar o seu perfil",
             "raiseHand": "Levantar a mão",
+            "reactions": "Reações",
             "reactionsMenu": "Menu de reações",
             "recording": "Mudar gravação",
             "remoteMute": "Participante sem som",
@@ -1171,6 +1210,7 @@
             "unmute": "Ligar microfone",
             "videoblur": "Mudar o desfoque de vídeo",
             "videomute": "Parar câmara",
+            "videomuteGUMPending": "A ligar a sua câmara",
             "videounmute": "Iniciar câmara"
         },
         "addPeople": "Adicione pessoas à sua chamada",
@@ -1205,7 +1245,7 @@
         "help": "Ajuda",
         "hideWhiteboard": "Esconder quadro branco",
         "invite": "Convidar pessoas",
-        "joinBreakoutRoom": "Entrar na sala",
+        "joinBreakoutRoom": "Entar na sala",
         "laugh": "Risos",
         "leaveBreakoutRoom": "Sair da sala",
         "leaveConference": "Sair da reunião",
@@ -1221,6 +1261,7 @@
         "mute": "Desligar microfone",
         "muteEveryone": "Silenciar todos",
         "muteEveryonesVideo": "Desativar a câmara de todos",
+        "muteGUMPending": "A ligar o seu microfone",
         "noAudioSignalDesc": "Se não o silenciou propositadamente a partir de configurações do sistema ou hardware, considere mudar de dispositivo.",
         "noAudioSignalDescSuggestion": "Se não o silenciou propositadamente a partir das configurações do sistema ou hardware, considere mudar para o dispositivo sugerido.",
         "noAudioSignalDialInDesc": "Também pode marcar usando:",
@@ -1243,6 +1284,7 @@
         "reactionLike": "Enviar reação de aprovado",
         "reactionSilence": "Enviar reação de silêncio",
         "reactionSurprised": "Enviar reação de surpreendido",
+        "reactions": "Reações",
         "security": "Opções de segurança",
         "selectBackground": "Selecionar plano de fundo",
         "shareRoom": "Convidar alguém",
@@ -1265,6 +1307,7 @@
         "unmute": "Ligar microfone",
         "videoSettings": "Definições de vídeo",
         "videomute": "Parar câmara",
+        "videomuteGUMPending": "A ligar a sua câmara",
         "videounmute": "Iniciar câmara"
     },
     "transcribing": {
@@ -1311,7 +1354,7 @@
         "audioOnly": "AUD",
         "audioOnlyExpanded": "Está em modo de baixa largura de banda. Neste modo, receberá apenas partilha de áudio e ecrã.",
         "bestPerformance": "Melhor desempenho",
-        "callQuality": "Qualidade de vídeo",
+        "callQuality": "Qualidade de vídeo (0 para o melhor desempenho, 3 para a melhor qualidade)",
         "hd": "HD",
         "hdTooltip": "Ver vídeo em alta definição",
         "highDefinition": "Alta definição (HD)",
@@ -1353,6 +1396,10 @@
         "videomute": "Participante parou a câmara"
     },
     "virtualBackground": {
+        "accessibilityLabel": {
+            "currentBackground": "Atual imagem de fundo: {{background}}",
+            "selectBackground": "Selecionar uma imagem de fundo"
+        },
         "addBackground": "Adicionar imagem de fundo",
         "apply": "Aplicar",
         "backgroundEffectError": "Falha ao aplicar efeito de fundo.",
@@ -1376,7 +1423,14 @@
         "webAssemblyWarning": "WebAssembly não suportado",
         "webAssemblyWarningDescription": "WebAssembly desactivado ou não suportado por este navegador"
     },
-    "visitorsLabel": "Número de visitantes: {{count}}",
+    "visitors": {
+        "chatIndicator": "(visitante)",
+        "labelTooltip": "Número de visitantes: {{count}}",
+        "notification": {
+            "description": "Para participar levante a sua mão",
+            "title": "É um visitante na reunião"
+        }
+    },
     "volumeSlider": "Controlo de volume",
     "welcomepage": {
         "accessibilityLabel": {

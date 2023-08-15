@@ -1,5 +1,8 @@
 {
     "addPeople": {
+        "accessibilityLabel": {
+            "meetingLink": "Meeting link: {{url}}"
+        },
         "add": "Invite",
         "addContacts": "Invite your contacts",
         "contacts": "contacts",
@@ -39,6 +42,18 @@
     "audioOnly": {
         "audioOnly": "Low bandwidth"
     },
+    "bandwidthSettings": {
+        "assumedBandwidthBps": "e.g. 10000000 for 10 Mbps",
+        "assumedBandwidthBpsWarning": "Higher values might cause network issues.",
+        "customValue": "custom value",
+        "customValueEffect": "to set the actual bps value",
+        "leaveEmpty": "leave empty",
+        "leaveEmptyEffect": "to allow estimations to take place",
+        "possibleValues": "Possible values",
+        "setAssumedBandwidthBps": "Assumed bandwidth (bps)",
+        "title": "Bandwidth settings",
+        "zeroEffect": "to disable video"
+    },
     "breakoutRooms": {
         "actions": {
             "add": "Add breakout room",
@@ -48,6 +63,8 @@
             "leaveBreakoutRoom": "Leave breakout room",
             "more": "More",
             "remove": "Remove",
+            "rename": "Rename",
+            "renameBreakoutRoom": "Rename breakout room",
             "sendToBreakoutRoom": "Send participant to:"
         },
         "defaultName": "Breakout room #{{index}}",
@@ -242,6 +259,8 @@
         "WaitingForHostTitle": "Waiting for the host ...",
         "Yes": "Yes",
         "accessibilityLabel": {
+            "Cancel": "Cancel (leave dialog)",
+            "Ok": "OK (save and leave dialog)",
             "close": "Close dialog",
             "liveStreaming": "Live Stream",
             "sharingTabs": "Sharing options"
@@ -310,6 +329,7 @@
         "lockRoom": "Add meeting $t(lockRoomPassword)",
         "lockTitle": "Lock failed",
         "login": "Login",
+        "loginQuestion": "Are you sure you want to login and leave the conference?",
         "logoutQuestion": "Are you sure you want to logout and leave the conference?",
         "logoutTitle": "Logout",
         "maxUsersLimitReached": "The limit for maximum number of participants has been reached. The conference is full. Please contact the meeting owner or try again later!",
@@ -353,8 +373,6 @@
         "permissionCameraRequiredError": "Camera permission is required to participate in conferences with video. Please grant it in Settings",
         "permissionErrorTitle": "Permission required",
         "permissionMicRequiredError": "Microphone permission is required to participate in conferences with audio. Please grant it in Settings",
-        "popupError": "Your browser is blocking pop-up windows from this site. Please enable pop-ups in your browser's security settings and try again.",
-        "popupErrorTitle": "Pop-up blocked",
         "readMore": "more",
         "recentlyUsedObjects": "Your recently used objects",
         "recording": "Recording",
@@ -371,6 +389,8 @@
         "removePassword": "Remove $t(lockRoomPassword)",
         "removeSharedVideoMsg": "Are you sure you would like to remove your shared video?",
         "removeSharedVideoTitle": "Remove shared video",
+        "renameBreakoutRoomLabel": "Room name",
+        "renameBreakoutRoomTitle": "Rename breakout room",
         "reservationError": "Reservation system error",
         "reservationErrorMsg": "Error code: {{code}}, message: {{msg}}",
         "retry": "Retry",
@@ -421,7 +441,25 @@
         "thankYou": "Thank you for using {{appName}}!",
         "token": "token",
         "tokenAuthFailed": "Sorry, you're not allowed to join this call.",
+        "tokenAuthFailedReason": {
+            "audInvalid": "Ivalid `aud` value. It should be `jitsi`.",
+            "contextNotFound": "The `context` object is missing from the payload.",
+            "expInvalid": "Invalid `exp` value.",
+            "featureInvalid": "Invalid feature: {{feature}}, most likely not implemented yet.",
+            "featureValueInvalid": "Invalid value for feature: {{feature}}.",
+            "featuresNotFound": "The `features` object is missing from the payload.",
+            "headerNotFound": "Missing the header.",
+            "issInvalid": "Invalid `iss` value. It should be `chat`.",
+            "kidMismatch": "Key ID (kid) does not match sub.",
+            "kidNotFound": "Missing Key ID (kid).",
+            "nbfFuture": "The `nbf` value is in the future.",
+            "nbfInvalid": "Invalid `nbf` value.",
+            "payloadNotFound": "Missing the payload.",
+            "tokenExpired": "Token is expired."
+        },
         "tokenAuthFailedTitle": "Authentication failed",
+        "tokenAuthFailedWithReasons": "Sorry, you're not allowed to join this call. Possible reasons: {{reason}}",
+        "tokenAuthUnsupported": "Token URL is not supported.",
         "transcribing": "Transcribing",
         "unlockRoom": "Remove meeting $t(lockRoomPassword)",
         "user": "User",
@@ -447,6 +485,9 @@
         "title": "Embed this meeting"
     },
     "feedback": {
+        "accessibilityLabel": {
+            "yourChoice": "Your choice: {{rating}}"
+        },
         "average": "Average",
         "bad": "Bad",
         "detailsLabel": "Tell us more about it.",
@@ -654,6 +695,8 @@
         "sessionToken": "Session Token",
         "start": "Start Recording",
         "stop": "Stop Recording",
+        "stopping": "Stopping Recording",
+        "wait": "Please wait while we save your recording",
         "yes": "Yes"
     },
     "lockRoomPassword": "password",
@@ -722,7 +765,6 @@
         "newDeviceCameraTitle": "New camera detected",
         "noiseSuppressionDesktopAudioDescription": "Noise suppression can't be enabled while sharing desktop audio, please disable it and try again.",
         "noiseSuppressionFailedTitle": "Failed to start noise suppression",
-        "noiseSuppressionNoTrackDescription": "Please unmute your microphone first.",
         "noiseSuppressionStereoDescription": "Stereo audio noise suppression is not currently supported.",
         "oldElectronClientDescription1": "You appear to be using an old version of the Jitsi Meet client which has known security vulnerabilities. Please make sure you update to our ",
         "oldElectronClientDescription2": "latest build",
@@ -1037,6 +1079,7 @@
         "alertOk": "OK",
         "alertTitle": "Warning",
         "alertURLText": "The entered server URL is invalid",
+        "apply": "Apply",
         "buildInfoSection": "Build Information",
         "conferenceSection": "Conference",
         "disableCallIntegration": "Disable native call integration",
@@ -1047,19 +1090,21 @@
         "displayNamePlaceholderText": "Eg: John Doe",
         "email": "Email",
         "emailPlaceholderText": "email@example.com",
+        "gavatarMessage": "If your email is associated with a Gravatar account, we will use it to display your profile picture.",
         "goTo": "Go to",
         "header": "Settings",
         "help": "Help",
         "links": "Links",
         "privacy": "Privacy",
         "profileSection": "Profile",
+        "sdkVersion": "SDK version",
         "serverURL": "Server URL",
         "showAdvanced": "Show advanced settings",
         "startCarModeInLowBandwidthMode": "Start car mode in low bandwidth mode",
         "startWithAudioMuted": "Start with audio muted",
         "startWithVideoMuted": "Start with video muted",
         "terms": "Terms",
-        "version": "Version"
+        "version": "App version"
     },
     "share": {
         "dialInfoText": "\n\n=====\n\nJust want to dial in on your phone?\n\n{{defaultDialInNumber}}Click this link to see the dial in phone numbers for this meeting\n{{dialInfoPageUrl}}",
@@ -1151,6 +1196,7 @@
             "muteEveryoneElse": "Mute everyone else",
             "muteEveryoneElsesVideoStream": "Stop everyone else's video",
             "muteEveryonesVideoStream": "Stop everyone's video",
+            "muteGUMPending": "Connecting your microphone",
             "noiseSuppression": "Noise suppression",
             "openChat": "Open chat",
             "participants": "Open participants pane",
@@ -1184,6 +1230,7 @@
             "unmute": "Unmute",
             "videoblur": "Toggle video blur",
             "videomute": "Stop camera",
+            "videomuteGUMPending": "Connecting your camera",
             "videounmute": "Start camera"
         },
         "addPeople": "Add people to your call",
@@ -1234,6 +1281,7 @@
         "mute": "Mute",
         "muteEveryone": "Mute everyone",
         "muteEveryonesVideo": "Disable everyone's camera",
+        "muteGUMPending": "Connecting your microphone",
         "noAudioSignalDesc": "If you did not purposely mute it from system settings or hardware, consider switching the device.",
         "noAudioSignalDescSuggestion": "If you did not purposely mute it from system settings or hardware, consider switching to the suggested device.",
         "noAudioSignalDialInDesc": "You can also dial-in using:",
@@ -1279,6 +1327,7 @@
         "unmute": "Unmute",
         "videoSettings": "Video settings",
         "videomute": "Stop camera",
+        "videomuteGUMPending": "Connecting your camera",
         "videounmute": "Start camera"
     },
     "transcribing": {
@@ -1325,7 +1374,7 @@
         "audioOnly": "AUD",
         "audioOnlyExpanded": "You are in low bandwidth mode. In this mode you will receive only audio and screen sharing.",
         "bestPerformance": "Best performance",
-        "callQuality": "Video Quality",
+        "callQuality": "Video Quality (0 for best performance, 3 for highest quality)",
         "hd": "HD",
         "hdTooltip": "Viewing high definition video",
         "highDefinition": "High definition",
@@ -1367,6 +1416,10 @@
         "videomute": "Participant has stopped the camera"
     },
     "virtualBackground": {
+        "accessibilityLabel": {
+            "currentBackground": "Current background: {{background}}",
+            "selectBackground": "Select a background"
+        },
         "addBackground": "Add background",
         "apply": "Apply",
         "backgroundEffectError": "Failed to apply background effect.",

@@ -1,3 +1,5 @@
+import { AnyAction } from 'redux';
+
 import { FaceLandmarks } from '../../face-landmarks/types';
 import { LOCKED_LOCALLY, LOCKED_REMOTELY } from '../../room-lock/constants';
 import { ISpeakerStats } from '../../speaker-stats/reducer';
@@ -18,6 +20,7 @@ import {
     CONFERENCE_WILL_LEAVE,
     LOCK_STATE_CHANGED,
     P2P_STATUS_CHANGED,
+    SET_ASSUMED_BANDWIDTH_BPS,
     SET_FOLLOW_ME,
     SET_OBFUSCATED_ROOM,
     SET_PASSWORD,
@@ -29,6 +32,7 @@ import {
 import { isRoomValid } from './functions';
 
 const DEFAULT_STATE = {
+    assumedBandwidthBps: undefined,
     conference: undefined,
     e2eeSupported: undefined,
     joining: undefined,
@@ -73,6 +77,7 @@ export interface IJitsiConference {
     isE2EESupported: Function;
     isEndConferenceSupported: Function;
     isLobbySupported: Function;
+    isP2PActive: Function;
     isSIPCallingSupported: Function;
     isStartAudioMuted: Function;
     isStartVideoMuted: Function;
@@ -121,6 +126,7 @@ export interface IJitsiConference {
 }
 
 export interface IConferenceState {
+    assumedBandwidthBps?: number;
     authEnabled?: boolean;
     authLogin?: string;
     authRequired?: IJitsiConference;
@@ -148,6 +154,10 @@ export interface IConferenceState {
 }
 
 export interface IJitsiConferenceRoom {
+    locked: boolean;
+    moderator: {
+        logout: Function;
+    };
     myroomjid: string;
     roomjid: string;
 }
@@ -193,6 +203,13 @@ ReducerRegistry.register<IConferenceState>('features/base/conference',
         case P2P_STATUS_CHANGED:
             return _p2pStatusChanged(state, action);
 
+        case SET_ASSUMED_BANDWIDTH_BPS: {
+            const assumedBandwidthBps = action.assumedBandwidthBps >= 0
+                ? Number(action.assumedBandwidthBps)
+                : undefined;
+
+            return set(state, 'assumedBandwidthBps', assumedBandwidthBps);
+        }
         case SET_FOLLOW_ME:
             return set(state, 'followMeEnabled', action.enabled);
 
@@ -266,7 +283,7 @@ function _conferenceFailed(state: IConferenceState, { conference, error }: {
         return state;
     }
 
-    let authRequired: any;
+    let authRequired;
     let membersOnly;
     let passwordRequired;
 
@@ -323,7 +340,7 @@ function _conferenceFailed(state: IConferenceState, { conference, error }: {
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _conferenceJoined(state: IConferenceState, { conference }: { conference: any; }) {
+function _conferenceJoined(state: IConferenceState, { conference }: { conference: IJitsiConference; }) {
     // FIXME The indicator which determines whether a JitsiConference is locked
     // i.e. password-protected is private to lib-jitsi-meet. However, the
     // library does not fire LOCK_STATE_CHANGED upon joining a JitsiConference
@@ -462,7 +479,7 @@ function _lockStateChanged(state: IConferenceState, { conference, locked }: { co
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _p2pStatusChanged(state: IConferenceState, action: any) {
+function _p2pStatusChanged(state: IConferenceState, action: AnyAction) {
     return set(state, 'p2p', action.p2p);
 }
 
@@ -476,7 +493,7 @@ function _p2pStatusChanged(state: IConferenceState, action: any) {
  * reduction of the specified action.
  */
 function _setPassword(state: IConferenceState, { conference, method, password }: {
-    conference: any; method: Object; password: string; }) {
+    conference: IJitsiConference; method: Object; password: string; }) {
     switch (method) {
     case conference.join:
         return assign(state, {
@@ -523,7 +540,7 @@ function _setPassword(state: IConferenceState, { conference, method, password }:
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _setRoom(state: IConferenceState, action: any) {
+function _setRoom(state: IConferenceState, action: AnyAction) {
     let { room } = action;
 
     if (!isRoomValid(room)) {

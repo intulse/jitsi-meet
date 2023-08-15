@@ -3,6 +3,8 @@ local uuid_gen = require "util.uuid".generate;
 local main_util = module:require "util";
 local ends_with = main_util.ends_with;
 local is_healthcheck_room = main_util.is_healthcheck_room;
+local internal_room_jid_match_rewrite = main_util.internal_room_jid_match_rewrite;
+local presence_check_status = main_util.presence_check_status;
 
 local um_is_admin = require 'core.usermanager'.is_admin;
 local function is_admin(jid)
@@ -65,6 +67,13 @@ module:hook("muc-config-submitted/muc#roominfo_meetingId", function(event)
 
     return true;
 end, 99);
+module:hook('muc-broadcast-presence', function (event)
+    local actor, occupant, room, x = event.actor, event.occupant, event.room, event.x;
+    if presence_check_status(x, '307') then
+        -- make sure we update and affiliation for kicked users
+        room:set_affiliation(actor, occupant.bare_jid, 'none');
+    end
+end);
 
 --- Avoids any participant joining the room in the interval between creating the room
 --- and jicofo entering the room
@@ -72,7 +81,7 @@ module:hook('muc-occupant-pre-join', function (event)
     local room, stanza = event.room, event.stanza;
 
     -- we skip processing only if jicofo_lock is set to false
-    if room.jicofo_lock == false or is_healthcheck_room(stanza.attr.from) then
+    if room._data.jicofo_lock == false or is_healthcheck_room(stanza.attr.from) then
         return;
     end
 
@@ -80,7 +89,7 @@ module:hook('muc-occupant-pre-join', function (event)
     if ends_with(occupant.nick, '/focus') then
         module:fire_event('jicofo-unlock-room', { room = room; });
     else
-        room.jicofo_lock = true;
+        room._data.jicofo_lock = true;
         if not room.pre_join_queue then
             room.pre_join_queue = queue.new(QUEUE_MAX_SIZE);
         end
@@ -89,7 +98,7 @@ module:hook('muc-occupant-pre-join', function (event)
             module:log('error', 'Error enqueuing occupant event for: %s', occupant.nick);
             return true;
         end
-        module:log('info', 'Occupant pushed to prejoin queue %s', occupant.nick);
+        module:log('debug', 'Occupant pushed to prejoin queue %s', occupant.nick);
 
         -- stop processing
         return true;
@@ -99,15 +108,18 @@ end, 8); -- just after the rate limit
 function handle_jicofo_unlock(event)
     local room = event.room;
 
-    room.jicofo_lock = false;
+    room._data.jicofo_lock = false;
     if not room.pre_join_queue then
         return;
     end
 
     -- and now let's handle all pre_join_queue events
     for _, ev in room.pre_join_queue:items() do
-        module:log('info', 'Occupant processed from queue %s', ev.occupant.nick);
-        room:handle_normal_presence(ev.origin, ev.stanza);
+        -- if the connection was closed while waiting in the queue, ignore
+        if ev.origin.conn then
+            module:log('debug', 'Occupant processed from queue %s', ev.occupant.nick);
+            room:handle_normal_presence(ev.origin, ev.stanza);
+        end
     end
     room.pre_join_queue = nil;
 end

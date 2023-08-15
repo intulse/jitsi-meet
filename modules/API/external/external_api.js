@@ -36,7 +36,6 @@ const commands = {
     cancelPrivateChat: 'cancel-private-chat',
     closeBreakoutRoom: 'close-breakout-room',
     displayName: 'display-name',
-    e2eeKey: 'e2ee-key',
     endConference: 'end-conference',
     email: 'email',
     grantModerator: 'grant-moderator',
@@ -107,6 +106,7 @@ const events = {
     'browser-support': 'browserSupport',
     'camera-error': 'cameraError',
     'chat-updated': 'chatUpdated',
+    'compute-pressure-changed': 'computePressureChanged',
     'content-sharing-participants-changed': 'contentSharingParticipantsChanged',
     'data-channel-closed': 'dataChannelClosed',
     'data-channel-opened': 'dataChannelOpened',
@@ -129,8 +129,10 @@ const events = {
     'mouse-enter': 'mouseEnter',
     'mouse-leave': 'mouseLeave',
     'mouse-move': 'mouseMove',
+    'non-participant-message-received': 'nonParticipantMessageReceived',
     'notification-triggered': 'notificationTriggered',
     'outgoing-message': 'outgoingMessage',
+    'p2p-status-changed': 'p2pStatusChanged',
     'participant-joined': 'participantJoined',
     'participant-kicked-out': 'participantKickedOut',
     'participant-left': 'participantLeft',
@@ -395,7 +397,7 @@ export default class JitsiMeetExternalAPI extends EventEmitter {
         const frameName = `jitsiConferenceFrame${id}`;
 
         this._frame = document.createElement('iframe');
-        this._frame.allow = 'camera; microphone; display-capture; autoplay; clipboard-write; hid';
+        this._frame.allow = 'camera; microphone; display-capture; autoplay; clipboard-write; hid; screen-wake-lock';
         this._frame.name = frameName;
         this._frame.id = frameName;
         this._setSize(height, width);
@@ -561,7 +563,22 @@ export default class JitsiMeetExternalAPI extends EventEmitter {
             switch (name) {
             case 'video-conference-joined': {
                 if (typeof this._tmpE2EEKey !== 'undefined') {
-                    this.executeCommand(commands.e2eeKey, this._tmpE2EEKey);
+
+                    const hexToBytes = hex => {
+                        const bytes = [];
+
+                        for (let c = 0; c < hex.length; c += 2) {
+                            bytes.push(parseInt(hex.substring(c, c + 2), 16));
+                        }
+
+                        return bytes;
+                    };
+
+                    this.executeCommand('setMediaEncryptionKey', JSON.stringify({
+                        exportedKey: hexToBytes(this._tmpE2EEKey),
+                        index: 0
+                    }));
+
                     this._tmpE2EEKey = undefined;
                 }
 
@@ -679,7 +696,6 @@ export default class JitsiMeetExternalAPI extends EventEmitter {
         this._numberOfParticipants = allParticipants;
     }
 
-
     /**
      * Returns the rooms info in the conference.
      *
@@ -688,6 +704,17 @@ export default class JitsiMeetExternalAPI extends EventEmitter {
     async getRoomsInfo() {
         return this._transport.sendRequest({
             name: 'rooms-info'
+        });
+    }
+
+    /**
+     * Returns whether the conference is P2P.
+     *
+     * @returns {Promise}
+     */
+    isP2pActive() {
+        return this._transport.sendRequest({
+            name: 'get-p2p-status'
         });
     }
 

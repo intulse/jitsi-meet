@@ -1,5 +1,8 @@
+import i18n from 'i18next';
 import { AnyAction } from 'redux';
 
+// @ts-ignore
+import { MIN_ASSUMED_BANDWIDTH_BPS } from '../../../../modules/API/constants';
 import {
     ACTION_PINNED,
     ACTION_UNPINNED,
@@ -8,19 +11,21 @@ import {
 } from '../../analytics/AnalyticsEvents';
 import { sendAnalytics } from '../../analytics/functions';
 import { reloadNow } from '../../app/actions';
-import { IReduxState, IStore } from '../../app/types';
+import { IStore } from '../../app/types';
 import { removeLobbyChatParticipant } from '../../chat/actions.any';
 import { openDisplayNamePrompt } from '../../display-name/actions';
 import { readyToClose } from '../../mobile/external-api/actions';
 import { showErrorNotification, showWarningNotification } from '../../notifications/actions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
+import { stopLocalVideoRecording } from '../../recording/actions.any';
+import LocalRecordingManager from '../../recording/components/Recording/LocalRecordingManager';
 import { setIAmVisitor } from '../../visitors/actions';
 import { iAmVisitor } from '../../visitors/functions';
 import { overwriteConfig } from '../config/actions';
 import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from '../connection/actionTypes';
 import { connect, connectionDisconnected, disconnect } from '../connection/actions';
 import { validateJwt } from '../jwt/functions';
-import { JitsiConferenceErrors } from '../lib-jitsi-meet';
+import { JitsiConferenceErrors, JitsiConnectionErrors } from '../lib-jitsi-meet';
 import { PARTICIPANT_UPDATED, PIN_PARTICIPANT } from '../participants/actionTypes';
 import { PARTICIPANT_ROLE } from '../participants/constants';
 import {
@@ -31,18 +36,23 @@ import {
 import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 import { TRACK_ADDED, TRACK_REMOVED } from '../tracks/actionTypes';
 import { destroyLocalTracks } from '../tracks/actions.any';
+import { getLocalTracks } from '../tracks/functions.any';
 
 import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
     CONFERENCE_SUBJECT_CHANGED,
     CONFERENCE_WILL_LEAVE,
+    P2P_STATUS_CHANGED,
     SEND_TONES,
+    SET_ASSUMED_BANDWIDTH_BPS,
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM
 } from './actionTypes';
 import {
+    authStatusChanged,
     conferenceFailed,
+    conferenceWillInit,
     conferenceWillLeave,
     createConference,
     leaveConference,
@@ -67,7 +77,7 @@ import logger from './logger';
 /**
  * Handler for before unload event.
  */
-let beforeUnloadHandler: Function | undefined;
+let beforeUnloadHandler: ((e?: any) => void) | undefined;
 
 /**
  * Implements the middleware of the feature base/conference.
@@ -96,6 +106,9 @@ MiddlewareRegistry.register(store => next => action => {
         _conferenceWillLeave(store);
         break;
 
+    case P2P_STATUS_CHANGED:
+        return _p2pStatusChanged(next, action);
+
     case PARTICIPANT_UPDATED:
         return _updateLocalParticipantInConference(store, next, action);
 
@@ -111,6 +124,9 @@ MiddlewareRegistry.register(store => next => action => {
     case TRACK_ADDED:
     case TRACK_REMOVED:
         return _trackAddedOrRemoved(store, next, action);
+
+    case SET_ASSUMED_BANDWIDTH_BPS:
+        return _setAssumedBandwidthBps(store, next, action);
     }
 
     return next(action);
@@ -131,12 +147,6 @@ MiddlewareRegistry.register(store => next => action => {
  */
 function _conferenceFailed({ dispatch, getState }: IStore, next: Function, action: AnyAction) {
     const { conference, error } = action;
-
-    if (error.name === JitsiConferenceErrors.REDIRECTED) {
-        if (typeof error.recoverable === 'undefined') {
-            error.recoverable = true;
-        }
-    }
 
     const result = next(action);
     const { enableForcedReload } = getState()['features/base/config'];
@@ -185,18 +195,31 @@ function _conferenceFailed({ dispatch, getState }: IStore, next: Function, actio
         break;
     }
     case JitsiConferenceErrors.CONFERENCE_MAX_USERS: {
-        if (typeof APP === 'undefined') {
-            // in case of max users(it can be from a visitor node), let's restore
-            // oldConfig if any as we will be back to the main prosody
-            const newConfig = restoreConferenceOptions(getState);
+        dispatch(showErrorNotification({
+            hideErrorSupportLink: true,
+            descriptionKey: 'dialog.maxUsersLimitReached',
+            titleKey: 'dialog.maxUsersLimitReachedTitle'
+        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
 
-            if (newConfig) {
-                dispatch(overwriteConfig(newConfig)) // @ts-ignore
-                    .then(dispatch(conferenceWillLeave(conference)))
-                    .then(conference.leave())
-                    .then(dispatch(disconnect()))
-                    .then(dispatch(connect()));
-            }
+        // In case of max users(it can be from a visitor node), let's restore
+        // oldConfig if any as we will be back to the main prosody.
+        const newConfig = restoreConferenceOptions(getState);
+
+        if (newConfig) {
+            dispatch(overwriteConfig(newConfig)) // @ts-ignore
+                .then(() => dispatch(conferenceWillLeave(conference)))
+                .then(() => conference.leave())
+                .then(() => dispatch(disconnect()))
+                .then(() => dispatch(connect()))
+                .then(() => {
+                    // FIXME: Workaround for the web version. To be removed once we get rid of conference.js
+                    if (typeof APP !== 'undefined') {
+                        const localTracks = getLocalTracks(getState()['features/base/tracks']);
+                        const jitsiTracks = localTracks.map((t: any) => t.jitsiTrack);
+
+                        APP.conference.startConference(jitsiTracks).catch(logger.error);
+                    }
+                });
         }
 
         break;
@@ -204,45 +227,48 @@ function _conferenceFailed({ dispatch, getState }: IStore, next: Function, actio
     case JitsiConferenceErrors.OFFER_ANSWER_FAILED:
         sendAnalytics(createOfferAnswerFailedEvent());
         break;
+
     case JitsiConferenceErrors.REDIRECTED: {
-        // once conference.js is gone this can be removed and both
-        // redirect logics to be merged
-        if (typeof APP === 'undefined') {
-            const newConfig = getVisitorOptions(getState, error.params);
+        const newConfig = getVisitorOptions(getState, error.params);
 
-            if (!newConfig) {
-                logger.warn('Not redirected missing params');
-                break;
-            }
-
-            const [ vnode ] = error.params;
-
-            dispatch(overwriteConfig(newConfig)) // @ts-ignore
-                .then(dispatch(conferenceWillLeave(conference)))
-                .then(conference.leave())
-                .then(dispatch(disconnect()))
-                .then(dispatch(setIAmVisitor(Boolean(vnode))))
-
-                // we do not clear local tracks on error, so we need to manually clear them
-                .then(dispatch(destroyLocalTracks()))
-                .then(dispatch(connect()));
+        if (!newConfig) {
+            logger.warn('Not redirected missing params');
+            break;
         }
+
+        const [ vnode ] = error.params;
+
+        dispatch(overwriteConfig(newConfig)) // @ts-ignore
+            .then(() => dispatch(conferenceWillLeave(conference)))
+            .then(() => dispatch(disconnect()))
+            .then(() => dispatch(setIAmVisitor(Boolean(vnode))))
+
+            // we do not clear local tracks on error, so we need to manually clear them
+            .then(() => dispatch(destroyLocalTracks()))
+            .then(() => dispatch(conferenceWillInit()))
+            .then(() => dispatch(connect()))
+            .then(() => {
+                // FIXME: Workaround for the web version. To be removed once we get rid of conference.js
+                if (typeof APP !== 'undefined') {
+                    APP.conference.startConference([]);
+                }
+            });
         break;
     }
     }
 
-    if (typeof APP === 'undefined') {
-        !error.recoverable
-        && conference
-        && conference.leave(CONFERENCE_LEAVE_REASONS.UNRECOVERABLE_ERROR).catch((reason: Error) => {
-            // Even though we don't care too much about the failure, it may be
-            // good to know that it happen, so log it (on the info level).
-            logger.info('JitsiConference.leave() rejected with:', reason);
-        });
-    } else {
-        // FIXME: Workaround for the web version. Currently, the creation of the
-        // conference is handled by /conference.js and appropriate failure handlers
-        // are set there.
+    !error.recoverable
+    && conference
+    && conference.leave(CONFERENCE_LEAVE_REASONS.UNRECOVERABLE_ERROR).catch((reason: Error) => {
+        // Even though we don't care too much about the failure, it may be
+        // good to know that it happen, so log it (on the info level).
+        logger.info('JitsiConference.leave() rejected with:', reason);
+    });
+
+    // FIXME: Workaround for the web version. Currently, the creation of the
+    // conference is handled by /conference.js and appropriate failure handlers
+    // are set there.
+    if (typeof APP !== 'undefined') {
         _removeUnloadHandler(getState);
     }
 
@@ -285,7 +311,14 @@ function _conferenceJoined({ dispatch, getState }: IStore, next: Function, actio
     // handles the process of leaving the conference. This is temporary solution
     // that should cover the described use case as part of the effort to
     // implement the conferenceWillLeave action for web.
-    beforeUnloadHandler = () => {
+    beforeUnloadHandler = (e?: any) => {
+        if (LocalRecordingManager.isRecordingLocally()) {
+            dispatch(stopLocalVideoRecording());
+            if (e) {
+                e.preventDefault();
+                e.returnValue = null;
+            }
+        }
         dispatch(conferenceWillLeave(conference));
     };
 
@@ -295,7 +328,6 @@ function _conferenceJoined({ dispatch, getState }: IStore, next: Function, actio
         dispatch(overwriteConfig({ disableFocus: false }));
     }
 
-    // @ts-ignore
     window.addEventListener(disableBeforeUnloadHandlers ? 'unload' : 'beforeunload', beforeUnloadHandler);
 
     if (requireDisplayName
@@ -321,12 +353,30 @@ function _conferenceJoined({ dispatch, getState }: IStore, next: Function, actio
  * @private
  * @returns {Object} The value returned by {@code next(action)}.
  */
-function _connectionEstablished({ dispatch }: IStore, next: Function, action: AnyAction) {
+async function _connectionEstablished({ dispatch, getState }: IStore, next: Function, action: AnyAction) {
     const result = next(action);
+
+    const { tokenAuthUrl = false } = getState()['features/base/config'];
+
+    // if there is token auth URL defined and local participant is using jwt
+    // this means it is logged in when connection is established, so we can change the state
+    if (tokenAuthUrl) {
+        let email;
+
+        if (getState()['features/base/jwt'].jwt) {
+            email = getLocalParticipant(getState())?.email;
+        }
+
+        dispatch(authStatusChanged(true, email || ''));
+    }
 
     // FIXME: Workaround for the web version. Currently, the creation of the
     // conference is handled by /conference.js.
-    typeof APP === 'undefined' && dispatch(createConference());
+    if (typeof APP === 'undefined') {
+        dispatch(createConference());
+
+        return result;
+    }
 
     return result;
 }
@@ -334,21 +384,13 @@ function _connectionEstablished({ dispatch }: IStore, next: Function, action: An
 /**
  * Logs jwt validation errors from xmpp and from the client-side validator.
  *
- * @param {string} message -The error message from xmpp.
- * @param {Object} state - The redux state.
+ * @param {string} message - The error message from xmpp.
+ * @param {string} errors - The detailed errors.
  * @returns {void}
  */
-function _logJwtErrors(message: string, state: IReduxState) {
-    const { jwt } = state['features/base/jwt'];
-
-    if (!jwt) {
-        return;
-    }
-
-    const errorKeys = validateJwt(jwt);
-
+function _logJwtErrors(message: string, errors: string) {
     message && logger.error(`JWT error: ${message}`);
-    errorKeys.length && logger.error('JWT parsing error:', errorKeys);
+    errors && logger.error('JWT parsing errors:', errors);
 }
 
 /**
@@ -366,47 +408,58 @@ function _logJwtErrors(message: string, state: IReduxState) {
  * @returns {Object} The value returned by {@code next(action)}.
  */
 function _connectionFailed({ dispatch, getState }: IStore, next: Function, action: AnyAction) {
-    _logJwtErrors(action.error.message, getState());
+    const { connection, error } = action;
+    const { jwt } = getState()['features/base/jwt'];
+
+    if (jwt) {
+        const errors: string = validateJwt(jwt).map((err: any) =>
+            i18n.t(`dialog.tokenAuthFailedReason.${err.key}`, err.args))
+        .join(' ');
+
+        _logJwtErrors(error.message, errors);
+
+        // do not show the notification when we will prompt the user
+        // for username and password
+        if (error.name === JitsiConnectionErrors.PASSWORD_REQUIRED) {
+            dispatch(showErrorNotification({
+                descriptionKey: errors ? 'dialog.tokenAuthFailedWithReasons' : 'dialog.tokenAuthFailed',
+                descriptionArguments: { reason: errors },
+                titleKey: 'dialog.tokenAuthFailedTitle'
+            }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+        }
+    }
 
     const result = next(action);
 
     _removeUnloadHandler(getState);
 
-    // FIXME: Workaround for the web version. Currently, the creation of the
-    // conference is handled by /conference.js and appropriate failure handlers
-    // are set there.
-    if (typeof APP === 'undefined') {
-        const { connection } = action;
-        const { error } = action;
+    forEachConference(getState, conference => {
+        // TODO: revisit this
+        // It feels that it would make things easier if JitsiConference
+        // in lib-jitsi-meet would monitor it's connection and emit
+        // CONFERENCE_FAILED when it's dropped. It has more knowledge on
+        // whether it can recover or not. But because the reload screen
+        // and the retry logic is implemented in the app maybe it can be
+        // left this way for now.
+        if (conference.getConnection() === connection) {
+            // XXX Note that on mobile the error type passed to
+            // connectionFailed is always an object with .name property.
+            // This fact needs to be checked prior to enabling this logic on
+            // web.
+            const conferenceAction = conferenceFailed(conference, error.name);
 
-        forEachConference(getState, conference => {
-            // It feels that it would make things easier if JitsiConference
-            // in lib-jitsi-meet would monitor it's connection and emit
-            // CONFERENCE_FAILED when it's dropped. It has more knowledge on
-            // whether it can recover or not. But because the reload screen
-            // and the retry logic is implemented in the app maybe it can be
-            // left this way for now.
-            if (conference.getConnection() === connection) {
-                // XXX Note that on mobile the error type passed to
-                // connectionFailed is always an object with .name property.
-                // This fact needs to be checked prior to enabling this logic on
-                // web.
-                const conferenceAction
-                    = conferenceFailed(conference, error.name);
-
-                // Copy the recoverable flag if set on the CONNECTION_FAILED
-                // action to not emit recoverable action caused by
-                // a non-recoverable one.
-                if (typeof error.recoverable !== 'undefined') {
-                    conferenceAction.error.recoverable = error.recoverable;
-                }
-
-                dispatch(conferenceAction);
+            // Copy the recoverable flag if set on the CONNECTION_FAILED
+            // action to not emit recoverable action caused by
+            // a non-recoverable one.
+            if (typeof error.recoverable !== 'undefined') {
+                conferenceAction.error.recoverable = error.recoverable;
             }
 
-            return true;
-        });
-    }
+            dispatch(conferenceAction);
+        }
+
+        return true;
+    });
 
     return result;
 }
@@ -513,7 +566,6 @@ function _removeUnloadHandler(getState: IStore['getState']) {
     if (typeof beforeUnloadHandler !== 'undefined') {
         const { disableBeforeUnloadHandlers = false } = getState()['features/base/config'];
 
-        // @ts-ignore
         window.removeEventListener(disableBeforeUnloadHandlers ? 'unload' : 'beforeunload', beforeUnloadHandler);
         beforeUnloadHandler = undefined;
     }
@@ -666,4 +718,55 @@ function _updateLocalParticipantInConference({ dispatch, getState }: IStore, nex
     }
 
     return result;
+}
+
+/**
+ * Notifies the external API that the action {@code P2P_STATUS_CHANGED}
+ * is being dispatched within a specific redux store.
+ *
+ * @param {Dispatch} next - The redux {@code dispatch} function to dispatch the
+ * specified {@code action} to the specified {@code store}.
+ * @param {Action} action - The redux action {@code P2P_STATUS_CHANGED}
+ * which is being dispatched in the specified {@code store}.
+ * @private
+ * @returns {Object} The value returned by {@code next(action)}.
+ */
+function _p2pStatusChanged(next: Function, action: AnyAction) {
+    const result = next(action);
+
+    if (typeof APP !== 'undefined') {
+        APP.API.notifyP2pStatusChanged(action.p2p);
+    }
+
+    return result;
+}
+
+/**
+ * Notifies the feature base/conference that the action
+ * {@code SET_ASSUMED_BANDWIDTH_BPS} is being dispatched within a specific
+ *  redux store.
+ *
+ * @param {Store} store - The redux store in which the specified {@code action}
+ * is being dispatched.
+ * @param {Dispatch} next - The redux {@code dispatch} function to dispatch the
+ * specified {@code action} to the specified {@code store}.
+ * @param {Action} action - The redux action {@code SET_ASSUMED_BANDWIDTH_BPS}
+ * which is being dispatched in the specified {@code store}.
+ * @private
+ * @returns {Object} The value returned by {@code next(action)}.
+ */
+function _setAssumedBandwidthBps({ getState }: IStore, next: Function, action: AnyAction) {
+    const state = getState();
+    const conference = getCurrentConference(state);
+    const payload = Number(action.assumedBandwidthBps);
+
+    const assumedBandwidthBps = isNaN(payload) || payload < MIN_ASSUMED_BANDWIDTH_BPS
+        ? MIN_ASSUMED_BANDWIDTH_BPS
+        : payload;
+
+    if (conference) {
+        conference.setAssumedBandwidthBps(assumedBandwidthBps);
+    }
+
+    return next(action);
 }

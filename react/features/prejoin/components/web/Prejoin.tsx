@@ -21,6 +21,7 @@ import Button from '../../../base/ui/components/web/Button';
 import Input from '../../../base/ui/components/web/Input';
 import { BUTTON_TYPES } from '../../../base/ui/constants.any';
 import isInsecureRoomName from '../../../base/util/isInsecureRoomName';
+import { isUnsafeRoomWarningEnabled } from '../../../prejoin/functions';
 import {
     joinConference as joinConferenceAction,
     joinConferenceWithoutAudio as joinConferenceWithoutAudioAction,
@@ -374,10 +375,12 @@ const Prejoin = ({
                 className = { classes.inputContainer }
                 data-testid = 'prejoin.screen'>
                 {showDisplayNameField.current ? (<Input
+                    accessibilityLabel = { t('dialog.enterDisplayName') }
                     autoComplete = { 'name' }
                     autoFocus = { true }
                     className = { classes.input }
                     error = { showErrorOnJoin }
+                    id = 'premeeting-name-input'
                     onChange = { setName }
                     onKeyPress = { showUnsafeRoomWarning && !unsafeRoomConsent ? undefined : onInputKeyPress }
                     placeholder = { t('dialog.enterDisplayName') }
@@ -454,7 +457,6 @@ function mapStateToProps(state: IReduxState) {
     const { id: participantId } = getLocalParticipant(state) ?? {};
     const { joiningInProgress } = state['features/prejoin'];
     const { room } = state['features/base/conference'];
-    const { enableInsecureRoomNameWarning = false } = state['features/base/config'];
     const { unsafeRoomConsent } = state['features/base/premeeting'];
 
     return {
@@ -469,7 +471,7 @@ function mapStateToProps(state: IReduxState) {
         showCameraPreview: !isVideoMutedByUser(state),
         showDialog: isJoinByPhoneDialogVisible(state),
         showErrorOnJoin,
-        showUnsafeRoomWarning: isInsecureRoomName(room) && enableInsecureRoomNameWarning,
+        showUnsafeRoomWarning: isInsecureRoomName(room) && isUnsafeRoomWarningEnabled(state),
         unsafeRoomConsent,
         videoTrack: getLocalJitsiVideoTrack(state)
     };

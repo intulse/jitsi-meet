@@ -1,7 +1,8 @@
-import { IReduxState } from '../../app/types';
+import { IReduxState, IStore } from '../../app/types';
 import JitsiMeetJS from '../lib-jitsi-meet';
 import { updateSettings } from '../settings/actions';
 import { ISettingsState } from '../settings/reducer';
+import { setNewAudioOutputDevice } from '../sounds/functions.web';
 import { parseURLParams } from '../util/parseURLParams';
 
 import logger from './logger';
@@ -251,7 +252,7 @@ export function getVideoDeviceIds(state: IReduxState) {
  */
 export function setAudioOutputDeviceId(
         newId = 'default',
-        dispatch: Function,
+        dispatch: IStore['dispatch'],
         userSelection = false,
         newLabel?: string): Promise<any> {
 
@@ -265,6 +266,7 @@ export function setAudioOutputDeviceId(
 
     return JitsiMeetJS.mediaDevices.setAudioOutputDevice(newId)
         .then(() => {
+            dispatch(setNewAudioOutputDevice(newId));
             const newSettings: Partial<ISettingsState> = {
                 audioOutputDeviceId: newId,
                 userSelectedAudioOutputDeviceId: undefined,

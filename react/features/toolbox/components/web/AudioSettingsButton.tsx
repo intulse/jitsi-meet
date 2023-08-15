@@ -7,12 +7,14 @@ import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n/functions';
 import { IconArrowUp } from '../../../base/icons/svg';
 import JitsiMeetJS from '../../../base/lib-jitsi-meet/_';
+import { IGUMPendingState } from '../../../base/media/types';
 import ToolboxButtonWithIcon from '../../../base/toolbox/components/web/ToolboxButtonWithIcon';
 import { toggleAudioSettings } from '../../../settings/actions';
 import AudioSettingsPopup from '../../../settings/components/web/audio/AudioSettingsPopup';
 import { getAudioSettingsVisibility } from '../../../settings/functions';
 import { isAudioSettingsButtonDisabled } from '../../functions';
-import AudioMuteButton from '../AudioMuteButton';
+
+import AudioMuteButton from './AudioMuteButton';
 
 interface IProps extends WithTranslation {
 
@@ -20,6 +22,11 @@ interface IProps extends WithTranslation {
      * The button's key.
      */
     buttonKey?: string;
+
+    /**
+     * The gumPending state from redux.
+     */
+    gumPending: IGUMPendingState;
 
     /**
      * External handler for click action.
@@ -112,7 +119,7 @@ class AudioSettingsButton extends Component<IProps> {
      * @inheritdoc
      */
     render() {
-        const { hasPermissions, isDisabled, visible, isOpen, buttonKey, notifyMode, t } = this.props;
+        const { gumPending, hasPermissions, isDisabled, visible, isOpen, buttonKey, notifyMode, t } = this.props;
         const settingsDisabled = !hasPermissions
             || isDisabled
             || !JitsiMeetJS.mediaDevices.isMultipleAudioInputSupported();
@@ -126,7 +133,7 @@ class AudioSettingsButton extends Component<IProps> {
                     ariaLabel = { t('toolbar.audioSettings') }
                     buttonKey = { buttonKey }
                     icon = { IconArrowUp }
-                    iconDisabled = { settingsDisabled }
+                    iconDisabled = { settingsDisabled || gumPending !== IGUMPendingState.NONE }
                     iconId = 'audio-settings-button'
                     iconTooltip = { t('toolbar.audioSettings') }
                     notifyMode = { notifyMode }
@@ -152,8 +159,10 @@ class AudioSettingsButton extends Component<IProps> {
 function mapStateToProps(state: IReduxState) {
     const { permissions = { audio: false } } = state['features/base/devices'];
     const { isNarrowLayout } = state['features/base/responsive-ui'];
+    const { gumPending } = state['features/base/media'].audio;
 
     return {
+        gumPending,
         hasPermissions: permissions.audio,
         isDisabled: Boolean(isAudioSettingsButtonDisabled(state)),
         isOpen: Boolean(getAudioSettingsVisibility(state)),

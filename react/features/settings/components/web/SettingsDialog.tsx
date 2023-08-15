@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
-import { IReduxState } from '../../../app/types';
+import { IReduxState, IStore } from '../../../app/types';
 import {
     IconBell,
     IconCalendar,
@@ -23,7 +23,7 @@ import {
     getAudioDeviceSelectionDialogProps,
     getVideoDeviceSelectionDialogProps
 } from '../../../device-selection/functions.web';
-import { checkBlurSupport } from '../../../virtual-background/functions';
+import { checkBlurSupport, checkVirtualBackgroundEnabled } from '../../../virtual-background/functions';
 import { iAmVisitor } from '../../../visitors/functions';
 import {
     submitModeratorTab,
@@ -72,7 +72,7 @@ interface IProps {
     /**
      * Invoked to save changed settings.
      */
-    dispatch: Function;
+    dispatch: IStore['dispatch'];
 
     /**
      * Indicates whether the device selection dialog is displayed on the
@@ -141,6 +141,7 @@ function _mapStateToProps(state: IReduxState, ownProps: any) {
     const enabledNotifications = getNotificationsMap(state);
     const showNotificationsSettings = Object.keys(enabledNotifications).length > 0;
     const virtualBackgroundSupported = checkBlurSupport();
+    const enableVirtualBackground = checkVirtualBackgroundEnabled(state);
     const tabs: IDialogTab<any>[] = [];
     const _iAmVisitor = iAmVisitor(state);
 
@@ -191,7 +192,7 @@ function _mapStateToProps(state: IReduxState, ownProps: any) {
         });
     }
 
-    if (virtualBackgroundSupported && !_iAmVisitor) {
+    if (virtualBackgroundSupported && !_iAmVisitor && enableVirtualBackground) {
         tabs.push({
             name: SETTINGS_TABS.VIRTUAL_BACKGROUND,
             component: VirtualBackgroundTab,
@@ -203,7 +204,7 @@ function _mapStateToProps(state: IReduxState, ownProps: any) {
 
                 return {
                     ...newProps,
-                    selectedVideoInputId: videoTabState.selectedVideoInputId || newProps.selectedVideoInputId,
+                    selectedVideoInputId: videoTabState?.selectedVideoInputId || newProps.selectedVideoInputId,
                     options: tabState.options
                 };
             },

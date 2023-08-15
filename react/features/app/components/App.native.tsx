@@ -1,5 +1,6 @@
 import React, { ComponentType } from 'react';
 import { NativeModules, Platform, StyleSheet, View } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SplashScreen from 'react-native-splash-screen';
 
@@ -11,6 +12,7 @@ import { getFeatureFlag } from '../../base/flags/functions';
 import { clientResized, setSafeAreaInsets } from '../../base/responsive-ui/actions';
 import DimensionsDetector from '../../base/responsive-ui/components/DimensionsDetector.native';
 import { updateSettings } from '../../base/settings/actions';
+import JitsiThemePaperProvider from '../../base/ui/components/JitsiThemeProvider.native';
 import { _getRouteToRender } from '../getRouteToRender.native';
 import logger from '../logger';
 
@@ -36,7 +38,7 @@ interface IProps extends AbstractAppProps {
     /**
      * An object with the feature flags.
      */
-    flags: Object;
+    flags: any;
 
     /**
      * An object with user information (display name, email, avatar URL).
@@ -89,13 +91,33 @@ export class App extends AbstractApp<IProps> {
     }
 
     /**
+     * Implements React's {@link Component#render()}.
+     *
+     * @inheritdoc
+     * @returns {ReactElement}
+     */
+    render() {
+        return (
+            <JitsiThemePaperProvider>
+                { super.render() }
+            </JitsiThemePaperProvider>
+        );
+    }
+
+    /**
      * Initializes feature flags and updates settings.
      *
      * @returns {void}
      */
     async _extraInit() {
         const { dispatch, getState } = this.state.store ?? {};
-        const { flags } = this.props;
+        const { flags = {} } = this.props;
+
+        // CallKit does not work on the simulator, make sure we disable it.
+        if (Platform.OS === 'ios' && DeviceInfo.isEmulatorSync()) {
+            flags['call-integration.enabled'] = false;
+            logger.info('Disabling CallKit because this is a simulator');
+        }
 
         // We set these early enough so then we avoid any unnecessary re-renders.
         dispatch?.(updateFlags(flags));

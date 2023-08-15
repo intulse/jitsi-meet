@@ -17,12 +17,13 @@ import { isEnabledFromState } from '../../react/features/av-moderation/functions
 import {
     endConference,
     sendTones,
+    setAssumedBandwidthBps,
     setFollowMe,
     setLocalSubject,
     setPassword,
     setSubject
 } from '../../react/features/base/conference/actions';
-import { getCurrentConference } from '../../react/features/base/conference/functions';
+import { getCurrentConference, isP2pActive } from '../../react/features/base/conference/functions';
 import { overwriteConfig } from '../../react/features/base/config/actions';
 import { getWhitelistedJSON } from '../../react/features/base/config/functions.any';
 import { toggleDialog } from '../../react/features/base/dialog/actions';
@@ -117,7 +118,6 @@ import { getJitsiMeetTransport } from '../transport';
 
 import {
     API_ID,
-    ASSUMED_BANDWIDTH_BPS,
     ENDPOINT_TEXT_MESSAGE_NAME
 } from './constants';
 
@@ -321,13 +321,7 @@ function initCommands() {
                 return;
             }
 
-            const { conference } = APP.store.getState()['features/base/conference'];
-
-            if (conference) {
-                conference.setAssumedBandwidthBps(value < ASSUMED_BANDWIDTH_BPS
-                    ? ASSUMED_BANDWIDTH_BPS
-                    : value);
-            }
+            APP.store.dispatch(setAssumedBandwidthBps(value));
         },
         'set-follow-me': value => {
             logger.debug('Set follow me command received');
@@ -342,15 +336,16 @@ function initCommands() {
         },
         'set-large-video-participant': (participantId, videoType) => {
             logger.debug('Set large video participant command received');
+            const { getState, dispatch } = APP.store;
 
             if (!participantId) {
                 sendAnalytics(createApiEvent('largevideo.participant.set'));
-                APP.store.dispatch(selectParticipantInLargeVideo());
+                dispatch(selectParticipantInLargeVideo());
 
                 return;
             }
 
-            const state = APP.store.getState();
+            const state = getState();
             const participant = videoType === VIDEO_TYPE.DESKTOP
                 ? getVirtualScreenshareParticipantByOwnerId(state, participantId)
                 : getParticipantById(state, participantId);
@@ -361,8 +356,9 @@ function initCommands() {
                 return;
             }
 
+            dispatch(setTileView(false));
             sendAnalytics(createApiEvent('largevideo.participant.set'));
-            APP.store.dispatch(selectParticipantInLargeVideo(participant.id));
+            dispatch(selectParticipantInLargeVideo(participant.id));
         },
         'set-participant-volume': (participantId, volume) => {
             APP.store.dispatch(setVolume(participantId, volume));
@@ -983,6 +979,10 @@ function initCommands() {
         }
         case 'rooms-info': {
             callback(getRoomsInfo(APP.store.getState()));
+            break;
+        }
+        case 'get-p2p-status': {
+            callback(isP2pActive(APP.store.getState()));
             break;
         }
         default:
@@ -2002,14 +2002,16 @@ class API {
      * Notify external application ( if API is enabled) that a participant menu button was clicked.
      *
      * @param {string} key - The key of the participant menu button.
-     * @param {string} participantId - The ID of the participant for with the participant menu button was clicked.
+     * @param {string} participantId - The ID of the participant for whom the participant menu button was clicked.
+     * @param {boolean} preventExecution - Whether execution of the button click was prevented or not.
      * @returns {void}
      */
-    notifyParticipantMenuButtonClicked(key, participantId) {
+    notifyParticipantMenuButtonClicked(key, participantId, preventExecution) {
         this._sendEvent({
             name: 'participant-menu-button-clicked',
             key,
-            participantId
+            participantId,
+            preventExecution
         });
     }
 
@@ -2024,6 +2026,49 @@ class API {
         this._sendEvent({
             name: 'whiteboard-status-changed',
             status
+        });
+    }
+
+    /**
+     * Notify external application (if API is enabled) if non participant message
+     * is received.
+     *
+     * @param {string} id - The resource id of the sender.
+     * @param {Object} json - The json carried by the message.
+     * @returns {void}
+     */
+    notifyNonParticipantMessageReceived(id, json) {
+        this._sendEvent({
+            name: 'non-participant-message-received',
+            id,
+            message: json
+        });
+    }
+
+
+    /**
+     * Notify the external application (if API is enabled) if the connection type changed.
+     *
+     * @param {boolean} isP2p - Whether the new connection is P2P.
+     * @returns {void}
+     */
+    notifyP2pStatusChanged(isP2p) {
+        this._sendEvent({
+            name: 'p2p-status-changed',
+            isP2p
+        });
+    }
+
+    /**
+     * Notify the external application (if API is enabled) when the compute pressure changed.
+     *
+     * @param {Array} records - The new pressure records.
+     * @returns {void}
+     */
+    notifyComputePressureChanged(records) {
+        this._sendEvent({
+            name: 'compute-pressure-changed',
+            records
         });
     }
 
