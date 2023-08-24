@@ -30,7 +30,7 @@ var config = {
 
     hosts: {
         // XMPP domain.
-        domain: 'jitsi-meet.example.com',
+        domain: 'meet.dev.intul.se',
 
         // When using authentication, domain for guest users.
         // anonymousdomain: 'guest.example.com',
@@ -42,11 +42,11 @@ var config = {
         // focus: 'focus.jitsi-meet.example.com',
 
         // XMPP MUC domain. FIXME: use XEP-0030 to discover it.
-        muc: 'conference.' + subdomain + 'jitsi-meet.example.com',
+        muc: 'conference.' + subdomain + 'meet.dev.intul.se',
     },
 
     // BOSH URL. FIXME: use XEP-0156 to discover it.
-    bosh: 'https://jitsi-meet.example.com/' + subdir + 'http-bind',
+    bosh: 'https://meet.dev.intul.se/' + subdir + 'http-bind',
 
     // Websocket URL (XMPP)
     // websocket: 'wss://jitsi-meet.example.com/' + subdir + 'xmpp-websocket',
@@ -260,18 +260,23 @@ var config = {
     // util#browser#usesNewGumFlow. The constraints are independent from
     // this config's resolution value. Defaults to requesting an ideal
     // resolution of 720p.
-    // constraints: {
-    //     video: {
-    //         height: {
-    //             ideal: 720,
-    //             max: 720,
-    //             min: 240,
-    //         },
-    //     },
-    // },
+    constraints: {
+        video: {
+            height: {
+                ideal: 720,
+                max: 1080,
+                min: 180
+            },
+            width: {
+                ideal: 1280,
+                max: 1920,
+                min: 320
+            }
+        }
+    },
 
     // Enable / disable simulcast support.
-    // disableSimulcast: false,
+    disableSimulcast: false,
 
     // Every participant after the Nth will start video muted.
     // startVideoMuted: 10,
@@ -426,33 +431,27 @@ var config = {
     // startLastN: 1,
 
     // Specify the settings for video quality optimizations on the client.
-    // videoQuality: {
-    //
-    //    // Provides a way to set the codec preference on desktop based endpoints.
-    //    codecPreferenceOrder: [ 'VP9', 'VP8', 'H264' ],
-    //
-    //    // Provides a way to configure the maximum bitrates that will be enforced on the simulcast streams for
-    //    // video tracks. The keys in the object represent the type of the stream (LD, SD or HD) and the values
-    //    // are the max.bitrates to be set on that particular type of stream. The actual send may vary based on
-    //    // the available bandwidth calculated by the browser, but it will be capped by the values specified here.
-    //    // This is currently not implemented on app based clients on mobile.
-    //    maxBitratesVideo: {
-    //          H264: {
-    //              low: 200000,
-    //              standard: 500000,
-    //              high: 1500000,
-    //          },
-    //          VP8 : {
-    //              low: 200000,
-    //              standard: 500000,
-    //              high: 1500000,
-    //          },
-    //          VP9: {
-    //              low: 100000,
-    //              standard: 300000,
-    //              high: 1200000,
-    //          },
-    //    },
+    videoQuality: {
+        // Provides a way to set the codec preference on desktop based endpoints.
+        codecPreferenceOrder: [ 'VP9', 'VP8' ],
+
+        // Provides a way to configure the maximum bitrates that will be enforced on the simulcast streams for
+        // video tracks. The keys in the object represent the type of the stream (LD, SD or HD) and the values
+        // are the max.bitrates to be set on that particular type of stream. The actual send may vary based on
+        // the available bandwidth calculated by the browser, but it will be capped by the values specified here.
+        // This is currently not implemented on app based clients on mobile.
+        maxBitratesVideo: {
+                VP8 : {
+                    low: 200000,
+                    standard: 500000,
+                    high: 1500000,
+                },
+                VP9: {
+                    low: 100000,
+                    standard: 300000,
+                    high: 1200000,
+                },
+        },
     //
     //    // The options can be used to override default thresholds of video thumbnail heights corresponding to
     //    // the video quality levels used in the application. At the time of this writing the allowed levels are:
@@ -469,8 +468,8 @@ var config = {
     //        720: 'high',
     //    },
     //
-    //    // Provides a way to set the codec preference on mobile devices, both on RN and mobile browser based endpoint
-    //    mobileCodecPreferenceOrder: [ 'VP8', 'VP9', 'H264' ],
+        // Provides a way to set the codec preference on mobile devices, both on RN and mobile browser based endpoint
+        mobileCodecPreferenceOrder: [ 'VP9', 'VP8' ],
     //
     //    // DEPRECATED! Use `codecPreferenceOrder/mobileCodecPreferenceOrder` instead.
     //    // Provides a way to prevent a video codec from being negotiated on the JVB connection. The codec specified
@@ -487,7 +486,7 @@ var config = {
     //    // to take effect.
     //    preferredCodec: 'VP8',
     //
-    // },
+    },
 
     // Notification timeouts
     // notificationTimeouts: {
@@ -579,13 +578,13 @@ var config = {
     // enableWelcomePage: true,
 
     // Configs for welcome page.
-    // welcomePage: {
-    //     // Whether to disable welcome page. In case it's disabled a random room
-    //     // will be joined when no room is specified.
-    //     disabled: false,
-    //     // If set,landing page will redirect to this URL.
-    //     customUrl: ''
-    // },
+    welcomePage: {
+        // Whether to disable welcome page. In case it's disabled a random room
+        // will be joined when no room is specified.
+        disabled: false,
+        // If set,landing page will redirect to this URL.
+        // customUrl: ''
+    },
 
     // Configs for the lobby screen.
     // lobby {
@@ -715,41 +714,42 @@ var config = {
     // - it's impossible to control the placement of buttons
     // - 'desktop' controls the "Share your screen" button
     // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
-    // toolbarButtons: [
-    //    'camera',
-    //    'chat',
+    toolbarButtons: [
+        
+        'camera',
+        'chat',
     //    'closedcaptions',
-    //    'desktop',
+        'desktop',
     //    'download',
     //    'embedmeeting',
-    //    'etherpad',
+    //   'etherpad',
     //    'feedback',
     //    'filmstrip',
-    //    'fullscreen',
-    //    'hangup',
+        'fullscreen',
+        'hangup',
     //    'help',
-    //    'highlight',
+        'highlight',
     //    'invite',
     //    'linktosalesforce',
     //    'livestreaming',
-    //    'microphone',
-    //    'noisesuppression',
-    //    'participants-pane',
-    //    'profile',
-    //    'raisehand',
-    //    'recording',
-    //    'security',
-    //    'select-background',
-    //    'settings',
-    //    'shareaudio',
-    //    'sharedvideo',
-    //    'shortcuts',
+        'microphone',
+        'noisesuppression',
+        'participants-pane',
+        'profile',
+        'raisehand',
+        'recording',
+        'security',
+        'select-background',
+        'settings',
+        'shareaudio',
+        'sharedvideo',
+        'shortcuts',
     //    'stats',
-    //    'tileview',
-    //    'toggle-camera',
-    //    'videoquality',
-    //    'whiteboard',
-    // ],
+        'tileview',
+        'toggle-camera',
+        'videoquality',
+        'whiteboard',
+    ],
 
     // Holds values related to toolbar visibility control.
     // toolbarConfig: {
@@ -975,10 +975,10 @@ var config = {
 
         // Provides a way to set the codec preference on mobile devices, both on RN and mobile browser based
         // endpoints.
-        // mobileCodecPreferenceOrder: [ 'H264', 'VP8', 'VP9' ],
+        mobileCodecPreferenceOrder: [ 'VP9', 'VP8' ],
         //
         // Provides a way to set the codec preference on desktop based endpoints.
-        // codecPreferenceOrder: [ 'VP9', 'VP8', 'H264 ],
+        codecPreferenceOrder: [ 'VP9', 'VP8' ],
 
         // How long we're going to wait, before going back to P2P after the 3rd
         // participant has left the conference (to filter out page reload).
@@ -1130,9 +1130,9 @@ var config = {
     // },
 
     // Options related to end-to-end (participant to participant) ping.
-    // e2eping: {
+    e2eping: {
     //   // Whether ene-to-end pings should be enabled.
-    //   enabled: false,
+        enabled: false,
     //
     //   // The number of responses to wait for.
     //   numRequests: 5,
@@ -1143,7 +1143,7 @@ var config = {
     //   // The maximum number of e2e ping messages per second for the whole conference to aim for.
     //   // This is used to control the pacing of messages in order to reduce the load on the backend.
     //   maxMessagesPerSecond: 250,
-    // },
+    },
 
     // If set, will attempt to use the provided video input device label when
     // triggering a screenshare, instead of proceeding through the normal flow
@@ -1228,7 +1228,7 @@ var config = {
     // Mainly privacy related settings
 
     // Disables all invite functions from the app (share, invite, dial out...etc)
-    // disableInviteFunctions: true,
+    disableInviteFunctions: true,
 
     // Disables storing the room name to the recents list. When in an iframe this is ignored and
     // the room is never stored in the recents list.
@@ -1338,14 +1338,14 @@ var config = {
     // },
 
     // Options related to the breakout rooms feature.
-    // breakoutRooms: {
-    //     // Hides the add breakout room button. This replaces `hideAddRoomButton`.
-    //     hideAddRoomButton: false,
-    //     // Hides the auto assign participants button.
-    //     hideAutoAssignButton: false,
-    //     // Hides the join breakout room button.
-    //     hideJoinRoomButton: false,
-    // },
+    breakoutRooms: {
+        // Hides the add breakout room button. This replaces `hideAddRoomButton`.
+        hideAddRoomButton: false,
+        // Hides the auto assign participants button.
+        hideAutoAssignButton: false,
+        // Hides the join breakout room button.
+        hideJoinRoomButton: false,
+    },
 
     // When true, virtual background feature will be disabled.
     // disableVirtualBackground: false,
@@ -1692,7 +1692,9 @@ config.flags.receiveMultipleVideoStreams = true;
 
 // Set the default values for JaaS customers
 if (enableJaaS) {
-    config.dialInNumbersUrl = 'https://conference-mapper.jitsi.net/v1/access/dids';
-    config.dialInConfCodeUrl = 'https://conference-mapper.jitsi.net/v1/access';
+    config.dialInNumbersUrl = 'https://meet.intul.se/phoneNumberList.json';
+    config.dialInConfCodeUrl = 'https://jitsi-api.jitsi.net/conferenceMapper';
+    // config.dialInNumbersUrl = 'https://conference-mapper.jitsi.net/v1/access/dids';
+    // config.dialInConfCodeUrl = 'https://conference-mapper.jitsi.net/v1/access';
     config.roomPasswordNumberOfDigits = 10; // skip re-adding it (do not remove comment)
 }
