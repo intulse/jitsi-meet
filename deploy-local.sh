@@ -1,5 +1,5 @@
 #!/bin/sh
-SRC_DIR="/home/intulseadmin/intulse-jitsi-meet" # full path, no trailing slash
+SRC_DIR="/home/intulseadmin/jitsi-meet" # full path, no trailing slash
 DST_DIR="/usr/share/jitsi-meet"         # full path, no trailing slash
 
 # rm -r $DST_DIR
