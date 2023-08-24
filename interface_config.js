@@ -121,7 +121,8 @@ var interfaceConfig = {
     RECENT_LIST_ENABLED: false,
     REMOTE_THUMBNAIL_RATIO: 1, // 1:1
 
-    SETTINGS_SECTIONS: [ 'devices', 'language', 'moderator', 'profile', 'calendar', 'sounds', 'more' ],
+    // SETTINGS_SECTIONS: [ 'devices', 'language', 'moderator', 'profile', 'calendar', 'sounds', 'more' ],
+    SETTINGS_SECTIONS: [ 'devices', 'language', 'moderator', 'profile', 'calendar', 'sounds' ],
 
     /**
      * Specify which sharing features should be displayed. If the value is not set

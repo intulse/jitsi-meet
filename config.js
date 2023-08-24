@@ -864,7 +864,7 @@ var config = {
 
     // List of pre meeting screens buttons to hide. The values must be one or more of the 5 allowed buttons:
     // 'microphone', 'camera', 'select-background', 'invite', 'settings'
-    // hiddenPremeetingButtons: [],
+    hiddenPremeetingButtons: ['invite'],
 
     // An array with custom option buttons for the participant context menu
     // type:  Array<{ icon: string; id: string; text: string; }>

@@ -35,13 +35,7 @@ cp "${SRC_DIR}/manifest.json" "${DST_DIR}/manifest.json"
 cp "${SRC_DIR}/phoneNumberList.json" "${DST_DIR}/phoneNumberList.json"
 cp "${SRC_DIR}/plugin.head.html" "${DST_DIR}/plugin.head.html"
 
-cp -r "${SRC_DIR}/prosody-plugins/." "${DST_DIR}/prosody-plugins/"
-
 cp "${SRC_DIR}/pwa-worker.js" "${DST_DIR}/pwa-worker.js"
-
-cp "${SRC_DIR}/robots.txt" "${DST_DIR}/robots.txt"
-
-cp -r "${SRC_DIR}/scripts/." "${DST_DIR}/scripts/"
 
 #mkdir "${DST_DIR}/sounds/"
 cp -r "${SRC_DIR}/sounds/." "${DST_DIR}/sounds/"
