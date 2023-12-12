@@ -17,6 +17,7 @@ local starts_with = main_util.starts_with;
 local cjson_safe  = require 'cjson.safe'
 local timer = require "util.timer";
 local async = require "util.async";
+local inspect = require 'inspect';
 
 local nr_retries = 3;
 local ssl = require "ssl";
@@ -197,6 +198,7 @@ end
 -- session.jitsi_meet_room - the room name value from the token
 -- session.jitsi_meet_domain - the domain name value from the token
 -- session.jitsi_meet_context_user - the user details from the token
+-- session.jitsi_meet_context_room - the room details from the token
 -- session.jitsi_meet_context_group - the group value from the token
 -- session.jitsi_meet_context_features - the features value from the token
 -- @param session the current session
@@ -301,6 +303,17 @@ function Util:process_and_verify_token(session, acceptedIssuers)
           session.jitsi_meet_context_user = {};
           session.jitsi_meet_context_user.id = claims["user_id"];
         end
+
+        -- fire event that token has been verified and pass the session and the decoded token
+        prosody.events.fire_event('jitsi-authentication-token-verified', {
+            session = session;
+            claims = claims;
+        });
+
+        if session.contextRequired and claims["context"] == nil then
+            return false, "not-allowed", 'jwt missing required context claim';
+        end
+
         return true;
     else
         return false, "not-allowed", msg;
@@ -333,7 +346,11 @@ function Util:verify_room(session, room_address)
 
     local auth_room = session.jitsi_meet_room;
     if auth_room then
-        auth_room = string.lower(auth_room);
+        if type(auth_room) == 'string' then
+            auth_room = string.lower(auth_room);
+        else
+            module:log('warn', 'session.jitsi_meet_room not string: %s', inspect(auth_room));
+        end
     end
     if not self.enableDomainVerification then
         -- if auth_room is missing, this means user is anonymous (no token for
@@ -381,7 +398,13 @@ function Util:verify_room(session, room_address)
         end
         module:log("debug", "room to check: %s", room_to_check)
         if not room_to_check then
-            return false
+            if not self.requireRoomClaim then
+                -- if we do not require to have the room claim, and it is missing
+                -- there is no point of continue and verifying the roomName and the tenant
+                return true;
+            end
+
+            return false;
         end
     end
 

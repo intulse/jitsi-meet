@@ -153,7 +153,7 @@ const useStyles = makeStyles()(() => {
             right: 'auto',
             margin: 0,
             marginBottom: '8px',
-            maxHeight: 'calc(100vh - 100px)',
+            maxHeight: 'calc(100dvh - 100px)',
             minWidth: '240px'
         },
 
@@ -303,7 +303,7 @@ const Toolbox = ({
             && (isToolbarButtonEnabled(key, _toolbarButtons) || isToolbarButtonEnabled(alias, _toolbarButtons))
         );
 
-        let sliceIndex = _overflowDrawer ? order.length + 2 : order.length + 1;
+        let sliceIndex = _overflowDrawer || _reactionsButtonEnabled ? order.length + 2 : order.length + 1;
 
         if (isHangupVisible) {
             sliceIndex -= 1;

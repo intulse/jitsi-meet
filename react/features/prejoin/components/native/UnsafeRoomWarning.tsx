@@ -1,6 +1,13 @@
 import React, { useCallback, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, StyleProp, Text, TextStyle, View, ViewStyle } from 'react-native';
+import {
+    Platform,
+    StyleProp,
+    Text,
+    TextStyle,
+    View,
+    ViewStyle
+} from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { appNavigate } from '../../../app/actions.native';
@@ -19,6 +26,7 @@ import { screen } from '../../../mobile/navigation/routes';
 import { IPrejoinProps } from '../../types';
 
 import { preJoinStyles as styles } from './styles';
+
 
 const UnsafeRoomWarning: React.FC<IPrejoinProps> = ({ navigation }: IPrejoinProps) => {
     const dispatch = useDispatch();

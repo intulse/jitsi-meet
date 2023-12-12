@@ -12,7 +12,7 @@ import {
 import { EdgeInsets, withSafeAreaInsets } from 'react-native-safe-area-context';
 import { connect, useDispatch } from 'react-redux';
 
-import { appNavigate } from '../../../app/actions';
+import { appNavigate } from '../../../app/actions.native';
 import { IReduxState, IStore } from '../../../app/types';
 import { CONFERENCE_BLURRED, CONFERENCE_FOCUSED } from '../../../base/conference/actionTypes';
 import { FULLSCREEN_ENABLED, PIP_ENABLED } from '../../../base/flags/constants';
@@ -36,23 +36,20 @@ import { FILMSTRIP_SIZE } from '../../../filmstrip/constants';
 import { isFilmstripVisible } from '../../../filmstrip/functions.native';
 import CalleeInfoContainer from '../../../invite/components/callee-info/CalleeInfoContainer';
 import LargeVideo from '../../../large-video/components/LargeVideo.native';
-import { startKnocking } from '../../../lobby/actions.any';
 import { getIsLobbyVisible } from '../../../lobby/functions';
-import { navigate }
-    from '../../../mobile/navigation/components/conference/ConferenceNavigationContainerRef';
-import { shouldEnableAutoKnock } from '../../../mobile/navigation/functions';
+import { navigate } from '../../../mobile/navigation/components/conference/ConferenceNavigationContainerRef';
 import { screen } from '../../../mobile/navigation/routes';
 import { setPictureInPictureEnabled } from '../../../mobile/picture-in-picture/functions';
 import Captions from '../../../subtitles/components/native/Captions';
-import { setToolboxVisible } from '../../../toolbox/actions';
+import { setToolboxVisible } from '../../../toolbox/actions.native';
 import Toolbox from '../../../toolbox/components/native/Toolbox';
-import { isToolboxVisible } from '../../../toolbox/functions';
+import { isToolboxVisible } from '../../../toolbox/functions.native';
 import {
     AbstractConference,
     abstractMapStateToProps
 } from '../AbstractConference';
 import type { AbstractProps } from '../AbstractConference';
-import { isConnecting } from '../functions';
+import { isConnecting } from '../functions.native';
 
 import AlwaysOnLabels from './AlwaysOnLabels';
 import ExpandedLabelPopup from './ExpandedLabelPopup';
@@ -134,11 +131,6 @@ interface IProps extends AbstractProps {
      * smaller display areas).
      */
     _reducedUI: boolean;
-
-    /**
-     * Indicates if we should auto-knock.
-     */
-    _shouldEnableAutoKnock: boolean;
 
     /**
      * Indicates whether the lobby screen should be visible.
@@ -238,20 +230,20 @@ class Conference extends AbstractConference<IProps, State> {
      */
     componentDidUpdate(prevProps: IProps) {
         const {
-            _shouldEnableAutoKnock,
+            _audioOnlyEnabled,
             _showLobby,
-            dispatch
+            _startCarMode
         } = this.props;
 
         if (!prevProps._showLobby && _showLobby) {
             navigate(screen.lobby.root);
-
-            if (_shouldEnableAutoKnock) {
-                dispatch(startKnocking());
-            }
         }
 
         if (prevProps._showLobby && !_showLobby) {
+            if (_audioOnlyEnabled && _startCarMode) {
+                return;
+            }
+
             navigate(screen.conference.main);
         }
     }
@@ -600,7 +592,6 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
         _largeVideoParticipantId: state['features/large-video'].participantId,
         _pictureInPictureEnabled: getFeatureFlag(state, PIP_ENABLED),
         _reducedUI: reducedUI,
-        _shouldEnableAutoKnock: shouldEnableAutoKnock(state),
         _showLobby: getIsLobbyVisible(state),
         _startCarMode: startCarMode,
         _toolboxVisible: isToolboxVisible(state)

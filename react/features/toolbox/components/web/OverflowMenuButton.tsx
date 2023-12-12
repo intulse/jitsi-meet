@@ -73,14 +73,14 @@ const useStyles = makeStyles<{ overflowDrawer: boolean; reactionsMenuHeight: num
     return {
         overflowMenuDrawer: {
             overflow: 'hidden',
-            height: `calc(${DRAWER_MAX_HEIGHT} - ${reactionsMenuHeight}px - 16px)`
+            height: `calc(${DRAWER_MAX_HEIGHT})`
         },
         contextMenu: {
             position: 'relative' as const,
             right: 'auto',
             margin: 0,
             marginBottom: '8px',
-            maxHeight: overflowDrawer ? undefined : 'calc(100vh - 100px)',
+            maxHeight: overflowDrawer ? undefined : 'calc(100dvh - 100px)',
             paddingBottom: overflowDrawer ? undefined : 0,
             minWidth: '240px',
             overflow: 'hidden'
@@ -88,7 +88,7 @@ const useStyles = makeStyles<{ overflowDrawer: boolean; reactionsMenuHeight: num
         content: {
             position: 'relative',
             maxHeight: overflowDrawer
-                ? `calc(100% - ${reactionsMenuHeight}px - 16px)` : `calc(100vh - 100px - ${reactionsMenuHeight}px)`,
+                ? `calc(100% - ${reactionsMenuHeight}px - 16px)` : `calc(100dvh - 100px - ${reactionsMenuHeight}px)`,
             overflowY: 'auto'
         },
         footer: {
@@ -238,6 +238,7 @@ const OverflowMenuButton = ({
                 trigger = 'click'
                 visible = { isOpen }>
                 <OverflowToggleButton
+                    isMenuButton = { true }
                     isOpen = { isOpen }
                     onKeyDown = { onEscClick } />
             </Popover>

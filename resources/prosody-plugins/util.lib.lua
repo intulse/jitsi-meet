@@ -30,6 +30,9 @@ local split_subdomain_cache = cache.new(1000);
 local extract_subdomain_cache = cache.new(1000);
 local internal_room_jid_cache = cache.new(1000);
 
+local moderated_subdomains = module:get_option_set("allowners_moderated_subdomains", {})
+local moderated_rooms = module:get_option_set("allowners_moderated_rooms", {})
+
 -- Utility function to split room JID to include room name and subdomain
 -- (e.g. from room1@conference.foo.example.com/res returns (room1, example.com, res, foo))
 local function room_jid_split_subdomain(room_jid)
@@ -236,9 +239,9 @@ function update_presence_identity(
         if creator_group then
             stanza:tag("creator_group"):text(creator_group):up();
         end
-        stanza:up();
     end
 
+    stanza:up(); -- Close identity tag
 end
 
 -- Utility function to check whether feature is present and enabled. Allow
@@ -246,9 +249,8 @@ end
 -- the token) and the value of the feature is true.
 -- If features is not present in the token we skip feature detection and allow
 -- everything.
-function is_feature_allowed(session, feature)
-    if (session.jitsi_meet_context_features == nil
-        or session.jitsi_meet_context_features[feature] == "true" or session.jitsi_meet_context_features[feature] == true) then
+function is_feature_allowed(features, ft)
+    if (features == nil or features[ft] == "true" or features[ft] == true) then
         return true;
     else
         return false;
@@ -388,10 +390,37 @@ local function get_focus_occupant(room)
     return room:get_occupant_by_nick(room.jid..'/focus');
 end
 
+-- Checks whether the jid is moderated, the room name is in moderated_rooms
+-- or if the subdomain is in the moderated_subdomains
+-- @return returns on of the:
+--      -> false
+--      -> true, room_name, subdomain
+--      -> true, room_name, nil (if no subdomain is used for the room)
+function is_moderated(room_jid)
+    if moderated_subdomains:empty() and moderated_rooms:empty() then
+        return false;
+    end
+
+    local room_node = jid.node(room_jid);
+    -- parses bare room address, for multidomain expected format is:
+    -- [subdomain]roomName@conference.domain
+    local target_subdomain, target_room_name = extract_subdomain(room_node);
+    if target_subdomain then
+        if moderated_subdomains:contains(target_subdomain) then
+            return true, target_room_name, target_subdomain;
+        end
+    elseif moderated_rooms:contains(room_node) then
+        return true, room_node, nil;
+    end
+
+    return false;
+end
+
 return {
     extract_subdomain = extract_subdomain;
     is_feature_allowed = is_feature_allowed;
     is_healthcheck_room = is_healthcheck_room;
+    is_moderated = is_moderated;
     get_focus_occupant = get_focus_occupant;
     get_room_from_jid = get_room_from_jid;
     get_room_by_name_and_subdomain = get_room_by_name_and_subdomain;

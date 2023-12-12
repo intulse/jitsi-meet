@@ -11,7 +11,7 @@ local function is_admin(jid)
     return um_is_admin(jid, module.host);
 end
 
-local QUEUE_MAX_SIZE = 100;
+local QUEUE_MAX_SIZE = 500;
 
 -- Module that generates a unique meetingId, attaches it to the room
 -- and adds it to all disco info form data (when room is queried or in the
@@ -81,7 +81,7 @@ module:hook('muc-occupant-pre-join', function (event)
     local room, stanza = event.room, event.stanza;
 
     -- we skip processing only if jicofo_lock is set to false
-    if room._data.jicofo_lock == false or is_healthcheck_room(stanza.attr.from) then
+    if room._data.jicofo_lock == false or is_healthcheck_room(room.jid) then
         return;
     end
 

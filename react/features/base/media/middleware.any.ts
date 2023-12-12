@@ -23,7 +23,12 @@ import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 import { getPropertyValue } from '../settings/functions.any';
 import { TRACK_ADDED } from '../tracks/actionTypes';
 import { destroyLocalTracks } from '../tracks/actions.any';
-import { isLocalTrackMuted, isLocalVideoTrackDesktop, setTrackMuted } from '../tracks/functions.any';
+import {
+    getCameraFacingMode,
+    isLocalTrackMuted,
+    isLocalVideoTrackDesktop,
+    setTrackMuted
+} from '../tracks/functions.any';
 import { ITrack } from '../tracks/types';
 
 import {
@@ -40,7 +45,6 @@ import {
     setVideoMuted
 } from './actions';
 import {
-    CAMERA_FACING_MODE,
     MEDIA_TYPE,
     SCREENSHARE_MUTISM_AUTHORITY,
     VIDEO_MUTISM_AUTHORITY
@@ -220,21 +224,22 @@ function _setRoom({ dispatch, getState }: IStore, next: Function, action: AnyAct
     const state = getState();
     const { room } = action;
     const roomIsValid = isRoomValid(room);
-    const audioMuted = roomIsValid ? getStartWithAudioMuted(state) : _AUDIO_INITIAL_MEDIA_STATE.muted;
-    const videoMuted = roomIsValid ? getStartWithVideoMuted(state) : _VIDEO_INITIAL_MEDIA_STATE.muted;
 
-    sendAnalytics(
-        createStartMutedConfigurationEvent('local', audioMuted, Boolean(videoMuted)));
-    logger.log(
-        `Start muted: ${audioMuted ? 'audio, ' : ''}${
-            videoMuted ? 'video' : ''}`);
+    // when going to welcomepage on web(room is not valid) we want to skip resetting the values of startWithA/V
+    if (roomIsValid || navigator.product === 'ReactNative') {
+        const audioMuted = roomIsValid ? getStartWithAudioMuted(state) : _AUDIO_INITIAL_MEDIA_STATE.muted;
+        const videoMuted = roomIsValid ? getStartWithVideoMuted(state) : _VIDEO_INITIAL_MEDIA_STATE.muted;
 
-    // Unconditionally express the desires/expectations/intents of the app and
-    // the user i.e. the state of base/media. Eventually, practice/reality i.e.
-    // the state of base/tracks will or will not agree with the desires.
-    dispatch(setAudioMuted(audioMuted));
-    dispatch(setCameraFacingMode(CAMERA_FACING_MODE.USER));
-    dispatch(setVideoMuted(videoMuted));
+        sendAnalytics(createStartMutedConfigurationEvent('local', audioMuted, Boolean(videoMuted)));
+        logger.log(`Start muted: ${audioMuted ? 'audio, ' : ''}${videoMuted ? 'video' : ''}`);
+
+        // Unconditionally express the desires/expectations/intents of the app and
+        // the user i.e. the state of base/media. Eventually, practice/reality i.e.
+        // the state of base/tracks will or will not agree with the desires.
+        dispatch(setAudioMuted(audioMuted));
+        dispatch(setCameraFacingMode(getCameraFacingMode(state)));
+        dispatch(setVideoMuted(videoMuted));
+    }
 
     // startAudioOnly
     //

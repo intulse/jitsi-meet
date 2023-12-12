@@ -136,9 +136,11 @@ export interface IProps {
     description?: string;
     disableBackdropClose?: boolean;
     disableEnter?: boolean;
+    disableEscape?: boolean;
     onClose?: () => void;
     size?: 'large' | 'medium';
     submit?: () => void;
+    testId?: string;
     title?: string;
     titleKey?: string;
 }
@@ -149,9 +151,11 @@ const BaseDialog = ({
     description,
     disableBackdropClose,
     disableEnter,
+    disableEscape,
     onClose,
     size = 'medium',
     submit,
+    testId,
     title,
     titleKey
 }: IProps) => {
@@ -164,7 +168,7 @@ const BaseDialog = ({
     }, [ disableBackdropClose, onClose ]);
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
+        if (e.key === 'Escape' && !disableEscape) {
             onClose?.();
         }
         if (e.key === 'Enter' && !disableEnter) {
@@ -179,7 +183,9 @@ const BaseDialog = ({
     }, [ handleKeyDown ]);
 
     return (
-        <div className = { cx(classes.container, isUnmounting && 'unmount') }>
+        <div
+            className = { cx(classes.container, isUnmounting && 'unmount') }
+            data-testid = { testId }>
             <div className = { classes.backdrop } />
             <FocusOn
                 className = { classes.focusLock }

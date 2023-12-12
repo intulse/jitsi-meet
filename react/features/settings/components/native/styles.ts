@@ -73,8 +73,9 @@ export default {
     fieldContainer: {
         alignItems: 'center',
         flexDirection: 'row',
-        minHeight: 56,
-        paddingHorizontal: 8
+        minHeight: BaseTheme.spacing[8],
+        paddingHorizontal: BaseTheme.spacing[2],
+        justifyContent: 'space-between'
     },
 
     /**
@@ -90,9 +91,10 @@ export default {
      */
     fieldLabelContainer: {
         alignItems: 'center',
+        flexShrink: 1,
         flexDirection: 'row',
-        flex: 3,
-        paddingLeft: BaseTheme.spacing[3]
+        paddingLeft: BaseTheme.spacing[3],
+        paddingRight: BaseTheme.spacing[1]
     },
 
     /**
@@ -118,8 +120,8 @@ export default {
      */
     fieldValueContainer: {
         alignItems: 'center',
-        flex: 1,
         flexDirection: 'row',
+        flexShrink: 1,
         justifyContent: 'flex-end',
         paddingRight: BaseTheme.spacing[3]
     },
@@ -156,9 +158,17 @@ export default {
         marginTop: BaseTheme.spacing[2]
     },
 
+    languageButtonContainer: {
+        borderRadius: BaseTheme.shape.borderRadius,
+        overflow: 'hidden'
+    },
+
     languageButton: {
+        alignItems: 'center',
         display: 'flex',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        height: BaseTheme.spacing[7],
+        justifyContent: 'center'
     },
 
     languageOption: {
@@ -178,7 +188,7 @@ export default {
     languageText: {
         ...BaseTheme.typography.bodyShortRegularLarge,
         color: BaseTheme.palette.text01,
-        marginRight: BaseTheme.spacing[3]
+        marginHorizontal: BaseTheme.spacing[2]
     },
 
     /**
@@ -222,5 +232,13 @@ export default {
         flexDirection: 'row',
         alignItems: 'center',
         ...BaseTheme.typography.bodyShortBoldLarge
+    },
+
+    logBtn: {
+        marginRight: BaseTheme.spacing[3]
+    },
+
+    backBtn: {
+        marginLeft: BaseTheme.spacing[3]
     }
 };

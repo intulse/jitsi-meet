@@ -67,13 +67,18 @@
             "renameBreakoutRoom": "Rename breakout room",
             "sendToBreakoutRoom": "Send participant to:"
         },
+        "breakoutList": "Breakout list",
+        "buttonLabel": "Breakout rooms",
         "defaultName": "Breakout room #{{index}}",
+        "hideParticipantList": "Hide participant list",
         "mainRoom": "Main room",
         "notifications": {
             "joined": "Joining the \"{{name}}\" breakout room",
             "joinedMainRoom": "Joining the main room",
             "joinedTitle": "Breakout Rooms"
-        }
+        },
+        "showParticipantList": "Show participant list",
+        "title": "Breakout Rooms"
     },
     "calendarSync": {
         "addMeetingURL": "Add a meeting link",
@@ -250,13 +255,14 @@
     "dialog": {
         "Back": "Back",
         "Cancel": "Cancel",
-        "IamHost": "I am the host",
+        "IamHost": "Log-in",
         "Ok": "OK",
         "Remove": "Remove",
         "Share": "Share",
         "Submit": "Submit",
-        "WaitForHostMsg": "The conference has not yet started. If you are the host then please authenticate. Otherwise, please wait for the host to arrive.",
-        "WaitingForHostTitle": "Waiting for the host ...",
+        "WaitForHostMsg": "The conference has not yet started because no moderators have yet arrived. If you'd like to become a moderator please log-in. Otherwise, please wait.",
+        "WaitingForHostButton": "Wait for moderator",
+        "WaitingForHostTitle": "Waiting for a moderator...",
         "Yes": "Yes",
         "accessibilityLabel": {
             "Cancel": "Cancel (leave dialog)",
@@ -269,6 +275,8 @@
         "addMeetingNote": "Add a note about this meeting",
         "addOptionalNote": "Add a note (optional):",
         "allow": "Allow",
+        "allowToggleCameraDialog": "Do you allow {{initiatorName}} to toggle your camera facing mode?",
+        "allowToggleCameraTitle": "Allow toggle camera?",
         "alreadySharedVideoMsg": "Another participant is already sharing a video. This conference allows only one shared video at a time.",
         "alreadySharedVideoTitle": "Only one shared video is allowed at a time",
         "applicationWindow": "Application window",
@@ -410,8 +418,10 @@
         "sendPrivateMessageTitle": "Send privately?",
         "serviceUnavailable": "Service unavailable",
         "sessTerminated": "Call terminated",
+        "sessTerminatedReason": "The meeting has been terminated",
         "sessionRestarted": "Call restarted because of a connection issue.",
         "shareAudio": "Continue",
+        "shareAudioAltText": "to share the desired content, navigate to \"Browser Tab\", select the content, activate the \"share audio\" check mark and then click \"share\" button",
         "shareAudioTitle": "How to share audio",
         "shareAudioWarningD1": "you need to stop screen sharing before sharing your audio.",
         "shareAudioWarningD2": "you need to restart your screen sharing and check the \"share audio\" option.",
@@ -473,6 +483,10 @@
         "viewUpgradeOptions": "View upgrade options",
         "viewUpgradeOptionsContent": "To get unlimited access to premium features like recording, transcriptions, RTMP Streaming & more, you'll need to upgrade your plan.",
         "viewUpgradeOptionsTitle": "You discovered a premium feature!",
+        "whiteboardLimitContent": "Sorry, the limit of conccurent whiteboard users has been reached.",
+        "whiteboardLimitReference": "For more information please visit",
+        "whiteboardLimitReferenceUrl": "our website",
+        "whiteboardLimitTitle": "Whiteboard usage restricted",
         "yourEntireScreen": "Your entire screen"
     },
     "documentSharing": {
@@ -548,6 +562,7 @@
         "password": "$t(lockRoomPasswordUppercase): ",
         "reachedLimit": "You have reached the limit of your plan.",
         "sip": "SIP address",
+        "sipAudioOnly": "SIP audio only address",
         "title": "Share",
         "tooltip": "Share link and dial-in info for this meeting",
         "upgradeOptions": "Please check the upgrade options on"
@@ -654,13 +669,13 @@
         "knockingParticipantList": "Knocking participant list",
         "lobbyChatStartedNotification": "{{moderator}} started a lobby chat with {{attendee}}",
         "lobbyChatStartedTitle": "{{moderator}} has started a lobby chat with you.",
+        "lobbyClosed": "The lobby room has been closed.",
         "nameField": "Enter your name",
         "notificationLobbyAccessDenied": "{{targetParticipantName}} has been rejected to join by {{originParticipantName}}",
         "notificationLobbyAccessGranted": "{{targetParticipantName}} has been allowed to join by {{originParticipantName}}",
         "notificationLobbyDisabled": "Lobby has been disabled by {{originParticipantName}}",
         "notificationLobbyEnabled": "Lobby has been enabled by {{originParticipantName}}",
         "notificationTitle": "Lobby",
-        "passwordField": "Enter meeting password",
         "passwordJoinButton": "Join",
         "reject": "Reject",
         "rejectAll": "Reject all",
@@ -719,6 +734,7 @@
         "dataChannelClosed": "Video quality impaired",
         "dataChannelClosedDescription": "The bridge channel has been disconnected and thus video quality is limited to its lowest setting.",
         "disabledIframe": "Embedding is only meant for demo purposes, so this call will disconnect in {{timeout}} minutes.",
+        "disabledIframeSecondary": "Embedding {{domain}} is only meant for demo purposes, so this call will disconnect in {{timeout}} minutes. Please use <a href='{{jaasDomain}}' rel='noopener noreferrer' target='_blank'>Jitsi as a Service</a> for production embedding!",
         "disconnected": "disconnected",
         "displayNotifications": "Display notifications for",
         "dontRemindMe": "Do not remind me",
@@ -794,7 +810,9 @@
         "videoUnmuteBlockedDescription": "Camera unmute and desktop sharing operation have been temporarily blocked because of system limits.",
         "videoUnmuteBlockedTitle": "Camera unmute and desktop sharing blocked!",
         "viewLobby": "View lobby",
-        "waitingParticipants": "{{waitingParticipants}} people"
+        "waitingParticipants": "{{waitingParticipants}} people",
+        "whiteboardLimitDescription": "Please save your progress, as the user limit will soon be reached and the whiteboard will close.",
+        "whiteboardLimitTitle": "Whiteboard usage"
     },
     "participantsPane": {
         "actions": {
@@ -803,6 +821,7 @@
             "askUnmute": "Ask to unmute",
             "audioModeration": "Unmute themselves",
             "blockEveryoneMicCamera": "Block everyone's mic and camera",
+            "breakoutRooms": "Breakout rooms",
             "invite": "Invite Someone",
             "moreModerationActions": "More moderation options",
             "moreModerationControls": "More moderation controls",
@@ -1149,7 +1168,7 @@
             "audioOnly": "Toggle audio only",
             "audioRoute": "Select the sound device",
             "boo": "Boo",
-            "breakoutRoom": "Join/leave breakout room",
+            "breakoutRooms": "Breakout rooms",
             "callQuality": "Manage video quality",
             "carmode": "Car Mode",
             "cc": "Toggle subtitles",
@@ -1273,8 +1292,8 @@
         "linkToSalesforce": "Link to Salesforce",
         "lobbyButtonDisable": "Disable lobby mode",
         "lobbyButtonEnable": "Enable lobby mode",
-        "login": "Login",
-        "logout": "Logout",
+        "login": "Log-in",
+        "logout": "Log-out",
         "lowerYourHand": "Lower your hand",
         "moreActions": "More actions",
         "moreOptions": "More options",
