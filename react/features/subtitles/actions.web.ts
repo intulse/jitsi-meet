@@ -8,7 +8,9 @@ export * from './actions.any';
 /**
  * Signals that the local user has toggled the LanguageSelector button.
  *
- * @returns {Function}
+ * @returns {{
+ *      type: UPDATE_TRANSLATION_LANGUAGE
+ * }}
  */
 export function toggleLanguageSelectorDialog() {
     return function(dispatch: IStore['dispatch']) {

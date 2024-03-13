@@ -31,6 +31,12 @@ if (window.Olm) {
 window.APP = {
     API,
     conference,
+
+    // Used for automated performance tests.
+    connectionTimes: {
+        'index.loaded': window.indexLoadedTime
+    },
+
     translation,
     UI
 };

@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-no-bind */
-import React, { useMemo, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { connect, useDispatch } from 'react-redux';
+import { connect } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState } from '../../../app/types';
@@ -21,7 +21,6 @@ import Button from '../../../base/ui/components/web/Button';
 import Input from '../../../base/ui/components/web/Input';
 import { BUTTON_TYPES } from '../../../base/ui/constants.any';
 import isInsecureRoomName from '../../../base/util/isInsecureRoomName';
-import { openDisplayNamePrompt } from '../../../display-name/actions';
 import { isUnsafeRoomWarningEnabled } from '../../../prejoin/functions';
 import {
     joinConference as joinConferenceAction,
@@ -35,11 +34,15 @@ import {
     isJoinByPhoneDialogVisible,
     isPrejoinDisplayNameVisible
 } from '../../functions';
-import { hasDisplayName } from '../../utils';
 
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
 
 interface IProps {
+
+    /**
+     * Indicates whether the display  name is editable.
+     */
+    canEditDisplayName: boolean;
 
     /**
      * Flag signaling if the device status is visible or not.
@@ -50,11 +53,6 @@ interface IProps {
      * If join by phone button should be visible.
      */
     hasJoinByPhoneButton: boolean;
-
-    /**
-     * Flag signaling if the display name is visible or not.
-     */
-    isDisplayNameVisible: boolean;
 
     /**
      * Joins the current meeting.
@@ -189,25 +187,15 @@ const useStyles = makeStyles()(theme => {
             color: theme.palette.text04,
             borderRadius: theme.shape.borderRadius,
             position: 'relative',
-            top: `-${theme.spacing(3)}`,
-
-            '@media (max-width: 511px)': {
-                margin: '0 auto',
-                top: 0
-            },
-
-            '@media (max-width: 420px)': {
-                top: 0,
-                width: 'calc(100% - 32px)'
-            }
+            top: `-${theme.spacing(3)}`
         }
     };
 });
 
 const Prejoin = ({
+    canEditDisplayName,
     deviceStatusVisible,
     hasJoinByPhoneButton,
-    isDisplayNameVisible,
     joinConference,
     joinConferenceWithoutAudio,
     joiningInProgress,
@@ -224,16 +212,10 @@ const Prejoin = ({
     updateSettings: dispatchUpdateSettings,
     videoTrack
 }: IProps) => {
-    const showDisplayNameField = useMemo(
-        () => isDisplayNameVisible && !readOnlyName,
-        [ isDisplayNameVisible, readOnlyName ]);
-    const showErrorOnField = useMemo(
-        () => showDisplayNameField && showErrorOnJoin,
-        [ showDisplayNameField, showErrorOnJoin ]);
+    const showDisplayNameField = useRef(canEditDisplayName || showErrorOnJoin);
     const [ showJoinByPhoneButtons, setShowJoinByPhoneButtons ] = useState(false);
     const { classes } = useStyles();
     const { t } = useTranslation();
-    const dispatch = useDispatch();
 
     /**
      * Handler for the join button.
@@ -243,11 +225,6 @@ const Prejoin = ({
      */
     const onJoinButtonClick = () => {
         if (showErrorOnJoin) {
-            dispatch(openDisplayNamePrompt({
-                onPostSubmit: joinConference,
-                validateInput: hasDisplayName
-            }));
-
             return;
         }
         joinConference();
@@ -397,12 +374,12 @@ const Prejoin = ({
             <div
                 className = { classes.inputContainer }
                 data-testid = 'prejoin.screen'>
-                {showDisplayNameField ? (<Input
+                {showDisplayNameField.current ? (<Input
                     accessibilityLabel = { t('dialog.enterDisplayName') }
                     autoComplete = { 'name' }
                     autoFocus = { true }
                     className = { classes.input }
-                    error = { showErrorOnField }
+                    error = { showErrorOnJoin }
                     id = 'premeeting-name-input'
                     onChange = { setName }
                     onKeyPress = { showUnsafeRoomWarning && !unsafeRoomConsent ? undefined : onInputKeyPress }
@@ -416,11 +393,11 @@ const Prejoin = ({
                             displayName = { name }
                             participantId = { participantId }
                             size = { 72 } />
-                        {isDisplayNameVisible && <div className = { classes.avatarName }>{name}</div>}
+                        <div className = { classes.avatarName }>{name}</div>
                     </div>
                 )}
 
-                {showErrorOnField && <div
+                {showErrorOnJoin && <div
                     className = { classes.error }
                     data-testid = 'prejoin.errorMessage'>{t('prejoin.errorMissingName')}</div>}
 
@@ -429,7 +406,7 @@ const Prejoin = ({
                         content = { hasExtraJoinButtons && <div className = { classes.dropdownButtons }>
                             {extraButtonsToRender.map(({ key, ...rest }) => (
                                 <Button
-                                    disabled = { joiningInProgress || showErrorOnField }
+                                    disabled = { joiningInProgress }
                                     fullWidth = { true }
                                     key = { key }
                                     type = { BUTTON_TYPES.SECONDARY }
@@ -445,9 +422,7 @@ const Prejoin = ({
                             ariaDropDownLabel = { t('prejoin.joinWithoutAudio') }
                             ariaLabel = { t('prejoin.joinMeeting') }
                             ariaPressed = { showJoinByPhoneButtons }
-                            disabled = { joiningInProgress
-                                || (showUnsafeRoomWarning && !unsafeRoomConsent)
-                                || showErrorOnField }
+                            disabled = { joiningInProgress || (showUnsafeRoomWarning && !unsafeRoomConsent) }
                             hasOptions = { hasExtraJoinButtons }
                             onClick = { onJoinButtonClick }
                             onOptionsClick = { onOptionsClick }
@@ -485,9 +460,9 @@ function mapStateToProps(state: IReduxState) {
     const { unsafeRoomConsent } = state['features/base/premeeting'];
 
     return {
+        canEditDisplayName: isPrejoinDisplayNameVisible(state),
         deviceStatusVisible: isDeviceStatusVisible(state),
         hasJoinByPhoneButton: isJoinByPhoneButtonVisible(state),
-        isDisplayNameVisible: isPrejoinDisplayNameVisible(state),
         joiningInProgress,
         name,
         participantId,

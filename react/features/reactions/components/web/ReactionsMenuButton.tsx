@@ -10,7 +10,7 @@ import AbstractButton, { type IProps as AbstractButtonProps } from '../../../bas
 import ToolboxButtonWithPopup from '../../../base/toolbox/components/web/ToolboxButtonWithPopup';
 import { toggleReactionsMenuVisibility } from '../../actions.web';
 import { IReactionEmojiProps } from '../../constants';
-import { getReactionsQueue } from '../../functions.any';
+import { getReactionsQueue, isReactionsEnabled } from '../../functions.any';
 import { getReactionsMenuVisibility, isReactionsButtonEnabled } from '../../functions.web';
 import { IReactionsMenuParent } from '../../types';
 
@@ -29,6 +29,11 @@ interface IProps extends WithTranslation {
      * Whether the reactions should be displayed on separate button or not.
      */
     _reactionsButtonEnabled: boolean;
+
+    /**
+     * Whether or not the reactions are enabled.
+     */
+    _reactionsEnabled: boolean;
 
     /**
      * The button's key.
@@ -88,6 +93,7 @@ const ReactionsButton = translate(connect()(ReactionsButtonImpl));
  */
 function ReactionsMenuButton({
     _reactionsButtonEnabled,
+    _reactionsEnabled,
     _isMobile,
     buttonKey,
     dispatch,
@@ -110,7 +116,7 @@ function ReactionsMenuButton({
         isOpen && toggleReactionsMenu();
     }, [ isOpen, toggleReactionsMenu ]);
 
-    if (!showRaiseHand && !_reactionsButtonEnabled) {
+    if (!showRaiseHand && (!_reactionsButtonEnabled || !_reactionsEnabled)) {
         return null;
     }
 
@@ -178,6 +184,7 @@ function mapStateToProps(state: IReduxState) {
 
     return {
         _reactionsButtonEnabled: isReactionsButtonEnabled(state),
+        _reactionsEnabled: isReactionsEnabled(state),
         _isMobile: isMobileBrowser(),
         isOpen: getReactionsMenuVisibility(state),
         isNarrow: isNarrowLayout,

@@ -3,7 +3,8 @@ import { GestureResponderEvent, Text, TextStyle, TouchableOpacity, View, ViewSty
 
 import Icon from '../../../base/icons/components/Icon';
 import { IconArrowDown, IconArrowUp } from '../../../base/icons/svg';
-import styles from '../../../breakout-rooms/components/native/styles';
+import { StyleType } from '../../../base/styles/functions.native';
+import styles from '../breakout-rooms/components/native/styles';
 
 interface IProps {
 
@@ -11,6 +12,11 @@ interface IProps {
      * The children to be displayed within this list.
      */
     children: React.ReactNode;
+
+    /**
+     * Additional style to be appended to the CollapsibleList container.
+     */
+    containerStyle?: StyleType;
 
     /**
      * Callback to invoke when the {@code CollapsibleList} is long pressed.
@@ -23,14 +29,14 @@ interface IProps {
     title: Object;
 }
 
-const CollapsibleList = ({ children, onLongPress, title }: IProps) => {
+const CollapsibleList = ({ children, containerStyle, onLongPress, title }: IProps) => {
     const [ collapsed, setCollapsed ] = useState(false);
     const _toggleCollapsed = useCallback(() => {
         setCollapsed(!collapsed);
     }, [ collapsed ]);
 
     return (
-        <View>
+        <View style = { !collapsed && containerStyle }>
             <TouchableOpacity
                 onLongPress = { onLongPress }
                 onPress = { _toggleCollapsed }
@@ -43,10 +49,14 @@ const CollapsibleList = ({ children, onLongPress, title }: IProps) => {
                         src = { collapsed ? IconArrowDown : IconArrowUp } />
                 </TouchableOpacity>
                 <Text style = { styles.listTile as TextStyle }>
-                    { title }
+                    {
+                        title
+                    }
                 </Text>
             </TouchableOpacity>
-            { !collapsed && children }
+            {
+                !collapsed && children
+            }
         </View>
     );
 };

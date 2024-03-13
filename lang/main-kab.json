@@ -498,6 +498,8 @@
         "youtubeTerms": "Tiwtilin n yimeẓla n Youtube"
     },
     "lobby": {
+        "admit": "Steεref",
+        "admitAll": "Steεref s kullec",
         "allow": "Sireg",
         "backToKnockModeButton": "Ulac awal uffir, suter attekki deg ubdil-is",
         "dialogTitle": "Askar Lobby",
@@ -528,6 +530,8 @@
         "notificationTitle": "Taxxamt n uraǧu",
         "passwordField": "Sekcem awal uffir n temlilit",
         "passwordJoinButton": "Semlil",
+        "reject": "Agi",
+        "rejectAll": "Agi akk",
         "title": "Taxxamt n uraǧu",
         "toggleLabel": "Rmed Lobby"
     },
@@ -624,8 +628,6 @@
     },
     "participantsPane": {
         "actions": {
-            "admit": "Steεref",
-            "admitAll": "Steεref s kullec",
             "allow": "Sireg i yimttekkiyen ad:",
             "allowVideo": "Sireg tavidyut",
             "askUnmute": "Suter tririt n ṣṣut",
@@ -635,7 +637,6 @@
             "mute": "Asusam",
             "muteAll": "Sgugem meṛṛa",
             "muteEveryoneElse": "Sgugem-iten i meṛṛa",
-            "reject": "Agi",
             "stopEveryonesVideo": "Seḥbes tavidyut n yal yiwen",
             "stopVideo": "Seḥbes tavidyut n Youtube",
             "unblockEveryoneMicCamera": "Serreḥ i usawaḍ d tkamiṛat n yal yiwen",
@@ -873,8 +874,7 @@
         "hours": "{{count}} isragen",
         "minutes": "{{count}} n tesdidin",
         "name": "Isem",
-        "search": "Nadi",
-        "searchHint": "Nadi imttekkiyen",
+        "search": "Rechercher",
         "seconds": "{{count}} n tsinin",
         "speakerStats": "Addad n yimsiwel",
         "speakerTime": "Akud n yimsiwel"

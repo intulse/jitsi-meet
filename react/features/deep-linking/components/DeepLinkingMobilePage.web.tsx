@@ -30,7 +30,7 @@ const useStyles = makeStyles()((theme: Theme) => {
         container: {
             background: '#1E1E1E',
             width: '100vw',
-            height: '100dvh',
+            height: '100vh',
             overflowX: 'hidden',
             overflowY: 'auto',
             justifyContent: 'center',
@@ -211,7 +211,7 @@ const DeepLinkingMobilePage: React.FC<WithTranslation> = ({ t }) => {
                 </a>
                 {isSupportedMobileBrowser() ? (
                     <div className = { styles.supportedBrowserContent }>
-                        <div className = { styles.labelOr }>{ t(`${_TNS}.or`) }</div>
+                        <div className = { styles.labelOr }>OR</div>
                         <a
                             className = { styles.linkWrapper }
                             onClick = { onLaunchWeb }
@@ -228,7 +228,6 @@ const DeepLinkingMobilePage: React.FC<WithTranslation> = ({ t }) => {
                 <DialInSummary
                     className = 'deep-linking-dial-in'
                     clickableNumbers = { true }
-                    hideError = { true }
                     room = { room }
                     url = { url } />
             </div>

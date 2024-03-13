@@ -107,7 +107,6 @@ export const RoomContextMenu = ({
 
     return (
         <ContextMenu
-            activateFocusTrap = { true }
             entity = { room }
             isDrawerOpen = { Boolean(room) }
             offsetTarget = { offsetTarget }

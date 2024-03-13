@@ -91,7 +91,7 @@ export default function LobbyParticipants() {
                     participants.length > 1
                     && <div
                         className = { classes.link }
-                        onClick = { admitAll }>{t('participantsPane.actions.admitAll')}</div>
+                        onClick = { admitAll }>{t('lobby.admitAll')}</div>
                 }
             </div>
             <LobbyParticipantItems
@@ -117,7 +117,7 @@ export default function LobbyParticipants() {
                                 className = { classes.icon }
                                 size = { 20 }
                                 src = { IconCheck } />
-                            <span>{ t('participantsPane.actions.admit') }</span>
+                            <span>{ t('lobby.admit') }</span>
                         </li>
                         <li
                             className = { classes.drawerItem }
@@ -126,7 +126,7 @@ export default function LobbyParticipants() {
                                 className = { classes.icon }
                                 size = { 20 }
                                 src = { IconCloseLarge } />
-                            <span>{ t('participantsPane.actions.reject')}</span>
+                            <span>{ t('lobby.reject')}</span>
                         </li>
                     </ul>
                 </Drawer>

@@ -83,8 +83,7 @@ function _appWillMount({ dispatch, getState }: IStore, next: Function, action: A
  * @returns {*} The result returned by {@code next(action)}.
  */
 function _conferenceWillLeave({ dispatch, getState }: IStore, next: Function, action: AnyAction) {
-    const state = getState();
-    const { doNotStoreRoom } = state['features/base/config'];
+    const { doNotStoreRoom } = getState()['features/base/config'];
 
     if (!doNotStoreRoom && !inIframe()) {
         let locationURL;
@@ -101,17 +100,13 @@ function _conferenceWillLeave({ dispatch, getState }: IStore, next: Function, ac
          * JITSI_CONFERENCE_URL_KEY so we cannot call it and must use the other way.
          */
         if (typeof APP === 'undefined') {
-            const { conference } = action;
-
-            // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-            locationURL = conference && conference[JITSI_CONFERENCE_URL_KEY];
+            locationURL = action.conference[JITSI_CONFERENCE_URL_KEY];
         } else {
-            locationURL = state['features/base/connection'].locationURL;
+            locationURL = getState()['features/base/connection'].locationURL;
         }
         dispatch(
             _updateConferenceDuration(
-                locationURL
-            ));
+                locationURL));
     }
 
     return next(action);

@@ -9,7 +9,6 @@ import { translate } from '../../base/i18n/functions';
 import { IconFeedback } from '../../base/icons/svg';
 import AbstractButton, { IProps as AbstractButtonProps } from '../../base/toolbox/components/AbstractButton';
 import { openFeedbackDialog } from '../actions';
-import { shouldSendJaaSFeedbackMetadata } from '../functions.web';
 
 /**
  * The type of the React {@code Component} props of {@link FeedbackButton}.
@@ -46,11 +45,11 @@ class FeedbackButton extends AbstractButton<IProps> {
 }
 
 const mapStateToProps = (state: IReduxState) => {
-    const { conference } = state['features/base/conference'];
+    const { callStatsID } = state['features/base/config'];
 
     return {
-        _conference: conference,
-        visible: shouldSendJaaSFeedbackMetadata(state)
+        _conference: state['features/base/conference'].conference,
+        visible: Boolean(callStatsID)
     };
 };
 

@@ -1,10 +1,7 @@
-import i18next from 'i18next';
-
 import {
     setPrejoinPageVisibility,
     setSkipPrejoinOnReload
 } from '../../prejoin/actions.web';
-import { hangup } from '../connection/actions.web';
 import { JitsiConferenceErrors } from '../lib-jitsi-meet';
 import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 
@@ -15,9 +12,7 @@ import {
     CONFERENCE_LEFT,
     KICKED_OUT
 } from './actionTypes';
-import { TRIGGER_READY_TO_CLOSE_REASONS } from './constants';
 import logger from './logger';
-
 import './middleware.any';
 
 let screenLock: WakeLockSentinel | undefined;
@@ -111,15 +106,6 @@ MiddlewareRegistry.register(store => next => action => {
 
         if (enableForcedReload && errorName === JitsiConferenceErrors.CONFERENCE_RESTARTED) {
             dispatch(setSkipPrejoinOnReload(true));
-        }
-
-        if (errorName === JitsiConferenceErrors.CONFERENCE_DESTROYED) {
-            const [ reason ] = action.error.params;
-            const titlekey = Object.keys(TRIGGER_READY_TO_CLOSE_REASONS)[
-                Object.values(TRIGGER_READY_TO_CLOSE_REASONS).indexOf(reason)
-            ];
-
-            dispatch(hangup(true, i18next.t(titlekey) || reason));
         }
 
         releaseScreenLock();

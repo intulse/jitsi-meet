@@ -17,12 +17,6 @@ const headerNavigationButtonLabel = {
     lineHeight: BaseTheme.spacing[3]
 };
 
-const headerNavigationButton = {
-    borderRadius: BaseTheme.shape.borderRadius,
-    height: BaseTheme.spacing[6],
-    marginLeft: BaseTheme.spacing[3]
-};
-
 /**
  * Styles of the navigation feature.
  */
@@ -49,12 +43,7 @@ export const navigationStyles = {
     },
 
     headerNavigationButton: {
-        ...headerNavigationButton
-    },
-
-    headerNavigationButtonIcon: {
-        ...headerNavigationButton,
-        padding: BaseTheme.spacing[2]
+        marginLeft: BaseTheme.spacing[2]
     },
 
     headerNavigationButtonDisabled: {

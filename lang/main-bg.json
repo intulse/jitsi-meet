@@ -420,6 +420,8 @@
         "youtubeTerms": "Условия за ползване на YouTube"
     },
     "lobby": {
+        "admit": "Допусни",
+        "allow": "Разреши",
         "backToKnockModeButton": "Заявка за включване без парола",
         "dialogTitle": "Режим лоби",
         "disableDialogContent": "Режим Лоби е включен. Този решим защитава срещите Ви от случайни посетители. Искате ли да го изключите?",
@@ -448,6 +450,7 @@
         "notificationTitle": "Лоби",
         "passwordField": "Въведи парола за срещата",
         "passwordJoinButton": "Влез",
+        "reject": "Откажи",
         "title": "Лоби",
         "toggleLabel": "Включи лоби"
     },
@@ -517,13 +520,6 @@
         "suboptimalBrowserWarning": "Опасяваме се, че няма да можете да се насладите на срещата. Работим по въпроса, междувременно използвайте някой от <a href='{{recommendedBrowserPageLink}}' target='_blank'>напълно поддържаните браузъри</a>.",
         "suboptimalExperienceTitle": "Внимание",
         "unmute": "Пускане на микрофона"
-    },
-    "participantsPane": {
-        "actions": {
-            "admit": "Допусни",
-            "allow": "Разреши",
-            "reject": "Откажи"
-        }
     },
     "passwordDigitsOnly": "До {{number}} цифри",
     "passwordSetRemotely": "зададена от друг участник",
@@ -640,7 +636,6 @@
         "minutes": "{{count}}мин",
         "name": "Име",
         "search": "Търсене",
-        "searchHint": "Търсене участници",
         "seconds": "{{count}}сек",
         "speakerStats": "Статистика на говорителя",
         "speakerTime": "Време на говорене"

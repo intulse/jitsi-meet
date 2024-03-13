@@ -1,10 +1,11 @@
 import { maybeRedirectToWelcomePage } from '../app/actions.web';
 import { IStore } from '../app/types';
-import { openDialog } from '../base/dialog/actions';
-import { browser } from '../base/lib-jitsi-meet';
 
-import { CANCEL_LOGIN } from './actionTypes';
-import LoginQuestionDialog from './components/web/LoginQuestionDialog';
+import {
+    CANCEL_LOGIN,
+    LOGIN,
+    LOGOUT
+} from './actionTypes';
 
 export * from './actions.any';
 
@@ -37,7 +38,7 @@ export function cancelWaitForOwner() {
     };
 }
 
-/**
+/** .
  * Redirect to the default location (e.g. Welcome page).
  *
  * @returns {Function}
@@ -47,32 +48,27 @@ export function redirectToDefaultLocation() {
 }
 
 /**
- * Opens token auth URL page.
+ * Login.
  *
- * @param {string} tokenAuthServiceUrl - Authentication service URL.
- *
- * @returns {Function}
+ * @returns {{
+ *     type: LOGIN
+ * }}
  */
-export function openTokenAuthUrl(tokenAuthServiceUrl: string): any {
-    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
-        const redirect = () => {
-            if (browser.isElectron()) {
-                window.open(tokenAuthServiceUrl, '_blank');
-            } else {
-                window.location.href = tokenAuthServiceUrl;
-            }
-        };
+export function login() {
+    return {
+        type: LOGIN
+    };
+}
 
-        // Show warning for leaving conference only when in a conference.
-        if (!browser.isElectron() && getState()['features/base/conference'].conference) {
-            dispatch(openDialog(LoginQuestionDialog, {
-                handler: () => {
-                    // Give time for the dialog to close.
-                    setTimeout(() => redirect(), 500);
-                }
-            }));
-        } else {
-            redirect();
-        }
+/**
+ * Logout.
+ *
+ * @returns {{
+ *     type: LOGOUT
+ * }}
+ */
+export function logout() {
+    return {
+        type: LOGOUT
     };
 }

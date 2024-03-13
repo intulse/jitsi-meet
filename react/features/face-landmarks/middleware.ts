@@ -15,7 +15,7 @@ import { TRACK_ADDED, TRACK_REMOVED, TRACK_UPDATED } from '../base/tracks/action
 import FaceLandmarksDetector from './FaceLandmarksDetector';
 import { ADD_FACE_LANDMARKS, NEW_FACE_COORDINATES, UPDATE_FACE_COORDINATES } from './actionTypes';
 import { FACE_BOX_EVENT_TYPE } from './constants';
-import { sendFaceBoxToParticipants, sendFaceExpressionToParticipants } from './functions';
+import { sendFaceBoxToParticipants, sendFaceExpressionToParticipants, sendFaceExpressionToServer } from './functions';
 
 
 MiddlewareRegistry.register((store: IStore) => (next: Function) => (action: AnyAction) => {
@@ -107,8 +107,7 @@ MiddlewareRegistry.register((store: IStore) => (next: Function) => (action: AnyA
             sendFaceExpressionToParticipants(conference, faceLandmarks);
         }
 
-        // Disabling for now as there is no value of having the data in speakerstats at the server
-        // sendFaceExpressionToServer(conference, faceLandmarks);
+        sendFaceExpressionToServer(conference, faceLandmarks);
 
         return next(action);
     }

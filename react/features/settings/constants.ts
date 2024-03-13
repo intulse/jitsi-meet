@@ -13,7 +13,7 @@ export const SETTINGS_TABS = {
 /**
  * Default frame rate to be used for capturing screenshare.
  */
-export const SS_DEFAULT_FRAME_RATE = 5;
+export const SS_DEFAULT_FRAME_RATE = 30;
 
 /**
  * Supported framerates to be used for capturing screenshare.

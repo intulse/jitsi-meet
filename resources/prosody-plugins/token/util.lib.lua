@@ -17,7 +17,6 @@ local starts_with = main_util.starts_with;
 local cjson_safe  = require 'cjson.safe'
 local timer = require "util.timer";
 local async = require "util.async";
-local inspect = require 'inspect';
 
 local nr_retries = 3;
 local ssl = require "ssl";
@@ -198,7 +197,6 @@ end
 -- session.jitsi_meet_room - the room name value from the token
 -- session.jitsi_meet_domain - the domain name value from the token
 -- session.jitsi_meet_context_user - the user details from the token
--- session.jitsi_meet_context_room - the room details from the token
 -- session.jitsi_meet_context_group - the group value from the token
 -- session.jitsi_meet_context_features - the features value from the token
 -- @param session the current session
@@ -220,7 +218,7 @@ function Util:process_and_verify_token(session, acceptedIssuers)
     local key;
     if session.public_key then
         -- We're using an public key stored in the session
-        -- module:log("debug","Public key was found on the session");
+        module:log("debug","Public key was found on the session");
         key = session.public_key;
     elseif self.asapKeyServer and session.auth_token ~= nil then
         -- We're fetching an public key from an ASAP server
@@ -283,8 +281,6 @@ function Util:process_and_verify_token(session, acceptedIssuers)
 
         -- Binds the user details to the session if available
         if claims["context"] ~= nil then
-          session.jitsi_meet_str_tenant = claims["context"]["tenant"];
-
           if claims["context"]["user"] ~= nil then
             session.jitsi_meet_context_user = claims["context"]["user"];
           end
@@ -305,17 +301,6 @@ function Util:process_and_verify_token(session, acceptedIssuers)
           session.jitsi_meet_context_user = {};
           session.jitsi_meet_context_user.id = claims["user_id"];
         end
-
-        -- fire event that token has been verified and pass the session and the decoded token
-        prosody.events.fire_event('jitsi-authentication-token-verified', {
-            session = session;
-            claims = claims;
-        });
-
-        if session.contextRequired and claims["context"] == nil then
-            return false, "not-allowed", 'jwt missing required context claim';
-        end
-
         return true;
     else
         return false, "not-allowed", msg;
@@ -348,11 +333,7 @@ function Util:verify_room(session, room_address)
 
     local auth_room = session.jitsi_meet_room;
     if auth_room then
-        if type(auth_room) == 'string' then
-            auth_room = string.lower(auth_room);
-        else
-            module:log('warn', 'session.jitsi_meet_room not string: %s', inspect(auth_room));
-        end
+        auth_room = string.lower(auth_room);
     end
     if not self.enableDomainVerification then
         -- if auth_room is missing, this means user is anonymous (no token for
@@ -398,24 +379,10 @@ function Util:verify_room(session, room_address)
             -- not a regex
             room_to_check = auth_room;
         end
-        -- module:log("debug", "room to check: %s", room_to_check)
+        module:log("debug", "room to check: %s", room_to_check)
         if not room_to_check then
-            if not self.requireRoomClaim then
-                -- if we do not require to have the room claim, and it is missing
-                -- there is no point of continue and verifying the roomName and the tenant
-                return true;
-            end
-
-            return false;
+            return false
         end
-    end
-
-    if session.jitsi_meet_str_tenant
-        and string.lower(session.jitsi_meet_str_tenant) ~= session.jitsi_web_query_prefix then
-        module:log('warn', 'Tenant differs for user:%s group:%s url_tenant:%s token_tenant:%s',
-            inspect(session.jitsi_meet_context_user), session.jitsi_meet_context_group,
-            session.jitsi_web_query_prefix, session.jitsi_meet_str_tenant);
-        session.jitsi_meet_tenant_mismatch = true;
     end
 
     local auth_domain = string.lower(session.jitsi_meet_domain);

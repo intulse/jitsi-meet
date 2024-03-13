@@ -2,7 +2,10 @@ import _ from 'lodash';
 
 import { IStore } from '../../app/types';
 import { getCurrentConference } from '../conference/functions';
-import { getSsrcRewritingFeatureFlag } from '../config/functions.any';
+import {
+    getMultipleVideoSendingSupportFeatureFlag,
+    getSsrcRewritingFeatureFlag
+} from '../config/functions.any';
 import { VIDEO_TYPE } from '../media/constants';
 import StateListenerRegistry from '../redux/StateListenerRegistry';
 
@@ -89,14 +92,16 @@ function _updateScreenshareParticipants(store: IStore): void {
         return acc;
     }, []);
 
-    if (!localScreenShare && newLocalSceenshareSourceName) {
-        dispatch(createVirtualScreenshareParticipant(newLocalSceenshareSourceName, true, conference));
-    }
+    if (getMultipleVideoSendingSupportFeatureFlag(state)) {
+        if (!localScreenShare && newLocalSceenshareSourceName) {
+            dispatch(createVirtualScreenshareParticipant(newLocalSceenshareSourceName, true, conference));
+        }
 
-    if (localScreenShare && !newLocalSceenshareSourceName) {
-        dispatch(participantLeft(localScreenShare.id, conference, {
-            fakeParticipant: FakeParticipant.LocalScreenShare
-        }));
+        if (localScreenShare && !newLocalSceenshareSourceName) {
+            dispatch(participantLeft(localScreenShare.id, conference, {
+                fakeParticipant: FakeParticipant.LocalScreenShare
+            }));
+        }
     }
 
     if (getSsrcRewritingFeatureFlag(state)) {

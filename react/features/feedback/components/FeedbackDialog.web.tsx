@@ -60,10 +60,6 @@ const useStyles = makeStyles()(theme => {
             }
         },
 
-        title: {
-            fontSize: '16px'
-        },
-
         details: {
             '& textarea': {
                 minHeight: '122px'
@@ -102,11 +98,6 @@ interface IProps {
      * Callback invoked when {@code FeedbackDialog} is unmounted.
      */
     onClose: Function;
-
-    /**
-     * The title to display in the dialog. Usually the reason that triggered the feedback.
-     */
-    title?: string;
 }
 
 /**
@@ -117,7 +108,7 @@ interface IProps {
  * @param {IProps} props - Component's props.
  * @returns {JSX}
  */
-const FeedbackDialog = ({ conference, onClose, title }: IProps) => {
+const FeedbackDialog = ({ conference, onClose }: IProps) => {
     const { classes } = useStyles();
     const dispatch = useDispatch();
     const { t } = useTranslation();
@@ -293,7 +284,6 @@ const FeedbackDialog = ({ conference, onClose, title }: IProps) => {
             size = 'large'
             titleKey = 'feedback.rateExperience'>
             <div className = { classes.dialog }>
-                {title ? <div className = { classes.title }>{t(title)}</div> : null}
                 <div className = { classes.rating }>
                     <div
                         className = { classes.stars }

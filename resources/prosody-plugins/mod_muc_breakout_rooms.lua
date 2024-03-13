@@ -15,9 +15,6 @@
 --     muc_room_locking = false
 --     muc_room_default_public_jids = true
 --
-
-module:depends('room_destroy');
-
 -- we use async to detect Prosody 0.10 and earlier
 local have_async = pcall(require, 'util.async');
 
@@ -345,11 +342,12 @@ end
 function on_breakout_room_pre_create(event)
     local breakout_room = event.room;
     local main_room, main_room_jid = get_main_room(breakout_room.jid);
+    local name = main_room._data.breakout_rooms[breakout_room.jid];
 
     -- Only allow existent breakout rooms to be started.
     -- Authorisation of breakout rooms is done by their random uuid name
-    if main_room and main_room._data.breakout_rooms and main_room._data.breakout_rooms[breakout_room.jid] then
-        breakout_room:set_subject(breakout_room.jid, main_room._data.breakout_rooms[breakout_room.jid]);
+    if main_room and main_room._data.breakout_rooms and name then
+        breakout_room:set_subject(breakout_room.jid, name);
     else
         module:log('debug', 'Invalid breakout room %s will not be created.', breakout_room.jid);
         breakout_room:destroy(main_room_jid, 'Breakout room is invalid.');
@@ -364,11 +362,11 @@ function on_occupant_joined(event)
         return;
     end
 
-    local main_room, main_room_jid = get_main_room(room.jid);
+    local main_room = get_main_room(room.jid);
 
     if main_room and main_room._data.breakout_rooms_active then
         if jid_node(event.occupant.jid) ~= 'focus' then
-            broadcast_breakout_rooms(main_room_jid);
+            broadcast_breakout_rooms(room.jid);
         end
 
         -- Prevent closing all rooms if a participant has joined (see on_occupant_left).
@@ -413,14 +411,14 @@ function on_occupant_left(event)
         return;
     end
 
-    local main_room, main_room_jid = get_main_room(room_jid);
+    local main_room = get_main_room(room_jid);
 
     if not main_room then
         return;
     end
 
     if main_room._data.breakout_rooms_active and jid_node(event.occupant.jid) ~= 'focus' then
-        broadcast_breakout_rooms(main_room_jid);
+        broadcast_breakout_rooms(room_jid);
     end
 
     -- Close the conference if all left for good.
@@ -430,38 +428,13 @@ function on_occupant_left(event)
             -- and we will have the old instance
             local main_room, main_room_jid = get_main_room(room_jid);
             if main_room and main_room.close_timer then
-                prosody.events.fire_event("maybe-destroy-room", {
-                    room = main_room;
-                    reason = 'All occupants left.';
-                    caller = module:get_name();
-                });
+                module:log('info', 'Closing conference %s as all left for good.', main_room_jid);
+                main_room:set_persistent(false);
+                main_room:destroy(nil, 'All occupants left.');
             end
         end);
     end
 end
-
--- Stop other modules from destroying room if breakout rooms not empty
-function handle_maybe_destroy_main_room(event)
-    local main_room = event.room;
-    local caller = event.caller;
-
-    if caller == module:get_name() then
-        -- we were the one that requested the deletion. Do not override.
-        return nil; -- stop room destruction
-    end
-
-    -- deletion was requested by another module. Check for break room occupants.
-    for breakout_room_jid, _ in pairs(main_room._data.breakout_rooms or {}) do
-        local breakout_room = breakout_rooms_muc_service.get_room_from_jid(breakout_room_jid);
-        if breakout_room and breakout_room:has_occupant() then
-            module:log('info', 'Suppressing room destroy. Breakout room still occupied %s', breakout_room_jid);
-            return true; -- stop room destruction
-        end
-    end
-end
-
-module:hook_global("maybe-destroy-room", handle_maybe_destroy_main_room)
-
 
 function on_main_room_destroyed(event)
     local main_room = event.room;

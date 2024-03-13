@@ -1,5 +1,4 @@
 import { SET_ROOM } from '../conference/actionTypes';
-import { SET_JWT } from '../jwt/actionTypes';
 import { JitsiConnectionErrors } from '../lib-jitsi-meet';
 import ReducerRegistry from '../redux/ReducerRegistry';
 import { assign, set } from '../redux/functions';
@@ -12,7 +11,7 @@ import {
     SET_LOCATION_URL,
     SHOW_CONNECTION_INFO
 } from './actionTypes';
-import { ConnectionFailedError } from './types';
+import { ConnectionFailedError } from './actions.any';
 
 export interface IConnectionState {
     connecting?: any;
@@ -27,7 +26,6 @@ export interface IConnectionState {
     error?: ConnectionFailedError;
     locationURL?: URL;
     passwordRequired?: Object;
-    preferVisitor?: boolean;
     showConnectionInfo?: boolean;
     timeEstablished?: number;
 }
@@ -50,9 +48,6 @@ ReducerRegistry.register<IConnectionState>(
 
         case CONNECTION_WILL_CONNECT:
             return _connectionWillConnect(state, action);
-
-        case SET_JWT:
-            return _setJWT(state, action);
 
         case SET_LOCATION_URL:
             return _setLocationURL(state, action);
@@ -89,7 +84,6 @@ function _connectionDisconnected(
     return assign(state, {
         connecting: undefined,
         connection: undefined,
-        preferVisitor: undefined,
         timeEstablished: undefined
     });
 }
@@ -147,8 +141,7 @@ function _connectionFailed(
         error,
         passwordRequired:
             error.name === JitsiConnectionErrors.PASSWORD_REQUIRED
-                ? connection : undefined,
-        preferVisitor: undefined
+                ? connection : undefined
     });
 }
 
@@ -189,22 +182,6 @@ function _connectionWillConnect(
  */
 function _getCurrentConnection(baseConnectionState: IConnectionState): IConnectionState | undefined {
     return baseConnectionState.connection || baseConnectionState.connecting;
-}
-
-/**
- * Reduces a specific redux action {@link SET_JWT} of the feature
- * base/connection.
- *
- * @param {IConnectionState} state - The redux state of the feature base/connection.
- * @param {Action} action - The Redux action SET_JWT to reduce.
- * @private
- * @returns {Object} The new state of the feature base/connection after the
- * reduction of the specified action.
- */
-function _setJWT(state: IConnectionState, { preferVisitor }: { preferVisitor: boolean; }) {
-    return assign(state, {
-        preferVisitor
-    });
 }
 
 /**

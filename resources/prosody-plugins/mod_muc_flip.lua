@@ -27,7 +27,7 @@ end
 local function remove_flip_tag(stanza)
     stanza:maptags(function(tag)
         if tag and tag.name == "flip_device" then
-            -- module:log("debug", "Removing %s tag from presence stanza!", tag.name);
+            module:log("debug", "Removing %s tag from presence stanza!", tag.name);
             return nil;
         else
             return tag;
@@ -58,11 +58,11 @@ module:hook("muc-occupant-pre-join", function(event)
                 -- allow participant from flip device to bypass Lobby
                 local occupant_jid = stanza.attr.from;
                 local affiliation = room:get_affiliation(occupant_jid);
-                if not affiliation or affiliation == 'none' or affiliation == 'member' then
-                    -- module:log("debug", "Bypass lobby invitee %s", occupant_jid)
+                if not affiliation or affiliation == 0 then
+                    module:log("debug", "Bypass lobby invitee %s", occupant_jid)
                     occupant.role = "participant";
                     room:set_affiliation(true, jid_bare(occupant_jid), "member")
-                    room:save_occupant(occupant);
+                    room:save();
                 end
                 -- bypass password on the flip device
                 local join = stanza:get_child("x", MUC_NS);
@@ -95,7 +95,7 @@ module:hook("muc-occupant-pre-join", function(event)
         -- update authenticated participant list
         participants[id] = occupant.nick;
         room._data.participants_details = participants
-        -- module:log("debug", "current details list %s", inspect(participants))
+        module:log("debug", "current details list %s", inspect(participants))
     else
         if flip_device_tag then
             module:log("warn", "Flip device tag present for a guest user")
@@ -111,21 +111,14 @@ end)
 module:hook("muc-occupant-joined", function(event)
     local room, occupant = event.room, event.occupant;
     if is_healthcheck_room(room.jid) or is_admin(occupant.bare_jid) then
-        return;
+        return ;
     end
 
     if room._data.flip_participant_nick and occupant.nick == room._data.flip_participant_nick then
         -- make joining participant from flip device have the same role and affiliation as for the previous device
         local kicked_occupant = room:get_occupant_by_nick(room._data.kicked_participant_nick);
-
-        if not kicked_occupant then
-            module:log("info", "Kick participant not found, nick %s from main room jid %s",
-                room._data.kicked_participant_nick, room.jid)
-            return;
-        end
-
         local initial_affiliation = room:get_affiliation(kicked_occupant.jid) or "member";
-        -- module:log("debug", "Transfer affiliation %s to occupant jid %s", initial_affiliation, occupant.jid)
+        module:log("debug", "Transfer affiliation %s to occupant jid %s", initial_affiliation, occupant.jid)
         room:set_affiliation(true, occupant.bare_jid, initial_affiliation)
         if initial_affiliation == "owner" then
             event.occupant.role = "moderator";
@@ -136,7 +129,7 @@ module:hook("muc-occupant-joined", function(event)
         local kicked_participant_node_jid = jid.split(kicked_occupant.jid);
         module:log("info", "Kick participant jid %s nick %s from main room jid %s", kicked_occupant.jid, room._data.kicked_participant_nick, room.jid)
         room:set_role(true, room._data.kicked_participant_nick, 'none')
-        room:save_occupant(occupant);
+        room:save()
         -- Kick participant from the first device from the lobby room
         if room._data.lobbyroom then
             local lobby_room_jid = room._data.lobbyroom;
@@ -177,7 +170,7 @@ module:hook('muc-broadcast-presence', function(event)
     local kicked_participant_nick = event.room._data.kicked_participant_nick
     local stanza = event.stanza;
     if kicked_participant_nick and stanza.attr.from == kicked_participant_nick and stanza.attr.type == 'unavailable' then
-        -- module:log("debug", "Add flip_device tag for presence unavailable from occupant nick %s", kicked_participant_nick)
+        module:log("debug", "Add flip_device tag for presence unavailable from occupant nick %s", kicked_participant_nick)
         stanza:tag("flip_device"):up();
     end
 end)

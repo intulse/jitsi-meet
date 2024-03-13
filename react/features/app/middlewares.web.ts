@@ -1,4 +1,3 @@
-import '../base/app/middleware';
 import '../base/connection/middleware';
 import '../base/i18n/middleware';
 import '../base/devices/middleware';

@@ -1,3 +1,11 @@
+export type InitOptions = {
+    endpoint?: string;
+    meetingFqn: string;
+    pollInterval: number;
+    sendSdp: boolean;
+    useLegacy: boolean;
+};
+
 export type VideoTypeData = {
     ssrc: number;
     videoType: string;

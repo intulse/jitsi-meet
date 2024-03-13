@@ -1,6 +1,6 @@
 import COUNTRIES_RESOURCES from 'i18n-iso-countries/langs/en.json';
 import i18next from 'i18next';
-import I18nextXHRBackend, { HttpBackendOptions } from 'i18next-http-backend';
+import I18nextXHRBackend from 'i18next-xhr-backend';
 import _ from 'lodash';
 
 import LANGUAGES_RESOURCES from '../../../../lang/languages.json';
@@ -41,6 +41,14 @@ export const LANGUAGES: Array<string> = Object.keys(LANGUAGES_RESOURCES);
 export const TRANSLATION_LANGUAGES: Array<string> = Object.keys(TRANSLATION_LANGUAGES_RESOURCES);
 
 /**
+ * The available/supported translation languages head. (Languages displayed on the top ).
+ *
+ * @public
+ * @type {Array<string>}
+ */
+export const TRANSLATION_LANGUAGES_HEAD: Array<string> = [ 'en' ];
+
+/**
  * The default language.
  *
  * English is the default language.
@@ -51,29 +59,13 @@ export const TRANSLATION_LANGUAGES: Array<string> = Object.keys(TRANSLATION_LANG
 export const DEFAULT_LANGUAGE = 'en';
 
 /**
- * The available/supported translation languages head. (Languages displayed on the top ).
- *
- * @public
- * @type {Array<string>}
- */
-export const TRANSLATION_LANGUAGES_HEAD: Array<string> = [ DEFAULT_LANGUAGE ];
-
-/**
  * The options to initialize i18next with.
  *
- * @type {i18next.InitOptions}
+ * @type {Object}
  */
-const options: i18next.InitOptions = {
-    backend: <HttpBackendOptions>{
-        loadPath: (lng: string[], ns: string[]) => {
-            switch (ns[0]) {
-            case 'countries':
-            case 'main':
-                return 'lang/{{ns}}-{{lng}}.json';
-            default:
-                return 'lang/{{ns}}.json';
-            }
-        }
+const options = {
+    backend: {
+        loadPath: 'lang/{{ns}}-{{lng}}.json'
     },
     defaultNS: 'main',
     fallbackLng: DEFAULT_LANGUAGE,
@@ -84,7 +76,6 @@ const options: i18next.InitOptions = {
     ns: [ 'main', 'languages', 'countries', 'translation-languages' ],
     react: {
         // re-render when a new resource bundle is added
-        // @ts-expect-error. Fixed in i18next 19.6.1.
         bindI18nStore: 'added',
         useSuspense: false
     },
@@ -98,7 +89,7 @@ const options: i18next.InitOptions = {
 
 i18next
     .use(navigator.product === 'ReactNative' ? {} : I18nextXHRBackend)
-    .use(languageDetector)
+    .use(languageDetector) // @ts-ignore
     .init(options);
 
 // Add default language which is preloaded from the source code.

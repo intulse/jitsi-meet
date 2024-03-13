@@ -583,8 +583,6 @@
         "hours": "{{count}} שעות",
         "minutes": "{{count}} דקות",
         "name": "שם",
-        "search": "לחפש",
-        "searchHint": "חפש משתתפים",
         "seconds": "{{count}} שניות",
         "speakerStats": "סטטיסטיקות דיבורים",
         "speakerTime": "זמן דיבור"

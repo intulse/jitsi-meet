@@ -66,7 +66,7 @@ const ConferenceID: React.FC<IProps> = ({ conferenceID, t }) => {
     return (
         <div className = { styles.container }>
             <div className = { styles.descriptionLabel }>
-                { t('info.dialANumber') }
+                To join the meeting via phone, dial one of these numbers and then enter the pin
             </div>
             <div className = { styles.separator } />
             <div className = { styles.pinLabel }>

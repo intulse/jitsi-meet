@@ -17,9 +17,4 @@ export interface IProps extends WithTranslation {
      * Function to be invoked after a successful display name change.
      */
     onPostSubmit?: Function;
-
-    /**
-     * Function to be invoked after a display name change.
-     */
-    validateInput?: Function;
 }

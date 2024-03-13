@@ -4,7 +4,6 @@ import { WithTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     FlatList,
-    SafeAreaView,
     TouchableOpacity,
     View,
     ViewStyle
@@ -200,7 +199,6 @@ class AddPeopleDialog extends AbstractAddPeopleDialog<IProps, IState> {
         return (
             <JitsiScreen
                 footerComponent = { this._renderShareMeetingButton }
-                hasExtraHeaderHeight = { true }
                 style = { styles.addPeopleContainer }>
                 <Input
                     autoFocus = { false }
@@ -499,7 +497,7 @@ class AddPeopleDialog extends AbstractAddPeopleDialog<IProps, IState> {
      */
     _renderShareMeetingButton() {
         return (
-            <SafeAreaView
+            <View
                 style = { [
                     styles.bottomBar as ViewStyle,
                     this.state.bottomPadding ? styles.extraBarPadding : null
@@ -510,7 +508,7 @@ class AddPeopleDialog extends AbstractAddPeopleDialog<IProps, IState> {
                         src = { IconShare }
                         style = { styles.shareIcon } />
                 </TouchableOpacity>
-            </SafeAreaView>
+            </View>
         );
     }
 

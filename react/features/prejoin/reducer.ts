@@ -8,6 +8,7 @@ import {
     SET_DIALOUT_NUMBER,
     SET_DIALOUT_STATUS,
     SET_JOIN_BY_PHONE_DIALOG_VISIBLITY,
+    SET_PRECALL_TEST_RESULTS,
     SET_PREJOIN_DEVICE_ERRORS,
     SET_PREJOIN_PAGE_VISIBILITY,
     SET_SKIP_PREJOIN_RELOAD
@@ -44,6 +45,11 @@ export interface IPrejoinState {
     dialOutStatus: string;
     joiningInProgress?: boolean;
     name: string;
+    precallTestResults?: {
+        fractionalLoss: number;
+        mediaConnectivity: boolean;
+        throughput: number;
+    };
     rawError: string;
     showJoinByPhoneDialog: boolean;
     showPrejoin: boolean;
@@ -74,6 +80,12 @@ ReducerRegistry.register<IPrejoinState>(
                 skipPrejoinOnReload: action.value
             };
         }
+
+        case SET_PRECALL_TEST_RESULTS:
+            return {
+                ...state,
+                precallTestResults: action.value
+            };
 
         case SET_PREJOIN_PAGE_VISIBILITY:
             return {

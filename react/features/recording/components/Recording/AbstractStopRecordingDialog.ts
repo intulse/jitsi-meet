@@ -7,7 +7,6 @@ import { IReduxState, IStore } from '../../../app/types';
 import { IJitsiConference } from '../../../base/conference/reducer';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
 import { setVideoMuted } from '../../../base/media/actions';
-import { setRequestingSubtitles } from '../../../subtitles/actions.any';
 import { stopLocalVideoRecording } from '../../actions';
 import { getActiveSession } from '../../functions';
 import { ISessionData } from '../../reducer';
@@ -89,9 +88,6 @@ export default class AbstractStopRecordingDialog<P extends IProps>
                 this._toggleScreenshotCapture();
             }
         }
-
-        // TODO: this should be an action in transcribing. -saghul
-        this.props.dispatch(setRequestingSubtitles(false, false, null));
 
         return true;
     }

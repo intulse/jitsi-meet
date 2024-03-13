@@ -59,7 +59,6 @@ export interface IJitsiConference {
     enableLobby: Function;
     end: Function;
     getBreakoutRooms: Function;
-    getConnection: Function;
     getLocalParticipantProperty: Function;
     getLocalTracks: Function;
     getMeetingUniqueId: Function;
@@ -73,6 +72,7 @@ export interface IJitsiConference {
     getSsrcByTrack: Function;
     grantOwner: Function;
     isAVModerationSupported: Function;
+    isCallstatsEnabled: Function;
     isE2EEEnabled: Function;
     isE2EESupported: Function;
     isEndConferenceSupported: Function;
@@ -137,7 +137,6 @@ export interface IConferenceState {
     followMeEnabled?: boolean;
     joining?: IJitsiConference;
     leaving?: IJitsiConference;
-    lobbyWaitingForHost?: boolean;
     localSubject?: string;
     locked?: string;
     membersOnly?: IJitsiConference;
@@ -156,17 +155,11 @@ export interface IConferenceState {
 
 export interface IJitsiConferenceRoom {
     locked: boolean;
+    moderator: {
+        logout: Function;
+    };
     myroomjid: string;
     roomjid: string;
-    xmpp: {
-        moderator: {
-            logout: Function;
-        };
-    };
-}
-
-interface IConferenceFailedError extends Error {
-    params: Array<any>;
 }
 
 /**
@@ -281,7 +274,7 @@ function _authStatusChanged(state: IConferenceState,
  * reduction of the specified action.
  */
 function _conferenceFailed(state: IConferenceState, { conference, error }: {
-    conference: IJitsiConference; error: IConferenceFailedError; }) {
+    conference: IJitsiConference; error: Error; }) {
     // The current (similar to getCurrentConference in
     // base/conference/functions.any.js) conference which is joining or joined:
     const conference_ = state.conference || state.joining;
@@ -293,7 +286,6 @@ function _conferenceFailed(state: IConferenceState, { conference, error }: {
     let authRequired;
     let membersOnly;
     let passwordRequired;
-    let lobbyWaitingForHost;
 
     switch (error.name) {
     case JitsiConferenceErrors.AUTHENTICATION_REQUIRED:
@@ -301,16 +293,9 @@ function _conferenceFailed(state: IConferenceState, { conference, error }: {
         break;
 
     case JitsiConferenceErrors.CONFERENCE_ACCESS_DENIED:
-    case JitsiConferenceErrors.MEMBERS_ONLY_ERROR: {
+    case JitsiConferenceErrors.MEMBERS_ONLY_ERROR:
         membersOnly = conference;
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [ _lobbyJid, _lobbyWaitingForHost ] = error.params;
-
-        lobbyWaitingForHost = _lobbyWaitingForHost;
-
         break;
-    }
 
     case JitsiConferenceErrors.PASSWORD_REQUIRED:
         passwordRequired = conference;
@@ -324,7 +309,6 @@ function _conferenceFailed(state: IConferenceState, { conference, error }: {
         error,
         joining: undefined,
         leaving: undefined,
-        lobbyWaitingForHost,
 
         /**
          * The indicator of how the conference/room is locked. If falsy, the
@@ -380,8 +364,6 @@ function _conferenceJoined(state: IConferenceState, { conference }: { conference
         joining: undefined,
         membersOnly: undefined,
         leaving: undefined,
-
-        lobbyWaitingForHost: undefined,
 
         /**
          * The indicator which determines whether the conference is locked.

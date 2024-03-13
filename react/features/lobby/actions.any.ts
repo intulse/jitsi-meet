@@ -21,8 +21,7 @@ import {
     SET_PASSWORD_JOIN_FAILED
 } from './actionTypes';
 import { LOBBY_CHAT_INITIALIZED, MODERATOR_IN_CHAT_WITH_LEFT } from './constants';
-import { getKnockingParticipants, getLobbyConfig, getLobbyEnabled, isEnablingLobbyAllowed } from './functions';
-import logger from './logger';
+import { getKnockingParticipants, getLobbyConfig, getLobbyEnabled } from './functions';
 import { IKnockingParticipant } from './types';
 
 /**
@@ -244,11 +243,7 @@ export function toggleLobbyMode(enabled: boolean) {
         const conference = getCurrentConference(getState);
 
         if (enabled) {
-            if (isEnablingLobbyAllowed(getState())) {
-                conference?.enableLobby();
-            } else {
-                logger.info('Ignoring enable lobby request because there are visitors in the call already.');
-            }
+            conference?.enableLobby();
         } else {
             conference?.disableLobby();
         }

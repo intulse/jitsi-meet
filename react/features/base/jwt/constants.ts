@@ -4,6 +4,7 @@
 export const MEET_FEATURES = {
     BRANDING: 'branding',
     CALENDAR: 'calendar',
+    CALLSTATS: 'callstats',
     FLIP: 'flip',
     INBOUND_CALL: 'inbound-call',
     LIVESTREAMING: 'livestreaming',

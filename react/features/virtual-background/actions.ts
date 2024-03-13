@@ -3,7 +3,7 @@ import { createVirtualBackgroundEffect } from '../stream-effects/virtual-backgro
 
 import { BACKGROUND_ENABLED, SET_VIRTUAL_BACKGROUND } from './actionTypes';
 import logger from './logger';
-import { IVirtualBackground } from './reducer';
+import { IVirtualBackgroundOptions } from './types';
 
 /**
  * Signals the local participant activate the virtual background video or not.
@@ -12,16 +12,16 @@ import { IVirtualBackground } from './reducer';
  * @param {Object} jitsiTrack - Represents the jitsi track that will have backgraund effect applied.
  * @returns {Promise}
  */
-export function toggleBackgroundEffect(options: IVirtualBackground, jitsiTrack: any) {
+export function toggleBackgroundEffect(options: IVirtualBackgroundOptions, jitsiTrack: any) {
     return async function(dispatch: IStore['dispatch'], getState: IStore['getState']) {
-        await dispatch(backgroundEnabled(options.backgroundEffectEnabled));
+        await dispatch(backgroundEnabled(options.enabled));
         await dispatch(setVirtualBackground(options));
         const state = getState();
         const virtualBackground = state['features/virtual-background'];
 
         if (jitsiTrack) {
             try {
-                if (options.backgroundEffectEnabled) {
+                if (options.enabled) {
                     await jitsiTrack.setEffect(await createVirtualBackgroundEffect(virtualBackground, dispatch));
                 } else {
                     await jitsiTrack.setEffect(undefined);
@@ -46,10 +46,10 @@ export function toggleBackgroundEffect(options: IVirtualBackground, jitsiTrack: 
  *     type: string,
  * }}
  */
-export function setVirtualBackground(options?: IVirtualBackground) {
+export function setVirtualBackground(options?: IVirtualBackgroundOptions) {
     return {
         type: SET_VIRTUAL_BACKGROUND,
-        virtualSource: options?.virtualSource,
+        virtualSource: options?.url,
         blurValue: options?.blurValue,
         backgroundType: options?.backgroundType,
         selectedThumbnail: options?.selectedThumbnail
@@ -65,7 +65,7 @@ export function setVirtualBackground(options?: IVirtualBackground) {
  *      backgroundEffectEnabled: boolean
  * }}
  */
-export function backgroundEnabled(backgroundEffectEnabled?: boolean) {
+export function backgroundEnabled(backgroundEffectEnabled: boolean) {
     return {
         type: BACKGROUND_ENABLED,
         backgroundEffectEnabled

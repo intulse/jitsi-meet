@@ -1,10 +1,10 @@
 /**
  * Helper method used to process screenshots captured by the {@code ScreenshotCaptureEffect}.
  *
- * @param {Blob} imageBlob - The blob of the screenshot that has to be processed.
+ * @param {HTMLCanvasElement} canvas - The canvas containing a screenshot to be processed.
  * @param {Object} options - Custom options required for processing.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export async function processScreenshot(imageBlob, options) { // eslint-disable-line no-unused-vars
+export function processScreenshot(canvas, options) { // eslint-disable-line no-unused-vars
     return;
 }

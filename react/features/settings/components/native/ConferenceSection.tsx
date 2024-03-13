@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -7,7 +7,7 @@ import { IReduxState } from '../../../app/types';
 import { updateSettings } from '../../../base/settings/actions';
 import Input from '../../../base/ui/components/native/Input';
 import Switch from '../../../base/ui/components/native/Switch';
-import { isServerURLChangeEnabled, normalizeUserInputURL } from '../../functions.native';
+import { isServerURLChangeEnabled, normalizeUserInputURL } from '../../functions.any';
 
 import FormRow from './FormRow';
 import FormSection from './FormSection';
@@ -17,6 +17,7 @@ import styles from './styles';
 const ConferenceSection = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
+    const defaultServerURL = useSelector((state: IReduxState) => getDefaultURL(state));
     const {
         serverURL,
         startCarMode,
@@ -24,10 +25,7 @@ const ConferenceSection = () => {
         startWithVideoMuted
     } = useSelector((state: IReduxState) => state['features/base/settings']);
 
-    const defaultServerURL = useSelector((state: IReduxState) => getDefaultURL(state));
-    const [ newServerURL, setNewServerURL ] = useState(serverURL ?? '');
-
-    const serverURLChangeEnabled = useSelector((state: IReduxState) => isServerURLChangeEnabled(state));
+    const { serverURLChangeEnabled } = useSelector((state: IReduxState) => isServerURLChangeEnabled(state));
 
     const switches = useMemo(() => [
         {
@@ -47,27 +45,21 @@ const ConferenceSection = () => {
         }
     ], [ startCarMode, startWithAudioMuted, startWithVideoMuted ]);
 
-    const onChangeServerURL = useCallback(value => {
-
-        setNewServerURL(value);
-        dispatch(updateSettings({
-            serverURL: value
-        }));
-    }, [ dispatch, newServerURL ]);
+    const onChangeServerURL = useCallback(newServerURL => {
+        dispatch(updateSettings({ serverURL: newServerURL }));
+    }, [ updateSettings ]);
 
     const processServerURL = useCallback(() => {
-        const normalizedURL = normalizeUserInputURL(newServerURL);
+        const normalizedURL = normalizeUserInputURL(serverURL ?? '');
 
         onChangeServerURL(normalizedURL);
-    }, [ newServerURL ]);
+    }, [ serverURL ]);
 
     useEffect(() => () => processServerURL(), []);
 
     const onSwitchToggled = useCallback((name: string) => (enabled?: boolean) => {
-
-        // @ts-ignore
         dispatch(updateSettings({ [name]: enabled }));
-    }, [ dispatch ]);
+    }, [ dispatch, updateSettings ]);
 
     return (
         <FormSection
@@ -82,7 +74,7 @@ const ConferenceSection = () => {
                 onChange = { onChangeServerURL }
                 placeholder = { defaultServerURL }
                 textContentType = { 'URL' } // iOS only
-                value = { newServerURL } />
+                value = { serverURL ?? '' } />
             {
                 switches.map(({ label, state, name }) => (
                     <FormRow

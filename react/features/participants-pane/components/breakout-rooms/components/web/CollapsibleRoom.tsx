@@ -103,8 +103,7 @@ const useStyles = makeStyles()(theme => {
             marginRight: '16px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            border: 'none'
+            justifyContent: 'center'
         }
     };
 });
@@ -134,15 +133,11 @@ export const CollapsibleRoom = ({
     const overflowDrawer: boolean = useSelector(showOverflowDrawer);
     const moderator = useSelector(isLocalParticipantModerator);
 
-    const arrow = (<button
-        aria-label = { collapsed ? t('breakoutRooms.hideParticipantList', 'Hide participant list')
-            : t('breakoutRooms.showParticipantList', 'Show participant list')
-        }
-        className = { styles.arrowContainer }>
+    const arrow = (<div className = { styles.arrowContainer }>
         <Icon
             size = { 14 }
             src = { collapsed ? IconArrowDown : IconArrowUp } />
-    </button>);
+    </div>);
 
     const roomName = (<span className = { styles.roomName }>
         {`${room.name || t('breakoutRooms.mainRoom')} (${Object.keys(room?.participants
@@ -160,8 +155,6 @@ export const CollapsibleRoom = ({
         <ListItem
             actions = { children }
             className = { cx(styles.container, 'breakout-room-container') }
-            defaultName = { `${room.name || t('breakoutRooms.mainRoom')} (${Object.keys(room?.participants
-                || {}).length})` }
             icon = { arrow }
             isHighlighted = { isHighlighted }
             onClick = { toggleCollapsed }

@@ -69,7 +69,7 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
                 safeAreaInsets = { [ 'right' ] }
                 style = { contentWrapperStyles }>
                 <BrandingImageBackground />
-                <View style = { largeVideoContainerStyles as ViewStyle }>
+                <View style = { largeVideoContainerStyles }>
                     <View style = { preJoinStyles.displayRoomNameBackdrop as ViewStyle }>
                         <Text
                             numberOfLines = { 1 }
@@ -160,7 +160,7 @@ class LobbyScreen extends AbstractLobbyScreen<IProps> {
                 customStyles = {{ input: styles.customInput }}
                 error = { _passwordJoinFailed }
                 onChange = { this._onChangePassword }
-                placeholder = { t('lobby.enterPasswordButton') }
+                placeholder = { t('lobby.passwordField') }
                 secureTextEntry = { true }
                 value = { this.state.password } />
         );

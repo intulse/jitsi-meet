@@ -2,7 +2,7 @@ import { NativeModules } from 'react-native';
 
 
 /**
- * Determines if the ExternalAPI native module is available.
+ * Determimes if the ExternalAPI native module is available.
  *
  * @returns {boolean} If yes {@code true} otherwise {@code false}.
  */

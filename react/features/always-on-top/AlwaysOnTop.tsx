@@ -4,7 +4,6 @@ import React, { Component } from 'react';
 // in this environment (e.g. JitsiMeetJS or interfaceConfig)
 import StatelessAvatar from '../base/avatar/components/web/StatelessAvatar';
 import { getAvatarColor, getInitials } from '../base/avatar/functions';
-import { DEFAULT_ICON } from '../base/icons/svg/constants';
 
 import Toolbar from './Toolbar';
 
@@ -185,7 +184,6 @@ export default class AlwaysOnTop extends Component<any, IState> {
                 <div id = 'avatarContainer'>
                     <StatelessAvatar
                         color = { getAvatarColor(displayName, customAvatarBackgrounds) }
-                        iconUser = { DEFAULT_ICON.IconUser }
                         id = 'avatar'
                         initials = { getInitials(displayName) }
                         url = { avatarURL } />)

@@ -1,7 +1,6 @@
 import 'image-capture';
 import './createImageBitmap';
 import { IStore } from '../app/types';
-import { isMobileBrowser } from '../base/environment/utils';
 import { getLocalVideoTrack } from '../base/tracks/functions';
 import { getBaseUrl } from '../base/util/helpers';
 
@@ -89,7 +88,7 @@ class FaceLandmarksDetector {
             return;
         }
 
-        if (isMobileBrowser() || navigator.product === 'ReactNative') {
+        if (navigator.product === 'ReactNative') {
             logger.warn('Unsupported environment for face detection');
 
             return;

@@ -7,7 +7,6 @@ import { translate } from '../../../base/i18n/functions';
 import { getLocalParticipant } from '../../../base/participants/functions';
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
 import Tabs from '../../../base/ui/components/web/Tabs';
-import { arePollsDisabled } from '../../../conference/functions.any';
 import PollsPane from '../../../polls/components/web/PollsPane';
 import { sendMessage, setIsPollsTabFocused, toggleChat } from '../../actions.web';
 import { CHAT_SIZE, CHAT_TABS, SMALL_WIDTH_THRESHOLD } from '../../constants';
@@ -91,7 +90,7 @@ const useStyles = makeStyles()(theme => {
             zIndex: 300,
 
             '@media (max-width: 580px)': {
-                height: '100dvh',
+                height: '100vh',
                 position: 'fixed',
                 left: 0,
                 right: 0,
@@ -317,11 +316,12 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
     const { isOpen, isPollsTabFocused, messages, nbUnreadMessages } = state['features/chat'];
     const { nbUnreadPolls } = state['features/polls'];
     const _localParticipant = getLocalParticipant(state);
+    const { disablePolls } = state['features/base/config'];
 
     return {
         _isModal: window.innerWidth <= SMALL_WIDTH_THRESHOLD,
         _isOpen: isOpen,
-        _isPollsEnabled: !arePollsDisabled(state),
+        _isPollsEnabled: !disablePolls,
         _isPollsTabFocused: isPollsTabFocused,
         _messages: messages,
         _nbUnreadMessages: nbUnreadMessages,

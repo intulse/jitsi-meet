@@ -105,10 +105,10 @@ function UploadImageButton({
                 }
             ]);
             setOptions({
-                backgroundEffectEnabled: true,
                 backgroundType: VIRTUAL_BACKGROUND_TYPE.IMAGE,
-                selectedThumbnail: uuId,
-                virtualSource: url
+                enabled: true,
+                url,
+                selectedThumbnail: uuId
             });
         };
         logger.info('New virtual background image uploaded!');

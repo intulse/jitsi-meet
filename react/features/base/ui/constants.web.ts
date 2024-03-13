@@ -139,7 +139,7 @@ export const commonStyles = (theme: Theme) => {
                 alignItems: 'center',
                 background: 'rgba(0,0,0,0.6)',
                 display: 'flex',
-                height: '100dvh',
+                height: '100vh',
                 justifyContent: 'center',
                 left: 0,
                 position: 'absolute' as const,

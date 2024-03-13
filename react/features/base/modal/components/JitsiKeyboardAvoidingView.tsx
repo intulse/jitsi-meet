@@ -4,8 +4,7 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
-    StatusBar,
-    ViewStyle
+    StatusBar
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -39,9 +38,9 @@ interface IProps {
     hasBottomTextInput: boolean;
 
     /**
-     * Is the screen header having an extra height?
+     * Is the screen rendering a tab navigator?
      */
-    hasExtraHeaderHeight?: boolean;
+    hasTabNavigator: boolean;
 
     /**
      * Additional style to be appended to the KeyboardAvoidingView.
@@ -55,8 +54,8 @@ const JitsiKeyboardAvoidingView = (
             children,
             contentContainerStyle,
             disableForcedKeyboardDismiss,
+            hasTabNavigator,
             hasBottomTextInput,
-            hasExtraHeaderHeight,
             style
         }: IProps) => {
     const headerHeight = useHeaderHeight();
@@ -70,13 +69,13 @@ const JitsiKeyboardAvoidingView = (
     }, [ insets.bottom ]);
 
 
-    const extraHeaderHeight
-        = hasExtraHeaderHeight ? headerHeight : 0;
+    const tabNavigatorPadding
+        = hasTabNavigator ? headerHeight : 0;
     const extraBottomPadding
         = addBottomPadding ? bottomPadding : 0;
     const noNotchDevicePadding = extraBottomPadding || 10;
     const iosVerticalOffset
-        = headerHeight + noNotchDevicePadding + extraHeaderHeight;
+        = headerHeight + noNotchDevicePadding + tabNavigatorPadding;
     const androidVerticalOffset = hasBottomTextInput
         ? headerHeight + Number(StatusBar.currentHeight) : headerHeight;
 
@@ -87,7 +86,7 @@ const JitsiKeyboardAvoidingView = (
     return (
         <KeyboardAvoidingView
             behavior = { Platform.OS === 'ios' ? 'padding' : 'height' }
-            contentContainerStyle = { contentContainerStyle as ViewStyle }
+            contentContainerStyle = { contentContainerStyle }
             enabled = { true }
             keyboardVerticalOffset = {
                 Platform.OS === 'ios'
@@ -96,7 +95,7 @@ const JitsiKeyboardAvoidingView = (
             }
             onResponderRelease = { onRelease }
             onStartShouldSetResponder = { shouldSetResponse }
-            style = { style as ViewStyle }>
+            style = { style }>
             { children }
         </KeyboardAvoidingView>
     );

@@ -42,11 +42,6 @@ interface IProps extends AbstractProps, WithTranslation {
     isConfirmDestructive?: Boolean;
 
     /**
-     * Whether or not the confirm button is hidden.
-     */
-    isConfirmHidden?: Boolean;
-
-    /**
      * Dialog title.
      */
     title?: string;
@@ -65,8 +60,7 @@ class ConfirmDialog extends AbstractDialog<IProps> {
      * @static
      */
     static defaultProps = {
-        isConfirmDestructive: false,
-        isConfirmHidden: false
+        isConfirmDestructive: false
     };
 
     /**
@@ -101,7 +95,6 @@ class ConfirmDialog extends AbstractDialog<IProps> {
             children,
             confirmLabel,
             isConfirmDestructive,
-            isConfirmHidden,
             t,
             title
         } = this.props;
@@ -125,12 +118,10 @@ class ConfirmDialog extends AbstractDialog<IProps> {
                     label = { t(cancelLabel || 'dialog.confirmNo') }
                     onPress = { this._onCancel }
                     style = { styles.dialogButton } />
-                {
-                    !isConfirmHidden && <Dialog.Button
-                        label = { t(confirmLabel || 'dialog.confirmYes') }
-                        onPress = { this._onSubmit }
-                        style = { dialogButtonStyle } />
-                }
+                <Dialog.Button
+                    label = { t(confirmLabel || 'dialog.confirmYes') }
+                    onPress = { this._onSubmit }
+                    style = { dialogButtonStyle } />
             </Dialog.Container>
         );
     }

@@ -153,7 +153,7 @@ class ChromeExtensionBanner extends PureComponent<IProps, IState> {
      */
     _isSupportedEnvironment() {
         return interfaceConfig.SHOW_CHROME_EXTENSION_BANNER
-            && browser.isChromiumBased()
+            && browser.isChrome()
             && !browser.isTwa()
             && !isMobileBrowser()
             && !this.props.isVpaas;

@@ -1,9 +1,7 @@
 import React from 'react';
-import {
-    Animated,
+import { Animated,
     NativeSyntheticEvent,
     SafeAreaView,
-    StyleProp,
     TextInputFocusEventData,
     TextStyle,
     TouchableHighlight,
@@ -332,10 +330,10 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
                 style = { [
                     isSettingsScreenFocused && styles.roomNameInputContainer,
                     { opacity: this.state.roomNameInputAnimation }
-                ] as StyleProp<ViewStyle> }>
-                <SafeAreaView style = { styles.roomContainer as StyleProp<ViewStyle> }>
+                ] }>
+                <SafeAreaView style = { styles.roomContainer as ViewStyle }>
                     <View style = { styles.joinControls } >
-                        <Text style = { styles.enterRoomText as StyleProp<TextStyle> }>
+                        <Text style = { styles.enterRoomText }>
                             { t('welcomepage.roomname') }
                         </Text>
                         <Input

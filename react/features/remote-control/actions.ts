@@ -476,11 +476,7 @@ export function endpointMessageReceived(participantId: string, message: {
                 if (type === EVENTS.stop) {
                     dispatch(stopReceiver(false, true));
                 } else { // forward the message
-                    try {
-                        transport?.sendEvent(message);
-                    } catch (error) {
-                        logger.error('Error while trying to execute remote control message', error);
-                    }
+                    transport?.sendEvent(message);
                 }
             } // else ignore
         } else {

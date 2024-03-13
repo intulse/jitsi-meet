@@ -14,8 +14,8 @@ import {
 import {
     IConfig,
     IDeeplinkingConfig,
-    IDeeplinkingDesktopConfig,
     IDeeplinkingMobileConfig,
+    IDeeplinkingPlatformConfig,
     IMobileDynamicLink,
     ToolbarButton
 } from './configType';
@@ -295,7 +295,7 @@ function _translateInterfaceConfig(oldValue: IConfig) {
     } else {
         const disabled = Boolean(oldValue.disableDeepLinking);
         const deeplinking: IDeeplinkingConfig = {
-            desktop: {} as IDeeplinkingDesktopConfig,
+            desktop: {} as IDeeplinkingPlatformConfig,
             hideLogo: false,
             disabled,
             android: {} as IDeeplinkingMobileConfig,
@@ -465,7 +465,7 @@ function _translateLegacyConfig(oldValue: IConfig) {
     if (oldValue.autoCaptionOnRecord !== undefined) {
         newValue.transcription = {
             ...newValue.transcription,
-            autoTranscribeOnRecord: oldValue.autoCaptionOnRecord
+            autoCaptionOnRecord: oldValue.autoCaptionOnRecord
         };
     }
 

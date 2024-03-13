@@ -50,8 +50,8 @@ import {
 } from '../../react/features/base/participants/functions';
 import { updateSettings } from '../../react/features/base/settings/actions';
 import { getDisplayName } from '../../react/features/base/settings/functions.web';
-import { setCameraFacingMode } from '../../react/features/base/tracks/actions.web';
-import { CAMERA_FACING_MODE_MESSAGE } from '../../react/features/base/tracks/constants';
+import { toggleCamera } from '../../react/features/base/tracks/actions.any';
+import { isToggleCameraEnabled } from '../../react/features/base/tracks/functions';
 import {
     autoAssignToBreakoutRooms,
     closeBreakoutRoom,
@@ -244,6 +244,8 @@ function initCommands() {
             }
         },
         'pin-participant': (id, videoType) => {
+            logger.debug('Pin participant command received');
+
             const state = APP.store.getState();
 
             // if id not provided, unpin everybody.
@@ -301,6 +303,7 @@ function initCommands() {
             APP.store.dispatch(removeBreakoutRoom(breakoutRoomJid));
         },
         'resize-large-video': (width, height) => {
+            logger.debug('Resize large video command received');
             sendAnalytics(createApiEvent('largevideo.resized'));
             APP.store.dispatch(resizeLargeVideo(width, height));
         },
@@ -321,6 +324,7 @@ function initCommands() {
             APP.store.dispatch(setAssumedBandwidthBps(value));
         },
         'set-follow-me': value => {
+            logger.debug('Set follow me command received');
 
             if (value) {
                 sendAnalytics(createApiEvent('follow.me.set'));
@@ -331,6 +335,7 @@ function initCommands() {
             APP.store.dispatch(setFollowMe(value));
         },
         'set-large-video-participant': (participantId, videoType) => {
+            logger.debug('Set large video participant command received');
             const { getState, dispatch } = APP.store;
 
             if (!participantId) {
@@ -368,10 +373,12 @@ function initCommands() {
         },
         'toggle-audio': () => {
             sendAnalytics(createApiEvent('toggle-audio'));
+            logger.log('Audio toggle: API command received');
             APP.conference.toggleAudioMuted(false /* no UI */);
         },
         'toggle-video': () => {
             sendAnalytics(createApiEvent('toggle-video'));
+            logger.log('Video toggle: API command received');
             APP.conference.toggleVideoMuted(false /* no UI */, true /* ensure track */);
         },
         'toggle-film-strip': () => {
@@ -388,8 +395,12 @@ function initCommands() {
             sendAnalytics(createApiEvent('film.strip.resize'));
             APP.store.dispatch(resizeFilmStrip(options.width));
         },
-        'toggle-camera': facingMode => {
-            APP.store.dispatch(setCameraFacingMode(facingMode));
+        'toggle-camera': () => {
+            if (!isToggleCameraEnabled(APP.store.getState())) {
+                return;
+            }
+
+            APP.store.dispatch(toggleCamera());
         },
         'toggle-camera-mirror': () => {
             const state = APP.store.getState();
@@ -466,8 +477,8 @@ function initCommands() {
         'toggle-subtitles': () => {
             APP.store.dispatch(toggleRequestingSubtitles());
         },
-        'set-subtitles': (enabled, displaySubtitles, language) => {
-            APP.store.dispatch(setRequestingSubtitles(enabled, displaySubtitles, language));
+        'set-subtitles': enabled => {
+            APP.store.dispatch(setRequestingSubtitles(enabled));
         },
         'toggle-tile-view': () => {
             sendAnalytics(createApiEvent('tile-view.toggled'));
@@ -490,6 +501,7 @@ function initCommands() {
             APP.conference.changeLocalAvatarUrl(avatarUrl);
         },
         'send-chat-message': (message, to, ignorePrivacy = false) => {
+            logger.debug('Send chat message command received');
             if (to) {
                 const participant = getParticipantById(APP.store.getState(), to);
 
@@ -507,6 +519,7 @@ function initCommands() {
             APP.store.dispatch(sendMessage(message, ignorePrivacy));
         },
         'send-endpoint-text-message': (to, text) => {
+            logger.debug('Send endpoint message command received');
             try {
                 APP.conference.sendEndpointMessage(to, {
                     name: ENDPOINT_TEXT_MESSAGE_NAME,
@@ -516,32 +529,26 @@ function initCommands() {
                 logger.error('Failed sending endpoint text message', err);
             }
         },
-        'send-camera-facing-mode-message': (to, facingMode) => {
-            if (!to) {
-                logger.warn('Participant id not set');
-
-                return;
-            }
-
-            APP.conference.sendEndpointMessage(to, {
-                name: CAMERA_FACING_MODE_MESSAGE,
-                facingMode
-            });
-        },
         'overwrite-names': participantList => {
+            logger.debug('Overwrite names command received');
+
             APP.store.dispatch(overwriteParticipantsNames(participantList));
         },
         'toggle-e2ee': enabled => {
+            logger.debug('Toggle E2EE key command received');
             APP.store.dispatch(toggleE2EE(enabled));
         },
         'set-media-encryption-key': keyInfo => {
             APP.store.dispatch(setMediaEncryptionKey(JSON.parse(keyInfo)));
         },
         'set-video-quality': frameHeight => {
+            logger.debug('Set video quality command received');
             sendAnalytics(createApiEvent('set.video.quality'));
             APP.store.dispatch(setVideoQuality(frameHeight));
         },
+
         'start-share-video': url => {
+            logger.debug('Share video command received');
             sendAnalytics(createApiEvent('share.video.start'));
             const id = extractYoutubeIdOrURL(url);
 
@@ -549,7 +556,9 @@ function initCommands() {
                 APP.store.dispatch(playSharedVideo(id));
             }
         },
+
         'stop-share-video': () => {
+            logger.debug('Share video command received');
             sendAnalytics(createApiEvent('share.video.stop'));
             APP.store.dispatch(stopSharedVideo());
         },
@@ -624,7 +633,6 @@ function initCommands() {
          * Only applies to certain jitsi meet deploys.
          * @param { string } arg.youtubeStreamKey - The youtube stream key.
          * @param { string } arg.youtubeBroadcastID - The youtube broadcast ID.
-         * @param { Object } arg.extraMetadata - Any extra metadata params for file recording.
          * @returns {void}
          */
         'start-recording': ({
@@ -635,8 +643,7 @@ function initCommands() {
             rtmpStreamKey,
             rtmpBroadcastID,
             youtubeStreamKey,
-            youtubeBroadcastID,
-            extraMetadata = {}
+            youtubeBroadcastID
         }) => {
             const state = APP.store.getState();
             const conference = getCurrentConference(state);
@@ -686,7 +693,6 @@ function initCommands() {
                         mode: JitsiRecordingConstants.mode.FILE,
                         appData: JSON.stringify({
                             'file_recording_metadata': {
-                                ...extraMetadata,
                                 'upload_credentials': {
                                     'service_name': RECORDING_TYPES.DROPBOX,
                                     'token': dropboxToken
@@ -699,7 +705,6 @@ function initCommands() {
                         mode: JitsiRecordingConstants.mode.FILE,
                         appData: JSON.stringify({
                             'file_recording_metadata': {
-                                ...extraMetadata,
                                 'share': shouldShare
                             }
                         })
@@ -829,7 +834,6 @@ function initCommands() {
     };
     transport.on('event', ({ data, name }) => {
         if (name && commands[name]) {
-            logger.info(`API command received: ${name}`);
             commands[name](...data);
 
             return true;
@@ -981,13 +985,7 @@ function initCommands() {
             callback(isP2pActive(APP.store.getState()));
             break;
         }
-        case '_new_electron_screensharing_supported': {
-            callback(true);
-            break;
-        }
         default:
-            callback({ error: new Error('UnknownRequestError') });
-
             return false;
         }
 
@@ -1095,11 +1093,7 @@ class API {
         this._enabled = true;
 
         initCommands();
-
         this.notifyBrowserSupport(isSupportedBrowser());
-
-        // Let the embedder know we are ready.
-        this._sendEvent({ name: 'ready' });
     }
 
     /**
@@ -1139,11 +1133,7 @@ class API {
      */
     _sendEvent(event = {}) {
         if (this._enabled) {
-            try {
-                transport.sendEvent(event);
-            } catch (error) {
-                logger.error('Failed to send and IFrame API event', error);
-            }
+            transport.sendEvent(event);
         }
     }
 
@@ -1274,19 +1264,6 @@ class API {
             description,
             name: 'notification-triggered',
             title
-        });
-    }
-
-    /**
-     * Notify request desktop sources.
-     *
-     * @param {Object} options - Object with the options for desktop sources.
-     * @returns {void}
-     */
-    requestDesktopSources(options) {
-        return transport.sendRequest({
-            name: '_request-desktop-sources',
-            options
         });
     }
 
@@ -1490,43 +1467,11 @@ class API {
      * @param {Array<string>} args - Array of strings composing the log message.
      * @returns {void}
      */
-    notifyLog(logLevel, args = []) {
-        if (!Array.isArray(args)) {
-            logger.error('notifyLog received wrong argument types!');
-
-            return;
-        }
-
-        // Trying to convert arguments to strings. Otherwise in order to send the event the arguments will be formatted
-        // with JSON.stringify which can throw an error because of circular objects and we will lose the whole log.
-        const formattedArguments = [];
-
-        args.forEach(arg => {
-            let formattedArgument = '';
-
-            if (arg instanceof Error) {
-                formattedArgument += `${arg.toString()}: ${arg.stack}`;
-            } else if (typeof arg === 'object') {
-                // NOTE: The non-enumerable properties of the objects wouldn't be included in the string after
-                // JSON.strigify. For example Map instance will be translated to '{}'. So I think we have to eventually
-                // do something better for parsing the arguments. But since this option for strigify is part of the
-                // public interface and I think it could be useful in some cases I will it for now.
-                try {
-                    formattedArgument += JSON.stringify(arg);
-                } catch (error) {
-                    formattedArgument += arg;
-                }
-            } else {
-                formattedArgument += arg;
-            }
-
-            formattedArguments.push(formattedArgument);
-        });
-
+    notifyLog(logLevel, args) {
         this._sendEvent({
             name: 'log',
             logLevel,
-            args: formattedArguments
+            args
         });
     }
 
@@ -1972,33 +1917,6 @@ class API {
             name: 'toolbar-button-clicked',
             key,
             preventExecution
-        });
-    }
-
-    /**
-     * Notify external application (if API is enabled) that transcribing has started or stopped.
-     *
-     * @param {boolean} on - True if transcribing is on, false otherwise.
-     * @returns {void}
-     */
-    notifyTranscribingStatusChanged(on) {
-        this._sendEvent({
-            name: 'transcribing-status-changed',
-            on
-        });
-    }
-
-    /**
-     * Notify external application (if API is enabled) that the user received
-     * a transcription chunk.
-     *
-     * @param {Object} data - The event data.
-     * @returns {void}
-     */
-    notifyTranscriptionChunkReceived(data) {
-        this._sendEvent({
-            name: 'transcription-chunk-received',
-            data
         });
     }
 

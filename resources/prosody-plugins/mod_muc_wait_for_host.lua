@@ -8,9 +8,6 @@
 -- This module depends on mod_persistent_lobby.
 local um_is_admin = require 'core.usermanager'.is_admin;
 local jid = require 'util.jid';
-local util = module:require "util";
-local is_healthcheck_room = util.is_healthcheck_room;
-local is_moderated = util.is_moderated;
 
 local disable_auto_owners = module:get_option_boolean('wait_for_host_disable_auto_owners', false);
 
@@ -31,12 +28,9 @@ local lobby_host;
 if not disable_auto_owners then
     module:hook('muc-occupant-joined', function (event)
         local room, occupant, session = event.room, event.occupant, event.origin;
-        local is_moderated_room = is_moderated(room.jid);
 
         -- for jwt authenticated and username and password authenticated
-        -- only if it is not a moderated room
-        if not is_moderated_room and
-            (session.auth_token or (session.username and jid.host(occupant.bare_jid) == muc_domain_base)) then
+        if session.auth_token or (session.username and jid.host(occupant.bare_jid) == muc_domain_base) then
             room:set_affiliation(true, occupant.bare_jid, 'owner');
         end
     end, 2);
@@ -53,7 +47,7 @@ module:hook('muc-occupant-pre-join', function (event)
 
     -- we ignore jicofo as we want it to join the room or if the room has already seen its
     -- authenticated host
-    if is_admin(occupant.bare_jid) or is_healthcheck_room(room.jid) or room.has_host then
+    if is_admin(occupant.bare_jid) or room.has_host then
         return;
     end
 
@@ -76,7 +70,6 @@ module:hook('muc-occupant-pre-join', function (event)
             module:log('info', 'Host %s arrived in %s.', occupant.bare_jid, room.jid);
             audit_logger('room_jid:%s created_by:%s', room.jid,
                 session.jitsi_meet_context_user and session.jitsi_meet_context_user.id or 'nil');
-            module:fire_event('room_host_arrived', room.jid, session);
             lobby_host:fire_event('destroy-lobby-room', {
                 room = room,
                 newjid = room.jid,

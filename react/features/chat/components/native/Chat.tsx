@@ -59,17 +59,13 @@ class Chat extends Component<IProps> {
         return (
             <JitsiScreen
                 disableForcedKeyboardDismiss = { true }
-
-                /* eslint-disable react/jsx-no-bind */
-                footerComponent = { () =>
-                    <ChatInputBar onSend = { this._onSendMessage } />
-                }
                 hasBottomTextInput = { true }
-                hasExtraHeaderHeight = { true }
+                hasTabNavigator = { true }
                 style = { styles.chatContainer }>
                 {/* @ts-ignore */}
                 <MessageContainer messages = { _messages } />
                 <MessageRecipient privateMessageRecipient = { privateMessageRecipient } />
+                <ChatInputBar onSend = { this._onSendMessage } />
             </JitsiScreen>
         );
     }

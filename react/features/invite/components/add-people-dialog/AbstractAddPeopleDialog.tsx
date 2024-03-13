@@ -3,7 +3,6 @@ import { Component } from 'react';
 import { createInviteDialogEvent } from '../../../analytics/AnalyticsEvents';
 import { sendAnalytics } from '../../../analytics/functions';
 import { IReduxState, IStore } from '../../../app/types';
-import { getMeetingRegion } from '../../../base/config/functions.any';
 import { showErrorNotification, showNotification } from '../../../notifications/actions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../../../notifications/constants';
 import { INotificationProps } from '../../../notifications/types';
@@ -65,11 +64,6 @@ export interface IProps {
      * The URL pointing to the service allowing for people search.
      */
     _peopleSearchUrl: string;
-
-    /**
-     * The region where we connected to.
-     */
-    _region: string;
 
     /**
      * Whether or not to allow sip invites.
@@ -254,7 +248,6 @@ export default class AbstractAddPeopleDialog<P extends IProps, S extends IState>
             _jwt: jwt,
             _peopleSearchQueryTypes: peopleSearchQueryTypes,
             _peopleSearchUrl: peopleSearchUrl,
-            _region: region,
             _sipInviteEnabled: sipInviteEnabled
         } = this.props;
         const options = {
@@ -266,7 +259,6 @@ export default class AbstractAddPeopleDialog<P extends IProps, S extends IState>
             jwt,
             peopleSearchQueryTypes,
             peopleSearchUrl,
-            region,
             sipInviteEnabled
         };
 
@@ -308,7 +300,6 @@ export function _mapStateToProps(state: IReduxState) {
         _jwt: state['features/base/jwt'].jwt ?? '',
         _peopleSearchQueryTypes: peopleSearchQueryTypes ?? [],
         _peopleSearchUrl: peopleSearchUrl ?? '',
-        _region: getMeetingRegion(state),
         _sipInviteEnabled: isSipInviteEnabled(state)
     };
 }

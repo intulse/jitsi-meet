@@ -14,7 +14,7 @@ import {
     getDeviceIdByLabel,
     groupDevicesByKind
 } from '../base/devices/functions.web';
-import { isIosMobileBrowser, isMobileBrowser } from '../base/environment/utils';
+import { isIosMobileBrowser } from '../base/environment/utils';
 import JitsiMeetJS from '../base/lib-jitsi-meet';
 import { toState } from '../base/redux/functions';
 import {
@@ -97,7 +97,7 @@ export function getAudioDeviceSelectionDialogProps(stateful: IStateful, isDispla
 export function getVideoDeviceSelectionDialogProps(stateful: IStateful, isDisplayedOnWelcomePage: boolean) {
     // On mobile Safari because of https://bugs.webkit.org/show_bug.cgi?id=179363#c30, the old track is stopped
     // by the browser when a new track is created for preview. That's why we are disabling all previews.
-    const disablePreviews = isMobileBrowser();
+    const disablePreviews = isIosMobileBrowser();
 
     const state = toState(stateful);
     const settings = state['features/base/settings'];
@@ -109,7 +109,7 @@ export function getVideoDeviceSelectionDialogProps(stateful: IStateful, isDispla
     const framerate = state['features/screen-share'].captureFrameRate ?? SS_DEFAULT_FRAME_RATE;
 
     let disableVideoInputSelect = !inputDeviceChangeSupported;
-    let selectedVideoInputId = settings.cameraDeviceId || userSelectedCamera;
+    let selectedVideoInputId = settings.cameraDeviceId;
 
     // audio input change will be a problem only when we are in a
     // conference and this is not supported, when we open device selection on
@@ -180,8 +180,8 @@ export function processExternalDeviceRequest( // eslint-disable-line max-params
                 };
                 const currentlyUsedDeviceIds = new Set([
                     getAudioOutputDeviceId(),
-                    settings.micDeviceId ?? getUserSelectedMicDeviceId(state),
-                    settings.cameraDeviceId ?? getUserSelectedCameraDeviceId(state)
+                    settings.micDeviceId,
+                    settings.cameraDeviceId
                 ]);
 
                 devices.forEach(device => {

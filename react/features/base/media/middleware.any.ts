@@ -17,17 +17,13 @@ import { SET_AUDIO_ONLY } from '../audio-only/actionTypes';
 import { setAudioOnly } from '../audio-only/actions';
 import { SET_ROOM } from '../conference/actionTypes';
 import { isRoomValid } from '../conference/functions';
+import { getMultipleVideoSendingSupportFeatureFlag } from '../config/functions.any';
 import { getLocalParticipant } from '../participants/functions';
 import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 import { getPropertyValue } from '../settings/functions.any';
 import { TRACK_ADDED } from '../tracks/actionTypes';
 import { destroyLocalTracks } from '../tracks/actions.any';
-import {
-    getCameraFacingMode,
-    isLocalTrackMuted,
-    isLocalVideoTrackDesktop,
-    setTrackMuted
-} from '../tracks/functions.any';
+import { isLocalTrackMuted, isLocalVideoTrackDesktop, setTrackMuted } from '../tracks/functions.any';
 import { ITrack } from '../tracks/types';
 
 import {
@@ -44,6 +40,7 @@ import {
     setVideoMuted
 } from './actions';
 import {
+    CAMERA_FACING_MODE,
     MEDIA_TYPE,
     SCREENSHARE_MUTISM_AUTHORITY,
     VIDEO_MUTISM_AUTHORITY
@@ -185,14 +182,17 @@ function _appStateChanged({ dispatch, getState }: IStore, next: Function, action
  * @private
  * @returns {Object} The value returned by {@code next(action)}.
  */
-function _setAudioOnly({ dispatch }: IStore, next: Function, action: AnyAction) {
+function _setAudioOnly({ dispatch, getState }: IStore, next: Function, action: AnyAction) {
     const { audioOnly } = action;
+    const state = getState();
 
     sendAnalytics(createTrackMutedEvent('video', 'audio-only mode', audioOnly));
 
     // Make sure we mute both the desktop and video tracks.
     dispatch(setVideoMuted(audioOnly, VIDEO_MUTISM_AUTHORITY.AUDIO_ONLY));
-    dispatch(setScreenshareMuted(audioOnly, SCREENSHARE_MUTISM_AUTHORITY.AUDIO_ONLY));
+    if (getMultipleVideoSendingSupportFeatureFlag(state)) {
+        dispatch(setScreenshareMuted(audioOnly, SCREENSHARE_MUTISM_AUTHORITY.AUDIO_ONLY));
+    }
 
     return next(action);
 }
@@ -220,22 +220,21 @@ function _setRoom({ dispatch, getState }: IStore, next: Function, action: AnyAct
     const state = getState();
     const { room } = action;
     const roomIsValid = isRoomValid(room);
+    const audioMuted = roomIsValid ? getStartWithAudioMuted(state) : _AUDIO_INITIAL_MEDIA_STATE.muted;
+    const videoMuted = roomIsValid ? getStartWithVideoMuted(state) : _VIDEO_INITIAL_MEDIA_STATE.muted;
 
-    // when going to welcomepage on web(room is not valid) we want to skip resetting the values of startWithA/V
-    if (roomIsValid || navigator.product === 'ReactNative') {
-        const audioMuted = roomIsValid ? getStartWithAudioMuted(state) : _AUDIO_INITIAL_MEDIA_STATE.muted;
-        const videoMuted = roomIsValid ? getStartWithVideoMuted(state) : _VIDEO_INITIAL_MEDIA_STATE.muted;
+    sendAnalytics(
+        createStartMutedConfigurationEvent('local', audioMuted, Boolean(videoMuted)));
+    logger.log(
+        `Start muted: ${audioMuted ? 'audio, ' : ''}${
+            videoMuted ? 'video' : ''}`);
 
-        sendAnalytics(createStartMutedConfigurationEvent('local', audioMuted, Boolean(videoMuted)));
-        logger.log(`Start muted: ${audioMuted ? 'audio, ' : ''}${videoMuted ? 'video' : ''}`);
-
-        // Unconditionally express the desires/expectations/intents of the app and
-        // the user i.e. the state of base/media. Eventually, practice/reality i.e.
-        // the state of base/tracks will or will not agree with the desires.
-        dispatch(setAudioMuted(audioMuted));
-        dispatch(setCameraFacingMode(getCameraFacingMode(state)));
-        dispatch(setVideoMuted(videoMuted));
-    }
+    // Unconditionally express the desires/expectations/intents of the app and
+    // the user i.e. the state of base/media. Eventually, practice/reality i.e.
+    // the state of base/tracks will or will not agree with the desires.
+    dispatch(setAudioMuted(audioMuted));
+    dispatch(setCameraFacingMode(CAMERA_FACING_MODE.USER));
+    dispatch(setVideoMuted(videoMuted));
 
     // startAudioOnly
     //

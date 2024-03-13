@@ -72,9 +72,9 @@ export const LobbyParticipantItem = ({
 
     const renderAdmitButton = () => (
         <Button
-            accessibilityLabel = { `${t('participantsPane.actions.admit')} ${p.name}` }
+            accessibilityLabel = { `${t('lobby.admit')} ${p.name}` }
             className = { styles.button }
-            labelKey = { 'participantsPane.actions.admit' }
+            labelKey = { 'lobby.admit' }
             onClick = { admit }
             size = 'small'
             testId = { `admit-${id}` } />);
@@ -116,18 +116,18 @@ export const LobbyParticipantItem = ({
                         } ] } />
                     <ContextMenuItemGroup
                         actions = { [ {
-                            accessibilityLabel: `${t('participantsPane.actions.reject')} ${p.name}`,
+                            accessibilityLabel: `${t('lobby.reject')} ${p.name}`,
                             onClick: reject,
                             testId: `reject-${id}`,
                             icon: IconUserDeleted,
-                            text: t('participantsPane.actions.reject')
+                            text: t('lobby.reject')
                         } ] } />
                 </ContextMenu>
             </> : <>
                 <Button
-                    accessibilityLabel = { `${t('participantsPane.actions.reject')} ${p.name}` }
+                    accessibilityLabel = { `${t('lobby.reject')} ${p.name}` }
                     className = { styles.button }
-                    labelKey = { 'participantsPane.actions.reject' }
+                    labelKey = { 'lobby.reject' }
                     onClick = { reject }
                     size = 'small'
                     testId = { `reject-${id}` }

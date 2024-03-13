@@ -586,6 +586,8 @@
         "youtubeTerms": "YouTube үйлчилгээний нөхцөл"
     },
     "lobby": {
+        "admit": "Ok",
+        "admitAll": "Бүгдийг зөвшөөр",
         "backToKnockModeButton": "Зөвшөөрөл хүсэх",
         "chat": "Зурвас",
         "dialogTitle": "Лобби горим",
@@ -619,6 +621,8 @@
         "notificationTitle": "Лобби",
         "passwordField": "Нууц үгээ оруулна уу",
         "passwordJoinButton": "Оролцох",
+        "reject": "Татгалзах",
+        "rejectAll": "Бүгдийг татгалзуулах",
         "title": "Лобби",
         "toggleLabel": "Лобби идэвхижүүлэх"
     },
@@ -751,8 +755,6 @@
     },
     "participantsPane": {
         "actions": {
-            "admit": "Ok",
-            "admitAll": "Бүгдийг зөвшөөр",
             "allow": "Оролцогчийг зөвшөөрөх:",
             "allowVideo": "Дүрс зөвшөөрөх",
             "askUnmute": "Дуугаа нээхийг хүсэх",
@@ -765,7 +767,6 @@
             "mute": "Дуугүй болгох",
             "muteAll": "Бүгдийг дуугүй болгох",
             "muteEveryoneElse": "Бүгдийг дуугүй болгох",
-            "reject": "Татгалзах",
             "stopEveryonesVideo": "Бүгдийн дүрсийг хаах",
             "stopVideo": "Дүрс хаах",
             "unblockEveryoneMicCamera": "Бүх хүний микрофон, камерыг нээх",
@@ -1068,7 +1069,6 @@
         "neutral": "Төвийг сахисан",
         "sad": "Баргар",
         "search": "Хайх",
-        "searchHint": "Оролцогч хайх",
         "seconds": "{{count}}сек",
         "speakerStats": "Оролцогчийн статистик",
         "speakerTime": "Оролцогчийн ярьсан цаг",

@@ -1,7 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { TouchableHighlight } from 'react-native';
-import { Button as NativePaperButton, Text } from 'react-native-paper';
+import {
+    Button as NativePaperButton,
+    Text,
+    TouchableRipple
+} from 'react-native-paper';
 
 import { BUTTON_MODES, BUTTON_TYPES } from '../../constants.native';
 import BaseTheme from '../BaseTheme.native';
@@ -9,13 +12,13 @@ import { IButtonProps } from '../types';
 
 import styles from './buttonStyles';
 
-
 export interface IProps extends IButtonProps {
     color?: string | undefined;
     contentStyle?: Object | undefined;
     labelStyle?: Object | undefined;
     mode?: any;
     style?: Object | undefined;
+    useRippleColor?: boolean;
 }
 
 const Button: React.FC<IProps> = ({
@@ -29,11 +32,15 @@ const Button: React.FC<IProps> = ({
     mode = BUTTON_MODES.CONTAINED,
     onClick: onPress,
     style,
-    type
+    type,
+    useRippleColor = true
 }: IProps) => {
     const { t } = useTranslation();
     const { DESTRUCTIVE, PRIMARY, SECONDARY, TERTIARY } = BUTTON_TYPES;
     const { CONTAINED, TEXT } = BUTTON_MODES;
+
+    const rippleColor
+        = useRippleColor ? BaseTheme.palette.action03Active : 'transparent';
 
     let buttonLabelStyles;
     let buttonStyles;
@@ -65,16 +72,17 @@ const Button: React.FC<IProps> = ({
     }
 
     if (type === TERTIARY) {
-        if (disabled) {
+        if (useRippleColor && disabled) {
             buttonLabelStyles = styles.buttonLabelTertiaryDisabled;
         }
         buttonLabelStyles = styles.buttonLabelTertiary;
 
         return (
-            <TouchableHighlight
+            <TouchableRipple
                 accessibilityLabel = { accessibilityLabel }
                 disabled = { disabled }
                 onPress = { onPress }
+                rippleColor = { rippleColor }
                 style = { [
                     buttonStyles,
                     style
@@ -84,7 +92,7 @@ const Button: React.FC<IProps> = ({
                         buttonLabelStyles,
                         labelStyle
                     ] }>{ t(labelKey ?? '') }</Text>
-            </TouchableHighlight>
+            </TouchableRipple>
         );
     }
 

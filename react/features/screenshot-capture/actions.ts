@@ -1,5 +1,6 @@
 import { IStore } from '../app/types';
-import { getLocalJitsiDesktopTrack } from '../base/tracks/functions';
+import { getMultipleVideoSendingSupportFeatureFlag } from '../base/config/functions';
+import { getLocalJitsiDesktopTrack, getLocalJitsiVideoTrack } from '../base/tracks/functions';
 
 import { SET_SCREENSHOT_CAPTURE } from './actionTypes';
 import { createScreenshotCaptureSummary } from './functions';
@@ -44,7 +45,9 @@ export function toggleScreenshotCaptureSummary(enabled: boolean) {
 
             if (enabled) {
                 try {
-                    const jitsiTrack = getLocalJitsiDesktopTrack(state);
+                    const jitsiTrack = getMultipleVideoSendingSupportFeatureFlag(state)
+                        ? getLocalJitsiDesktopTrack(state)
+                        : getLocalJitsiVideoTrack(state);
 
                     await screenshotSummary.start(jitsiTrack);
                     dispatch(setScreenshotCapture(enabled));

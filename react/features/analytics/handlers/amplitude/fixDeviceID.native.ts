@@ -1,9 +1,6 @@
 import { Amplitude } from '@amplitude/react-native';
 import DefaultPreference from 'react-native-default-preference';
-import { getUniqueId } from 'react-native-device-info';
-
-import logger from '../../logger';
-
+import DeviceInfo from 'react-native-device-info';
 
 /**
  * Custom logic for setting the correct device id.
@@ -17,17 +14,11 @@ export async function fixDeviceID(amplitude: Amplitude) {
     const current = await DefaultPreference.get('amplitudeDeviceId');
 
     if (current) {
-        await amplitude.setDeviceId(current);
+        amplitude.setDeviceId(current);
     } else {
-        const uid = await getUniqueId();
+        const uid = DeviceInfo.getUniqueId();
 
-        if (!uid) {
-            logger.warn('Device ID is not set!');
-
-            return;
-        }
-
-        await amplitude.setDeviceId(uid as string);
-        await DefaultPreference.set('amplitudeDeviceId', uid as string);
+        amplitude.setDeviceId(uid);
+        DefaultPreference.set('amplitudeDeviceId', uid);
     }
 }

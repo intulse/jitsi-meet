@@ -24,12 +24,6 @@ export const AUDIO_MUTE_BUTTON_ENABLED = 'audio-mute.enabled';
 export const AUDIO_ONLY_BUTTON_ENABLED = 'audio-only.enabled';
 
 /**
- * Flag indicating that the Breakout Rooms button in the overflow menu is enabled.
- * Default: enabled (true).
- */
-export const BREAKOUT_ROOMS_BUTTON_ENABLED = 'breakout-rooms.enabled';
-
-/**
  * Flag indicating if calendar integration should be enabled.
  * Default: enabled (true) on Android, auto-detected on iOS.
  */
@@ -89,12 +83,6 @@ export const HELP_BUTTON_ENABLED = 'help.enabled';
  * Default: enabled (true).
  */
 export const INVITE_ENABLED = 'invite.enabled';
-
-/**
- * Flag indicating if dial-in invite functionality should be enabled.
- * Default: enabled (true).
- */
-export const INVITE_DIAL_IN_ENABLED = 'invite-dial-in.enabled';
 
 /**
  * Flag indicating if recording should be enabled in iOS.

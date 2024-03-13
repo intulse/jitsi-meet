@@ -36,51 +36,10 @@ interface IProps {
 
 const useStyles = makeStyles()(theme => {
     return {
-        drawerMenuContainer: {
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            height: '100dvh',
-            display: 'flex',
-            alignItems: 'flex-end'
-        },
-
         drawer: {
             backgroundColor: theme.palette.ui01,
             maxHeight: `calc(${DRAWER_MAX_HEIGHT})`,
-            borderRadius: '24px 24px 0 0',
-            overflowY: 'auto',
-            marginBottom: 'env(safe-area-inset-bottom, 0)',
-            width: '100%',
-
-            '& .overflow-menu': {
-                margin: 'auto',
-                fontSize: '1.2em',
-                listStyleType: 'none',
-                padding: 0,
-                height: 'calc(80vh - 144px - 64px)',
-                overflowY: 'auto',
-
-                '& .overflow-menu-item': {
-                    boxSizing: 'border-box',
-                    height: '48px',
-                    padding: '12px 16px',
-                    alignItems: 'center',
-                    color: theme.palette.text01,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    fontSize: '16px',
-
-                    '& div': {
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center'
-                    },
-
-                    '&.disabled': {
-                        cursor: 'initial',
-                        color: '#3b475c'
-                    }
-                }
-            }
+            borderRadius: '24px 24px 0 0'
         }
     };
 });
@@ -97,7 +56,7 @@ function Drawer({
     isOpen,
     onClose
 }: IProps) {
-    const { classes, cx } = useStyles();
+    const { classes: styles } = useStyles();
 
     /**
      * Handles clicks within the menu, preventing the propagation of the click event.
@@ -137,11 +96,11 @@ function Drawer({
     return (
         isOpen ? (
             <div
-                className = { classes.drawerMenuContainer }
+                className = 'drawer-menu-container'
                 onClick = { handleOutsideClick }
                 onKeyDown = { handleEscKey }>
                 <div
-                    className = { cx(classes.drawer, className) }
+                    className = { `drawer-menu ${styles.drawer} ${className}` }
                     onClick = { handleInsideClick }>
                     <FocusOn
                         returnFocus = {

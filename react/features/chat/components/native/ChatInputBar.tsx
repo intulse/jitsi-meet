@@ -1,25 +1,17 @@
 import React, { Component } from 'react';
 import { WithTranslation } from 'react-i18next';
-import { Platform, View, ViewStyle } from 'react-native';
-import { connect } from 'react-redux';
+import { Platform, ViewStyle } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { IReduxState } from '../../../app/types';
 import { translate } from '../../../base/i18n/functions';
 import { IconSend } from '../../../base/icons/svg';
-import { ASPECT_RATIO_WIDE } from '../../../base/responsive-ui/constants';
 import IconButton from '../../../base/ui/components/native/IconButton';
 import Input from '../../../base/ui/components/native/Input';
 import { BUTTON_TYPES } from '../../../base/ui/constants.native';
 
 import styles from './styles';
 
-
 interface IProps extends WithTranslation {
-
-    /**
-     * Application's aspect ratio.
-     */
-    aspectRatio: Symbol;
 
     /**
      * Callback to invoke on message send.
@@ -74,18 +66,11 @@ class ChatInputBar extends Component<IProps, IState> {
      * @inheritdoc
      */
     render() {
-        let inputBarStyles;
-
-        if (this.props.aspectRatio === ASPECT_RATIO_WIDE) {
-            inputBarStyles = styles.inputBarWide;
-        } else {
-            inputBarStyles = styles.inputBarNarrow;
-        }
-
         return (
-            <View
+            <SafeAreaView
+                edges = { [ 'bottom' ] }
                 style = { [
-                    inputBarStyles,
+                    styles.inputBar,
                     this.state.addPadding ? styles.extraBarPadding : null
                 ] as ViewStyle[] }>
                 <Input
@@ -103,8 +88,9 @@ class ChatInputBar extends Component<IProps, IState> {
                     disabled = { !this.state.message }
                     onPress = { this._onSubmit }
                     src = { IconSend }
+                    style = { styles.sendButton }
                     type = { BUTTON_TYPES.PRIMARY } />
-            </View>
+            </SafeAreaView>
         );
     }
 
@@ -151,19 +137,4 @@ class ChatInputBar extends Component<IProps, IState> {
     }
 }
 
-/**
- * Maps part of the Redux state to the props of this component.
- *
- * @param {Object} state - The redux state.
- * @private
- * @returns {IProps}
- */
-function _mapStateToProps(state: IReduxState) {
-    const { aspectRatio } = state['features/base/responsive-ui'];
-
-    return {
-        aspectRatio
-    };
-}
-
-export default translate(connect(_mapStateToProps)(ChatInputBar));
+export default translate(ChatInputBar);

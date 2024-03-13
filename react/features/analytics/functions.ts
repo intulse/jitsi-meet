@@ -16,7 +16,6 @@ import { getJitsiMeetGlobalNS } from '../base/util/helpers';
 import { inIframe } from '../base/util/iframeUtils';
 import { loadScript } from '../base/util/loadScript';
 import { parseURIString } from '../base/util/uri';
-import { isPrejoinPageVisible } from '../prejoin/functions';
 
 import AmplitudeHandler from './handlers/AmplitudeHandler';
 import MatomoHandler from './handlers/MatomoHandler';
@@ -83,7 +82,6 @@ export async function createHandlers({ getState }: IStore) {
     } = config;
     const {
         amplitudeAPPKey,
-        amplitudeIncludeUTM,
         blackListedEvents,
         scriptURLs,
         googleAnalyticsTrackingId,
@@ -94,7 +92,6 @@ export async function createHandlers({ getState }: IStore) {
     const { group, user } = state['features/base/jwt'];
     const handlerConstructorOptions = {
         amplitudeAPPKey,
-        amplitudeIncludeUTM,
         blackListedEvents,
         envType: deploymentInfo?.envType || 'dev',
         googleAnalyticsTrackingId,
@@ -159,13 +156,13 @@ export async function createHandlers({ getState }: IStore) {
  *
  * @param {Store} store - The redux store in which the specified {@code action} is being dispatched.
  * @param {Array<Object>} handlers - The analytics handlers.
- * @returns {boolean} - True if the analytics were successfully initialized and false otherwise.
+ * @returns {void}
  */
-export function initAnalytics(store: IStore, handlers: Array<Object>): boolean {
+export function initAnalytics(store: IStore, handlers: Array<Object>) {
     const { getState, dispatch } = store;
 
     if (!isAnalyticsEnabled(getState) || handlers.length === 0) {
-        return false;
+        return;
     }
 
     const state = getState();
@@ -181,12 +178,8 @@ export function initAnalytics(store: IStore, handlers: Array<Object>): boolean {
         externalApi?: boolean;
         group?: string;
         inIframe?: boolean;
-        isPromotedFromVisitor?: boolean;
-        isVisitor?: boolean;
         server?: string;
         tenant?: string;
-        wasLobbyVisible?: boolean;
-        wasPrejoinDisplayed?: boolean;
         websocket?: boolean;
     } & typeof deploymentInfo = {};
 
@@ -212,15 +205,6 @@ export function initAnalytics(store: IStore, handlers: Array<Object>): boolean {
     // Report the tenant from the URL.
     permanentProperties.tenant = tenant || '/';
 
-    permanentProperties.wasPrejoinDisplayed = isPrejoinPageVisible(state);
-
-    // Currently we don't know if there will be lobby. We will update it to true if we go through lobby.
-    permanentProperties.wasLobbyVisible = false;
-
-    // Setting visitor properties to false by default. We will update them later if it turns out we are visitor.
-    permanentProperties.isVisitor = false;
-    permanentProperties.isPromotedFromVisitor = false;
-
     // Optionally, include local deployment information based on the
     // contents of window.config.deploymentInfo.
     if (deploymentInfo) {
@@ -232,17 +216,13 @@ export function initAnalytics(store: IStore, handlers: Array<Object>): boolean {
         }
     }
 
-    analytics.addPermanentProperties({
-        ...permanentProperties,
-        ...getState()['features/analytics'].initialPermanentProperties
-    });
-
+    analytics.addPermanentProperties(permanentProperties);
     analytics.setConferenceName(getAnalyticsRoomName(state, dispatch));
 
     // Set the handlers last, since this triggers emptying of the cache
     analytics.setAnalyticsHandlers(handlers);
 
-    if (!isMobileBrowser() && browser.isChromiumBased()) {
+    if (!isMobileBrowser() && browser.isChrome()) {
         const bannerCfg = state['features/base/config'].chromeExtensionBanner;
 
         checkChromeExtensionsInstalled(bannerCfg).then(extensionsInstalled => {
@@ -253,8 +233,6 @@ export function initAnalytics(store: IStore, handlers: Array<Object>): boolean {
             }
         });
     }
-
-    return true;
 }
 
 /**

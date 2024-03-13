@@ -6,7 +6,6 @@ import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 import { playSound } from '../base/sounds/actions';
 import { INCOMING_MSG_SOUND_ID } from '../chat/constants';
-import { arePollsDisabled } from '../conference/functions.any';
 import { showNotification } from '../notifications/actions';
 import { NOTIFICATION_TIMEOUT_TYPE, NOTIFICATION_TYPE } from '../notifications/constants';
 
@@ -64,23 +63,13 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
 
         conference.on(JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED,
             (user: any, data: any) => {
-                const isNewPoll = data.type === COMMAND_NEW_POLL;
-
-                _handleReceivePollsMessage({
-                    ...data,
-                    senderId: isNewPoll ? user._id : undefined,
-                    voterId: isNewPoll ? undefined : user._id
-                }, dispatch, getState);
+                data.type === COMMAND_NEW_POLL ? data.senderId = user._id : data.voterId = user._id;
+                _handleReceivePollsMessage(data, dispatch);
             });
         conference.on(JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED,
             (id: any, data: any) => {
-                const isNewPoll = data.type === COMMAND_NEW_POLL;
-
-                _handleReceivePollsMessage({
-                    ...data,
-                    senderId: isNewPoll ? id : undefined,
-                    voterId: isNewPoll ? undefined : id
-                }, dispatch, getState);
+                data.type === COMMAND_NEW_POLL ? data.senderId = id : data.voterId = id;
+                _handleReceivePollsMessage(data, dispatch);
             });
 
         break;
@@ -90,11 +79,6 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
     case RECEIVE_POLL: {
 
         const state = getState();
-
-        if (arePollsDisabled(state)) {
-            break;
-        }
-
         const isChatOpen: boolean = state['features/chat'].isOpen;
         const isPollsTabFocused: boolean = state['features/chat'].isPollsTabFocused;
 
@@ -115,15 +99,10 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
  *
  * @param {Object} data - The json data carried by the polls message.
  * @param {Function} dispatch - The dispatch function.
- * @param {Function} getState - The getState function.
  *
  * @returns {void}
  */
-function _handleReceivePollsMessage(data: any, dispatch: IStore['dispatch'], getState: IStore['getState']) {
-    if (arePollsDisabled(getState())) {
-        return;
-    }
-
+function _handleReceivePollsMessage(data: any, dispatch: IStore['dispatch']) {
     switch (data.type) {
     case COMMAND_NEW_POLL: {
         const { question, answers, pollId, senderId } = data;

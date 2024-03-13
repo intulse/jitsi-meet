@@ -208,7 +208,7 @@ const Notification = ({
         descriptionKey
             && descriptionArray.push(t(descriptionKey, descriptionArguments));
 
-        description && typeof description === 'string' && descriptionArray.push(description);
+        description && descriptionArray.push(description);
 
         // Keeping in mind that:
         // - Notifications that use the `translateToHtml` function get an element-based description array with one entry
@@ -219,12 +219,11 @@ const Notification = ({
 
         // the id is used for testing the UI
         return (
-            <div
+            <p
                 className = { classes.description }
                 data-testid = { descriptionKey } >
                 {shouldRenderHtml ? descriptionArray : <Message text = { descriptionArray.join(' ') } />}
-                {typeof description === 'object' && description}
-            </div>
+            </p>
         );
     }, [ description, descriptionArguments, descriptionKey, classes ]);
 

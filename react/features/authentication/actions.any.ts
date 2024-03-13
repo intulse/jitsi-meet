@@ -4,8 +4,6 @@ import { IJitsiConference } from '../base/conference/reducer';
 import { hideDialog, openDialog } from '../base/dialog/actions';
 
 import {
-    LOGIN,
-    LOGOUT,
     SET_TOKEN_AUTH_URL_SUCCESS,
     STOP_WAIT_FOR_OWNER,
     UPGRADE_ROLE_FINISHED,
@@ -137,32 +135,6 @@ function _upgradeRoleStarted(thenableWithCancel: Object) {
  */
 export function hideLoginDialog() {
     return hideDialog(LoginDialog);
-}
-
-/**
- * Login.
- *
- * @returns {{
-*     type: LOGIN
-* }}
-*/
-export function login() {
-    return {
-        type: LOGIN
-    };
-}
-
-/**
-* Logout.
-*
-* @returns {{
-*     type: LOGOUT
-* }}
-*/
-export function logout() {
-    return {
-        type: LOGOUT
-    };
 }
 
 /**

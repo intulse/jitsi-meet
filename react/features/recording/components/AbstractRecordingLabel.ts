@@ -5,7 +5,14 @@ import { IReduxState } from '../../app/types';
 import { JitsiRecordingConstants } from '../../base/lib-jitsi-meet';
 import { getSessionStatusToShow } from '../functions';
 
-
+/**
+ * NOTE: Web currently renders multiple indicators if multiple recording
+ * sessions are running. This is however may not be a good UX as it's not
+ * obvious why there are multiple similar 'REC' indicators rendered. Mobile
+ * only renders one indicator if there is at least one recording session
+ * running. These boolean are shared across the two components to make it
+ * easier to align web's behaviour to mobile's later if necessary.
+ */
 interface IProps extends WithTranslation {
 
     /**
@@ -14,12 +21,7 @@ interface IProps extends WithTranslation {
     _iAmRecorder: boolean;
 
     /**
-     * Whether this meeting is being transcribed.
-     */
-    _isTranscribing: boolean;
-
-    /**
-     * The status of the higher priority session.
+     * The status of the highermost priority session.
      */
     _status?: string;
 
@@ -54,7 +56,8 @@ const STALE_TIMEOUT = 10 * 1000;
 /**
  * Abstract class for the {@code RecordingLabel} component.
  */
-export default class AbstractRecordingLabel extends Component<IProps, IState> {
+export default class AbstractRecordingLabel
+    extends Component<IProps, IState> {
     _mounted: boolean;
 
     /**
@@ -117,8 +120,26 @@ export default class AbstractRecordingLabel extends Component<IProps, IState> {
      * @inheritdoc
      */
     render() {
-        return (this.props._status || this.props._isTranscribing) && !this.state.staleLabel && !this.props._iAmRecorder
+        return this.props._status && !this.state.staleLabel && !this.props._iAmRecorder
             ? this._renderLabel() : null;
+    }
+
+    /**
+     * Returns the label key that this indicator should render.
+     *
+     * @protected
+     * @returns {?string}
+     */
+    _getLabelKey() {
+        switch (this.props.mode) {
+        case JitsiRecordingConstants.mode.STREAM:
+            return 'recording.live';
+        case JitsiRecordingConstants.mode.FILE:
+            return 'recording.rec';
+        default:
+            // Invalid mode is passed to the component.
+            return undefined;
+        }
     }
 
     /**
@@ -148,7 +169,8 @@ export default class AbstractRecordingLabel extends Component<IProps, IState> {
                     }
 
                     // Only if it's still OFF.
-                    if (this.props._status === JitsiRecordingConstants.status.OFF) {
+                    if (this.props._status
+                            === JitsiRecordingConstants.status.OFF) {
                         this.setState({
                             staleLabel: true
                         });
@@ -175,7 +197,6 @@ export function _mapStateToProps(state: IReduxState, ownProps: any) {
 
     return {
         _iAmRecorder: Boolean(state['features/base/config'].iAmRecorder),
-        _isTranscribing: state['features/transcribing'].isTranscribing,
         _status: getSessionStatusToShow(state, mode)
     };
 }

@@ -15,18 +15,13 @@ export default class AmplitudeHandler extends AbstractHandler {
      * Creates new instance of the Amplitude analytics handler.
      *
      * @param {Object} options -
-     * @param {string} options.amplitudeAPPKey - The Amplitude app key required by the Amplitude API.
-     * @param {boolean} options.amplitudeIncludeUTM - Whether to include UTM parameters
-     * in the Amplitude events.
+     * @param {string} options.amplitudeAPPKey - The Amplitude app key required
+     * by the Amplitude API.
      */
     constructor(options: any) {
         super(options);
 
-        const {
-            amplitudeAPPKey,
-            amplitudeIncludeUTM: includeUtm = true,
-            user
-        } = options;
+        const { amplitudeAPPKey, user } = options;
 
         this._enabled = true;
 
@@ -48,8 +43,6 @@ export default class AmplitudeHandler extends AbstractHandler {
         } else {
             const amplitudeOptions: any = {
                 includeReferrer: true,
-                includeUtm,
-                saveParamsReferrerOncePerSession: false,
                 onError
             };
 

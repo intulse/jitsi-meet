@@ -15,10 +15,12 @@ import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 import {
     playSound,
-    stopSound
+    registerSound,
+    stopSound,
+    unregisterSound
 } from '../base/sounds/actions';
 import { TRACK_ADDED } from '../base/tracks/actionTypes';
-import { hideNotification, showErrorNotification, showNotification } from '../notifications/actions';
+import { showErrorNotification, showNotification } from '../notifications/actions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 
 import { RECORDING_SESSION_UPDATED, START_LOCAL_RECORDING, STOP_LOCAL_RECORDING } from './actionTypes';
@@ -38,16 +40,19 @@ import {
     LIVE_STREAMING_OFF_SOUND_ID,
     LIVE_STREAMING_ON_SOUND_ID,
     RECORDING_OFF_SOUND_ID,
-    RECORDING_ON_SOUND_ID,
-    START_RECORDING_NOTIFICATION_ID
+    RECORDING_ON_SOUND_ID
 } from './constants';
 import {
     getResourceId,
-    getSessionById,
-    registerRecordingAudioFiles,
-    unregisterRecordingAudioFiles
+    getSessionById
 } from './functions';
 import logger from './logger';
+import {
+    LIVE_STREAMING_OFF_SOUND_FILE,
+    LIVE_STREAMING_ON_SOUND_FILE,
+    RECORDING_OFF_SOUND_FILE,
+    RECORDING_ON_SOUND_FILE
+} from './sounds';
 
 /**
  * StateListenerRegistry provides a reliable way to detect the leaving of a
@@ -80,12 +85,29 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => async action => 
 
     switch (action.type) {
     case APP_WILL_MOUNT:
-        registerRecordingAudioFiles(dispatch);
+        dispatch(registerSound(
+            LIVE_STREAMING_OFF_SOUND_ID,
+            LIVE_STREAMING_OFF_SOUND_FILE));
+
+        dispatch(registerSound(
+            LIVE_STREAMING_ON_SOUND_ID,
+            LIVE_STREAMING_ON_SOUND_FILE));
+
+        dispatch(registerSound(
+            RECORDING_OFF_SOUND_ID,
+            RECORDING_OFF_SOUND_FILE));
+
+        dispatch(registerSound(
+            RECORDING_ON_SOUND_ID,
+            RECORDING_ON_SOUND_FILE));
 
         break;
 
     case APP_WILL_UNMOUNT:
-        unregisterRecordingAudioFiles(dispatch);
+        dispatch(unregisterSound(LIVE_STREAMING_OFF_SOUND_ID));
+        dispatch(unregisterSound(LIVE_STREAMING_ON_SOUND_ID));
+        dispatch(unregisterSound(RECORDING_OFF_SOUND_ID));
+        dispatch(unregisterSound(RECORDING_ON_SOUND_ID));
 
         break;
 
@@ -196,7 +218,6 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => async action => 
         if (updatedSessionData?.status === PENDING
             && (!oldSessionData || oldSessionData.status !== PENDING)) {
             dispatch(showPendingRecordingNotification(mode));
-            dispatch(hideNotification(START_RECORDING_NOTIFICATION_ID));
         } else if (updatedSessionData?.status !== PENDING) {
             dispatch(hidePendingRecordingNotification(mode));
 

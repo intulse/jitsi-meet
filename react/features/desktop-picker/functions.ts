@@ -1,23 +1,28 @@
 import logger from './logger';
-import { ElectronWindowType } from './types';
-
 
 /**
  * Begins a request to get available DesktopCapturerSources.
  *
+ * @param {Array} types - An array with DesktopCapturerSource type strings.
  * @param {Object} options - Additional configuration for getting a list of
  * sources.
- * @param {Array} options.types - An array with DesktopCapturerSource type strings.
  * @param {Object} options.thumbnailSize - The desired height and width of the
  * return native image object used for the preview image of the source.
  * @returns {Function}
  */
-export function obtainDesktopSources(options: { thumbnailSize?: Object; types: string[]; }) {
-    const { JitsiMeetElectron } = window as ElectronWindowType;
+export function obtainDesktopSources(types: string[], options: { thumbnailSize?: Object; } = {}) {
+    const capturerOptions: any = {
+        types
+    };
 
-    // TODO: delete this after 2 releases
-    if (JitsiMeetElectron?.obtainDesktopStreams) {
-        return new Promise((resolve, reject) => {
+    if (options.thumbnailSize) {
+        capturerOptions.thumbnailSize = options.thumbnailSize;
+    }
+
+    return new Promise((resolve, reject) => {
+        const { JitsiMeetElectron } = window;
+
+        if (JitsiMeetElectron?.obtainDesktopStreams) {
             JitsiMeetElectron.obtainDesktopStreams(
                 (sources: Array<{ id: string; }>) => resolve(_separateSourcesByType(sources)),
                 (error: Error) => {
@@ -25,38 +30,19 @@ export function obtainDesktopSources(options: { thumbnailSize?: Object; types: s
                         `Error while obtaining desktop sources: ${error}`);
                     reject(error);
                 },
-                options
+                capturerOptions
             );
-        });
-    }
+        } else {
+            const reason = 'Called JitsiMeetElectron.obtainDesktopStreams'
+                + ' but it is not defined';
 
-    return APP.API.requestDesktopSources(options).then(
-        ({ sources, error }: { error: Error; sources: Array<{ id: string; }>; }) => {
-            if (sources) {
-                return _separateSourcesByType(sources);
-            } else if (error) {
-                logger.error(
-                    `Error while obtaining desktop sources: ${error}`);
+            logger.error(reason);
 
-                return null;
-            }
-        });
+            return Promise.reject(new Error(reason));
+        }
+    });
 }
 
-/**
- * Check usage of old jitsi meet electron version.
- *
- * @returns {boolean} True if we use old jitsi meet electron, otherwise false.
- */
-export function oldJitsiMeetElectronUsage() {
-    const { JitsiMeetElectron } = window as ElectronWindowType;
-
-    if (JitsiMeetElectron?.obtainDesktopStreams) {
-        return true;
-    }
-
-    return false;
-}
 
 /**
  * Converts an array of DesktopCapturerSources to an object with types for keys
@@ -67,7 +53,7 @@ export function oldJitsiMeetElectronUsage() {
  * @returns {Object} An object with the sources split into separate arrays based
  * on source type.
  */
-export function _separateSourcesByType(sources: Array<{ id: string; }> = []) {
+function _separateSourcesByType(sources: Array<{ id: string; }> = []) {
     const sourcesByType: any = {
         screen: [],
         window: []

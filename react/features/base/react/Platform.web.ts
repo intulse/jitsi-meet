@@ -10,8 +10,6 @@ if (userAgent.match(/Android/i)) {
     OS = 'macos';
 } else if (userAgent.match(/Windows/i)) {
     OS = 'windows';
-} else if (userAgent.match(/Linux/i)) {
-    OS = 'linux';
 }
 
 /**

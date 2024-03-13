@@ -64,17 +64,17 @@ const GeneralSection = () => {
             </FormRow>}
 
             <FormRow label = 'settings.language'>
-                <View style = { styles.languageButtonContainer as ViewStyle }>
-                    <TouchableHighlight onPress = { navigateToLanguageSelect }>
-                        <View style = { styles.languageButton as ViewStyle }>
-                            <Text
-                                style = { styles.languageText }>{t(`languages:${language}`)}</Text>
+                <TouchableHighlight onPress = { navigateToLanguageSelect }>
+                    <View style = { styles.languageButton as ViewStyle }>
+                        <Text
+                            style = { styles.languageText }>{t(`languages:${language}`)}</Text>
+                        <View>
                             <Icon
                                 size = { 24 }
                                 src = { IconArrowRight } />
                         </View>
-                    </TouchableHighlight>
-                </View>
+                    </View>
+                </TouchableHighlight>
             </FormRow>
         </FormSection>
     );

@@ -8,7 +8,6 @@ local um_is_admin = require "core.usermanager".is_admin;
 local jid_split = require 'util.jid'.split;
 local jid_bare = require 'util.jid'.bare;
 
-local DEBUG = false;
 
 local function is_admin(jid)
     return um_is_admin(jid, host);
@@ -52,15 +51,14 @@ load_config();
 
 -- verify user and whether he is allowed to join a room based on the token information
 local function verify_user(session, stanza)
-    if DEBUG then
-        module:log("debug", "Session token: %s, session room: %s",
-            tostring(session.auth_token), tostring(session.jitsi_meet_room));
-    end
+    module:log("debug", "Session token: %s, session room: %s",
+        tostring(session.auth_token),
+        tostring(session.jitsi_meet_room));
 
     -- token not required for admin users
     local user_jid = stanza.attr.from;
     if is_admin(user_jid) then
-        if DEBUG then module:log("debug", "Token not required from admin user: %s", user_jid); end
+        module:log("debug", "Token not required from admin user: %s", user_jid);
         return true;
     end
 
@@ -70,11 +68,13 @@ local function verify_user(session, stanza)
 
     -- allowlist for participants
     if allowlist:contains(user_domain) or allowlist:contains(user_bare_jid) then
-        if DEBUG then module:log("debug", "Token not required from user in allow list: %s", user_jid); end
+        module:log("debug", "Token not required from user in allow list: %s", user_jid);
         return true;
     end
 
-    if DEBUG then module:log("debug", "Will verify token for user: %s, room: %s ", user_jid, stanza.attr.to); end
+
+    module:log("debug",
+        "Will verify token for user: %s, room: %s ", user_jid, stanza.attr.to);
     if not token_util:verify_room(session, stanza.attr.to) then
         module:log("error", "Token %s not allowed to join: %s",
             tostring(session.auth_token), tostring(stanza.attr.to));
@@ -83,13 +83,13 @@ local function verify_user(session, stanza)
                 stanza, "cancel", "not-allowed", "Room and token mismatched"));
         return false; -- we need to just return non nil
     end
-    if DEBUG then module:log("debug", "allowed: %s to enter/create room: %s", user_jid, stanza.attr.to); end
+    module:log("debug", "allowed: %s to enter/create room: %s", user_jid, stanza.attr.to);
     return true;
 end
 
 module:hook("muc-room-pre-create", function(event)
     local origin, stanza = event.origin, event.stanza;
-    if DEBUG then module:log("debug", "pre create: %s %s", tostring(origin), tostring(stanza)); end
+    module:log("debug", "pre create: %s %s", tostring(origin), tostring(stanza));
     if not verify_user(origin, stanza) then
         return true; -- Returning any value other than nil will halt processing of the event
     end
@@ -97,7 +97,7 @@ end, 99);
 
 module:hook("muc-occupant-pre-join", function(event)
     local origin, room, stanza = event.origin, event.room, event.stanza;
-    if DEBUG then module:log("debug", "pre join: %s %s", tostring(room), tostring(stanza)); end
+    module:log("debug", "pre join: %s %s", tostring(room), tostring(stanza));
     if not verify_user(origin, stanza) then
         return true; -- Returning any value other than nil will halt processing of the event
     end

@@ -22,7 +22,6 @@ import {
     PARTICIPANT_SOURCES_UPDATED,
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
-    RAISE_HAND_CLEAR,
     RAISE_HAND_UPDATED,
     SCREENSHARE_PARTICIPANT_NAME_CHANGED,
     SET_LOADABLE_AVATAR_URL,
@@ -627,19 +626,6 @@ export function raiseHand(enabled: boolean) {
     return {
         type: LOCAL_PARTICIPANT_RAISE_HAND,
         raisedHandTimestamp: enabled ? Date.now() : 0
-    };
-}
-
-/**
- * Clear the raise hand queue.
- *
- * @returns {{
-*     type: RAISE_HAND_CLEAR
-* }}
-*/
-export function raiseHandClear() {
-    return {
-        type: RAISE_HAND_CLEAR
     };
 }
 

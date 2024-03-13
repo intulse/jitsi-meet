@@ -535,8 +535,6 @@
         "hours": "{{count}} t",
         "minutes": "{{count}} min",
         "name": "Nimi",
-        "search": "Etsi",
-        "searchHint": "Etsi osallistujia",
         "seconds": "{{count}} s",
         "speakerStats": "Puhujatilastot",
         "speakerTime": "Puhujan aika"

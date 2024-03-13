@@ -1,6 +1,8 @@
 import React, { useCallback } from 'react';
 import { FlatList, Text, TextStyle, View, ViewStyle } from 'react-native';
+import { useSelector } from 'react-redux';
 
+import { getLocalParticipant } from '../../../base/participants/functions';
 import Button from '../../../base/ui/components/native/Button';
 import { BUTTON_TYPES } from '../../../base/ui/constants.native';
 import AbstractPollResults from '../AbstractPollResults';
@@ -18,7 +20,6 @@ const PollResults = (props: AbstractProps) => {
     const {
         answers,
         changeVote,
-        creatorName,
         haveVoted,
         question,
         showDetails,
@@ -87,6 +88,7 @@ const PollResults = (props: AbstractProps) => {
         );
 
     }, [ showDetails ]);
+    const localParticipant = useSelector(getLocalParticipant);
 
 
     /* eslint-disable react/jsx-no-bind */
@@ -94,7 +96,7 @@ const PollResults = (props: AbstractProps) => {
         <View>
             <Text style = { dialogStyles.questionText as TextStyle } >{ question }</Text>
             <Text style = { dialogStyles.questionOwnerText as TextStyle } >
-                { t('polls.by', { name: creatorName }) }
+                { t('polls.by', { name: localParticipant?.name }) }
             </Text>
             <FlatList
                 data = { answers }

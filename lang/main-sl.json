@@ -499,6 +499,8 @@
         "youtubeTerms": "Pogoji uporabe YouTube"
     },
     "lobby": {
+        "admit": "Sprejmi",
+        "admitAll": "Sprejmi vse",
         "allow": "Dovoli",
         "backToKnockModeButton": "Prosi za dostop",
         "dialogTitle": "Način predsobe",
@@ -529,6 +531,8 @@
         "notificationTitle": "Predsoba",
         "passwordField": "Vnesite geslo sestanka",
         "passwordJoinButton": "Pridruži se",
+        "reject": "Zavrni",
+        "rejectAll": "Zavrni vse",
         "title": "Predsoba",
         "toggleLabel": "Omogoči predsobo"
     },
@@ -625,8 +629,6 @@
     },
     "participantsPane": {
         "actions": {
-            "admit": "Sprejmi",
-            "admitAll": "Sprejmi vse",
             "allow": "Udeleženci si lahko:",
             "allowVideo": "Dovoli video",
             "askUnmute": "Prosi za vklop mikrofona",
@@ -636,7 +638,6 @@
             "mute": "Izklopi zvok",
             "muteAll": "Izklopi zvok vsem",
             "muteEveryoneElse": "Izklopi zvok vsem ostalim",
-            "reject": "Zavrni",
             "stopEveryonesVideo": "Izklopi video vsem ostalim",
             "stopVideo": "Izklopi video",
             "unblockEveryoneMicCamera": "Dovoli zvok in video vsem udeležencem",
@@ -875,7 +876,6 @@
         "minutes": "{{count}}m",
         "name": "Ime",
         "search": "Iskanje",
-        "searchHint": "Iskanje udeležencev",
         "seconds": "{{count}}s",
         "speakerStats": "Statistika govorca",
         "speakerTime": "Čas govorjenja"

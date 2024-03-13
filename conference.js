@@ -65,11 +65,7 @@ import {
     updateDeviceList
 } from './react/features/base/devices/actions.web';
 import {
-    areDevicesDifferent,
-    filterIgnoredDevices,
-    flattenAvailableDevices,
     getDefaultDeviceId,
-    logDevices,
     setAudioOutputDeviceId
 } from './react/features/base/devices/functions.web';
 import {
@@ -134,7 +130,6 @@ import {
     isUserInteractionRequiredForUnmute
 } from './react/features/base/tracks/functions';
 import { downloadJSON } from './react/features/base/util/downloadJSON';
-import { openLeaveReasonDialog } from './react/features/conference/actions.web';
 import { showDesktopPicker } from './react/features/desktop-picker/actions';
 import { appendSuffix } from './react/features/display-name/functions';
 import { maybeOpenFeedbackDialog, submitFeedback } from './react/features/feedback/actions';
@@ -154,7 +149,7 @@ import {
 import { isModerationNotificationDisplayed } from './react/features/notifications/functions';
 import { mediaPermissionPromptVisibilityChanged } from './react/features/overlay/actions';
 import { suspendDetected } from './react/features/power-monitor/actions';
-import { initPrejoin } from './react/features/prejoin/actions';
+import { initPrejoin, makePrecallTest } from './react/features/prejoin/actions';
 import { isPrejoinPageVisible } from './react/features/prejoin/functions';
 import { disableReceiver, stopReceiver } from './react/features/remote-control/actions';
 import { setScreenAudioShareState } from './react/features/screen-share/actions.web';
@@ -446,7 +441,7 @@ export default {
 
         // Always get a handle on the audio input device so that we have statistics (such as "No audio input" or
         // "Are you trying to speak?" ) even if the user joins the conference muted.
-        const initialDevices = config.startSilent || config.disableInitialGUM ? [] : [ MEDIA_TYPE.AUDIO ];
+        const initialDevices = config.disableInitialGUM ? [] : [ MEDIA_TYPE.AUDIO ];
         const requestedAudio = !config.disableInitialGUM;
         let requestedVideo = false;
 
@@ -636,7 +631,7 @@ export default {
         // so that the user can try unmute later on and add audio/video
         // to the conference
         if (!tracks.find(t => t.isAudioTrack())) {
-            this.updateAudioIconEnabled();
+            this.setAudioMuteStatus(true);
         }
 
         if (!tracks.find(t => t.isVideoTrack())) {
@@ -718,6 +713,8 @@ export default {
         };
 
         if (isPrejoinPageVisible(state)) {
+            APP.store.dispatch(makePrecallTest(this._getConferenceOptions()));
+
             const { tryCreateLocalTracks, errors } = this.createInitialLocalTracks(initialOptions);
             const localTracks = await tryCreateLocalTracks;
 
@@ -843,7 +840,7 @@ export default {
             // This will only modify base/media.audio.muted which is then synced
             // up with the track at the end of local tracks initialization.
             muteLocalAudio(mute);
-            this.updateAudioIconEnabled();
+            this.setAudioMuteStatus(mute);
 
             return;
         } else if (this.isLocalAudioMuted() === mute) {
@@ -1038,6 +1035,17 @@ export default {
     },
 
     /**
+     * Returns true if the callstats integration is enabled, otherwise returns
+     * false.
+     *
+     * @returns true if the callstats integration is enabled, otherwise returns
+     * false.
+     */
+    isCallstatsEnabled() {
+        return room && room.isCallstatsEnabled();
+    },
+
+    /**
      * Get speaker stats that track total dominant speaker time.
      *
      * @returns {object} A hash with keys being user ids and values being the
@@ -1046,6 +1054,13 @@ export default {
      */
     getSpeakerStats() {
         return room.getSpeakerStats();
+    },
+
+    /**
+     * Returns the connection times stored in the library.
+     */
+    getConnectionTimes() {
+        return room.getConnectionTimes();
     },
 
     // used by torture currently
@@ -1374,7 +1389,7 @@ export default {
                 APP.store.dispatch(
                 replaceLocalTrack(oldTrack, newTrack, room))
                     .then(() => {
-                        this.updateAudioIconEnabled();
+                        this.setAudioMuteStatus(this.isLocalAudioMuted());
                     })
                     .then(resolve)
                     .catch(reject)
@@ -2029,6 +2044,10 @@ export default {
 
                     return this.useVideoStream(stream);
                 })
+                .then(() => {
+                    logger.info(`Switched local video device to ${cameraDeviceId}.`);
+                    this._updateVideoDeviceId();
+                })
                 .catch(error => {
                     logger.error(`Failed to switch to selected camera:${cameraDeviceId}, error:${error}`);
 
@@ -2083,6 +2102,8 @@ export default {
                         // above mentioned chrome bug.
                         localAudio._realDeviceId = localAudio.deviceId = 'default';
                     }
+                    logger.info(`switched local audio input device to: ${selectedDeviceId}`);
+                    this._updateAudioDeviceId();
                 })
                 .catch(err => {
                     logger.error(`Failed to switch to selected audio input device ${selectedDeviceId}, error=${err}`);
@@ -2167,11 +2188,48 @@ export default {
 
             return dispatch(getAvailableDevices())
                 .then(devices => {
+                    // Ugly way to synchronize real device IDs with local
+                    // storage and settings menu. This is a workaround until
+                    // getConstraints() method will be implemented in browsers.
+                    this._updateAudioDeviceId();
+
+                    this._updateVideoDeviceId();
+
                     APP.UI.onAvailableDevicesChanged(devices);
                 });
         }
 
         return Promise.resolve();
+    },
+
+    /**
+     * Updates the settings for the currently used video device, extracting
+     * the device id from the used track.
+     * @private
+     */
+    _updateVideoDeviceId() {
+        const localVideo = getLocalJitsiVideoTrack(APP.store.getState());
+
+        if (localVideo && localVideo.videoType === 'camera') {
+            APP.store.dispatch(updateSettings({
+                cameraDeviceId: localVideo.getDeviceId()
+            }));
+        }
+    },
+
+    /**
+     * Updates the settings for the currently used audio device, extracting
+     * the device id from the used track.
+     * @private
+     */
+    _updateAudioDeviceId() {
+        const localAudio = getLocalJitsiAudioTrack(APP.store.getState());
+
+        if (localAudio) {
+            APP.store.dispatch(updateSettings({
+                micDeviceId: localAudio.getDeviceId()
+            }));
+        }
     },
 
     /**
@@ -2182,28 +2240,19 @@ export default {
      * @returns {Promise}
      */
     async _onDeviceListChanged(devices) {
-        const state = APP.store.getState();
-        const { filteredDevices, ignoredDevices } = filterIgnoredDevices(devices);
-        const oldDevices = state['features/base/devices'].availableDevices;
+        const oldDevices = APP.store.getState()['features/base/devices'].availableDevices;
+        const localAudio = getLocalJitsiAudioTrack(APP.store.getState());
+        const localVideo = getLocalJitsiVideoTrack(APP.store.getState());
 
-        if (!areDevicesDifferent(flattenAvailableDevices(oldDevices), filteredDevices)) {
-            return Promise.resolve();
-        }
-
-        logDevices(ignoredDevices, 'Ignored devices on device list changed:');
-
-        const localAudio = getLocalJitsiAudioTrack(state);
-        const localVideo = getLocalJitsiVideoTrack(state);
-
-        APP.store.dispatch(updateDeviceList(filteredDevices));
+        APP.store.dispatch(updateDeviceList(devices));
 
         // Firefox users can choose their preferred device in the gUM prompt. In that case
         // we should respect that and not attempt to switch to the preferred device from
         // our settings.
-        const newLabelsOnly = mediaDeviceHelper.newDeviceListAddedLabelsOnly(oldDevices, filteredDevices);
+        const newLabelsOnly = mediaDeviceHelper.newDeviceListAddedLabelsOnly(oldDevices, devices);
         const newDevices
             = mediaDeviceHelper.getNewMediaDevicesAfterDeviceListChanged(
-                filteredDevices,
+                devices,
                 localVideo,
                 localAudio,
                 newLabelsOnly);
@@ -2322,17 +2371,21 @@ export default {
                         this.useAudioStream(track)
                             .then(() => {
                                 hasDefaultMicChanged && (track._realDeviceId = track.deviceId = 'default');
+                                this._updateAudioDeviceId();
                             }));
                 } else {
                     promises.push(
-                        this.useVideoStream(track));
+                        this.useVideoStream(track)
+                            .then(() => {
+                                this._updateVideoDeviceId();
+                            }));
                 }
             }
         }
 
         return Promise.all(promises)
             .then(() => {
-                APP.UI.onAvailableDevicesChanged(filteredDevices);
+                APP.UI.onAvailableDevicesChanged(devices);
             });
     },
 
@@ -2375,10 +2428,9 @@ export default {
     /**
      * Disconnect from the conference and optionally request user feedback.
      * @param {boolean} [requestFeedback=false] if user feedback should be
-     * @param {string} [hangupReason] the reason for leaving the meeting
      * requested
      */
-    hangup(requestFeedback = false, hangupReason) {
+    hangup(requestFeedback = false) {
         APP.store.dispatch(disableReceiver());
 
         this._stopProxyConnection();
@@ -2395,42 +2447,36 @@ export default {
 
         APP.UI.removeAllListeners();
 
-        let feedbackResultPromise = Promise.resolve({});
+        let requestFeedbackPromise;
 
         if (requestFeedback) {
-            const feedbackDialogClosed = (feedbackResult = {}) => {
-                if (!feedbackResult.wasDialogShown && hangupReason) {
-                    return APP.store.dispatch(
-                        openLeaveReasonDialog(hangupReason)).then(() => feedbackResult);
-                }
+            requestFeedbackPromise
+                = APP.store.dispatch(maybeOpenFeedbackDialog(room))
 
-                return Promise.resolve(feedbackResult);
-            };
-
-            feedbackResultPromise
-                = APP.store.dispatch(maybeOpenFeedbackDialog(room, hangupReason))
-                    .then(feedbackDialogClosed, feedbackDialogClosed);
+                    // false because the thank you dialog shouldn't be displayed
+                    .catch(() => Promise.resolve(false));
+        } else {
+            requestFeedbackPromise = Promise.resolve(true);
         }
 
-        const leavePromise = this.leaveRoom().catch(() => Promise.resolve());
-
-        Promise.allSettled([ feedbackResultPromise, leavePromise ]).then(([ feedback, _ ]) => {
+        Promise.all([
+            requestFeedbackPromise,
+            this.leaveRoom()
+        ])
+        .then(values => {
             this._room = undefined;
             room = undefined;
 
             /**
              * Don't call {@code notifyReadyToClose} if the promotional page flag is set
              * and let the page take care of sending the message, since there will be
-             * a redirect to the page anyway.
+             * a redirect to the page regardlessly.
              */
             if (!interfaceConfig.SHOW_PROMOTIONAL_CLOSE_PAGE) {
                 APP.API.notifyReadyToClose();
             }
-
-            APP.store.dispatch(maybeRedirectToWelcomePage(feedback.value ?? {}));
+            APP.store.dispatch(maybeRedirectToWelcomePage(values[0]));
         });
-
-
     },
 
     /**
@@ -2440,7 +2486,7 @@ export default {
      * @param {string} reason - reason for leaving the room.
      * @returns {Promise}
      */
-    leaveRoom(doDisconnect = true, reason = '') {
+    async leaveRoom(doDisconnect = true, reason = '') {
         APP.store.dispatch(conferenceWillLeave(room));
 
         const maybeDisconnect = () => {
@@ -2615,6 +2661,15 @@ export default {
      */
     setVideoMuteStatus() {
         APP.UI.setVideoMuted(this.getMyUserId());
+    },
+
+    /**
+     * Sets the audio muted status.
+     *
+     * @param {boolean} muted - New muted status.
+     */
+    setAudioMuteStatus(muted) {
+        APP.UI.setAudioMuted(this.getMyUserId(), muted);
     },
 
     /**

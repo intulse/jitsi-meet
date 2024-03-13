@@ -15,7 +15,6 @@ import {
     TRACK_ADDED,
     TRACK_MUTE_UNMUTE_FAILED,
     TRACK_NO_DATA_FROM_SOURCE,
-    TRACK_OWNER_CHANGED,
     TRACK_REMOVED,
     TRACK_STOPPED,
     TRACK_UPDATED
@@ -26,7 +25,7 @@ import {
     trackNoDataFromSourceNotificationInfoChanged
 } from './actions.web';
 import {
-    getTrackByJitsiTrack, logTracksForParticipant
+    getTrackByJitsiTrack
 } from './functions.web';
 import { ITrack } from './types';
 
@@ -49,17 +48,9 @@ MiddlewareRegistry.register(store => next => action => {
         // were granted and a local video track is added by umuting the video.
         if (local) {
             store.dispatch(getAvailableDevices());
-            break;
         }
 
-        const result = next(action);
-        const participantId = action.track?.participantId;
-
-        if (participantId) {
-            logTracksForParticipant(store.getState()['features/base/tracks'], participantId, 'Track added');
-        }
-
-        return result;
+        break;
     }
     case TRACK_NO_DATA_FROM_SOURCE: {
         const result = next(action);
@@ -71,32 +62,7 @@ MiddlewareRegistry.register(store => next => action => {
 
     case TRACK_REMOVED: {
         _removeNoDataFromSourceNotification(store, action.track);
-
-        const result = next(action);
-        const participantId = action.track?.jitsiTrack?.getParticipantId();
-
-        if (participantId && !action.track?.jitsiTrack?.isLocal()) {
-            logTracksForParticipant(store.getState()['features/base/tracks'], participantId, 'Track removed');
-        }
-
-        return result;
-    }
-
-    case TRACK_OWNER_CHANGED: {
-        const oldTrack = getTrackByJitsiTrack(store.getState()['features/base/tracks'], action.track?.jitsiTrack);
-        const oldOwner = oldTrack?.participantId;
-        const result = next(action);
-        const newOwner = action.track?.participantId;
-
-        if (oldOwner) {
-            logTracksForParticipant(store.getState()['features/base/tracks'], oldOwner, 'Owner changed');
-        }
-
-        if (newOwner) {
-            logTracksForParticipant(store.getState()['features/base/tracks'], newOwner, 'Owner changed');
-        }
-
-        return result;
+        break;
     }
 
     case TRACK_MUTE_UNMUTE_FAILED: {
@@ -109,7 +75,7 @@ MiddlewareRegistry.register(store => next => action => {
         } else if (isVideoTrack) {
             APP.conference.setVideoMuteStatus();
         } else {
-            APP.conference.updateAudioIconEnabled();
+            APP.conference.setAudioMuteStatus(!muted);
         }
 
         break;
@@ -136,22 +102,20 @@ MiddlewareRegistry.register(store => next => action => {
         }
 
         const { jitsiTrack } = action.track;
+        const muted = jitsiTrack.isMuted();
         const participantID = jitsiTrack.getParticipantId();
         const isVideoTrack = jitsiTrack.type !== MEDIA_TYPE.AUDIO;
-        const local = jitsiTrack.isLocal();
 
         if (isVideoTrack) {
-            if (local && !(jitsiTrack.getVideoType() === VIDEO_TYPE.DESKTOP)) {
+            if (jitsiTrack.isLocal() && !(jitsiTrack.getVideoType() === VIDEO_TYPE.DESKTOP)) {
                 APP.conference.setVideoMuteStatus();
-            } else if (!local) {
+            } else if (!jitsiTrack.isLocal()) {
                 APP.UI.setVideoMuted(participantID);
             }
-        } else if (local) {
-            APP.conference.updateAudioIconEnabled();
-        }
-
-        if (typeof action.track?.muted !== 'undefined' && participantID && !local) {
-            logTracksForParticipant(store.getState()['features/base/tracks'], participantID, 'Track updated');
+        } else if (jitsiTrack.isLocal()) {
+            APP.conference.setAudioMuteStatus(muted);
+        } else {
+            APP.UI.setAudioMuted(participantID, muted);
         }
 
         return result;

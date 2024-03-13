@@ -1,17 +1,14 @@
-/* eslint-disable guard-for-in, no-continue */
+/* eslint-disable guard-for-in */
 /* global __dirname */
 
 const fs = require('fs');
 const path = require('path');
-const semver = require('semver');
-
 
 const pathToPackageJSON = path.resolve(__dirname, '../../../package.json');
 
 const packageJSON = require(pathToPackageJSON);
 
 const RNSDKpackageJSON = require(path.resolve(__dirname, './package.json'));
-
 
 /**
  * Updates dependencies from the app package.json with the peer dependencies of the RNSDK package.json.
@@ -23,41 +20,6 @@ function updateDependencies() {
         if (!packageJSON.dependencies.hasOwnProperty(key)) {
             packageJSON.dependencies[key] = RNSDKpackageJSON.peerDependencies[key];
             updated = true;
-        }
-
-        if (!semver.valid(packageJSON.dependencies[key])
-            && packageJSON.dependencies[key] !== RNSDKpackageJSON.peerDependencies[key]) {
-            packageJSON.dependencies[key] = RNSDKpackageJSON.peerDependencies[key];
-            updated = true;
-
-            console.log(`
-⚠️We changed ${key} version number from ${packageJSON.dependencies[key]} to ${RNSDKpackageJSON.peerDependencies[key]}`
-            );
-
-            continue;
-        }
-
-        if (semver.satisfies(RNSDKpackageJSON.peerDependencies[key], `=${packageJSON.dependencies[key]}`)) {
-            continue;
-        }
-
-        if (semver.satisfies(RNSDKpackageJSON.peerDependencies[key], `>${packageJSON.dependencies[key]}`)) {
-            packageJSON.dependencies[key] = RNSDKpackageJSON.peerDependencies[key];
-            updated = true;
-
-            console.log(`${key} is now set to ${RNSDKpackageJSON.peerDependencies[key]}`);
-        }
-
-        if (!semver.valid(RNSDKpackageJSON.peerDependencies[key])
-            && RNSDKpackageJSON.peerDependencies[key].includes('github')
-            && packageJSON.dependencies[key] !== RNSDKpackageJSON.peerDependencies[key]) {
-            packageJSON.dependencies[key] = RNSDKpackageJSON.peerDependencies[key];
-            updated = true;
-
-            console.log(
-`A fix for ${key} is available on ${RNSDKpackageJSON.peerDependencies[key]}.
-This is now set on your end.`
-            );
         }
     }
 
@@ -71,8 +33,6 @@ This is now set on your end.`
     }
 
     if (!updated) {
-        console.log('All your dependencies are up to date!');
-
         return;
     }
 

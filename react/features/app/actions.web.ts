@@ -15,7 +15,6 @@ import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 import { isWelcomePageEnabled } from '../welcome/functions';
 
 import {
-    maybeRedirectToTokenAuthUrl,
     redirectToStaticPage,
     redirectWithStoredParams,
     reloadWithStoredParams
@@ -171,16 +170,8 @@ export function reloadNow() {
         const state = getState();
         const { locationURL } = state['features/base/connection'];
 
-        const reloadAction = () => {
-            logger.info(`Reloading the conference using URL: ${locationURL}`);
+        logger.info(`Reloading the conference using URL: ${locationURL}`);
 
-            dispatch(reloadWithStoredParams());
-        };
-
-        if (maybeRedirectToTokenAuthUrl(dispatch, getState, reloadAction)) {
-            return;
-        }
-
-        reloadAction();
+        dispatch(reloadWithStoredParams());
     };
 }

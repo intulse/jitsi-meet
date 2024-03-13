@@ -14,12 +14,12 @@ import { reloadNow } from '../../app/actions';
 import { IStore } from '../../app/types';
 import { removeLobbyChatParticipant } from '../../chat/actions.any';
 import { openDisplayNamePrompt } from '../../display-name/actions';
-import { isVpaasMeeting } from '../../jaas/functions';
-import { showErrorNotification } from '../../notifications/actions';
+import { readyToClose } from '../../mobile/external-api/actions';
+import { showErrorNotification, showWarningNotification } from '../../notifications/actions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
-import { hasDisplayName } from '../../prejoin/utils';
 import { stopLocalVideoRecording } from '../../recording/actions.any';
 import LocalRecordingManager from '../../recording/components/Recording/LocalRecordingManager';
+import { setIAmVisitor } from '../../visitors/actions';
 import { iAmVisitor } from '../../visitors/functions';
 import { overwriteConfig } from '../config/actions';
 import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from '../connection/actionTypes';
@@ -35,6 +35,7 @@ import {
 } from '../participants/functions';
 import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 import { TRACK_ADDED, TRACK_REMOVED } from '../tracks/actionTypes';
+import { destroyLocalTracks } from '../tracks/actions.any';
 import { getLocalTracks } from '../tracks/functions.any';
 
 import {
@@ -51,17 +52,24 @@ import {
 import {
     authStatusChanged,
     conferenceFailed,
+    conferenceWillInit,
     conferenceWillLeave,
     createConference,
+    leaveConference,
     setLocalSubject,
     setSubject
 } from './actions';
-import { CONFERENCE_LEAVE_REASONS } from './constants';
+import {
+    CONFERENCE_DESTROYED_LEAVE_TIMEOUT,
+    CONFERENCE_LEAVE_REASONS,
+    TRIGGER_READY_TO_CLOSE_REASONS
+} from './constants';
 import {
     _addLocalTracksToConference,
     _removeLocalTracksFromConference,
     forEachConference,
     getCurrentConference,
+    getVisitorOptions,
     restoreConferenceOptions
 } from './functions';
 import logger from './logger';
@@ -145,6 +153,25 @@ function _conferenceFailed({ dispatch, getState }: IStore, next: Function, actio
 
     // Handle specific failure reasons.
     switch (error.name) {
+    case JitsiConferenceErrors.CONFERENCE_DESTROYED: {
+        const [ reason ] = error.params;
+
+        dispatch(showWarningNotification({
+            description: reason,
+            titleKey: 'dialog.sessTerminated'
+        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+
+        if (TRIGGER_READY_TO_CLOSE_REASONS.includes(reason)) {
+            if (typeof APP === 'undefined') {
+                dispatch(readyToClose());
+            } else {
+                APP.API.notifyReadyToClose();
+            }
+            setTimeout(() => dispatch(leaveConference()), CONFERENCE_DESTROYED_LEAVE_TIMEOUT);
+        }
+
+        break;
+    }
     case JitsiConferenceErrors.CONFERENCE_RESTARTED: {
         if (enableForcedReload) {
             dispatch(showErrorNotification({
@@ -200,6 +227,34 @@ function _conferenceFailed({ dispatch, getState }: IStore, next: Function, actio
     case JitsiConferenceErrors.OFFER_ANSWER_FAILED:
         sendAnalytics(createOfferAnswerFailedEvent());
         break;
+
+    case JitsiConferenceErrors.REDIRECTED: {
+        const newConfig = getVisitorOptions(getState, error.params);
+
+        if (!newConfig) {
+            logger.warn('Not redirected missing params');
+            break;
+        }
+
+        const [ vnode ] = error.params;
+
+        dispatch(overwriteConfig(newConfig)) // @ts-ignore
+            .then(() => dispatch(conferenceWillLeave(conference)))
+            .then(() => dispatch(disconnect()))
+            .then(() => dispatch(setIAmVisitor(Boolean(vnode))))
+
+            // we do not clear local tracks on error, so we need to manually clear them
+            .then(() => dispatch(destroyLocalTracks()))
+            .then(() => dispatch(conferenceWillInit()))
+            .then(() => dispatch(connect()))
+            .then(() => {
+                // FIXME: Workaround for the web version. To be removed once we get rid of conference.js
+                if (typeof APP !== 'undefined') {
+                    APP.conference.startConference([]);
+                }
+            });
+        break;
+    }
     }
 
     !error.recoverable
@@ -278,9 +333,7 @@ function _conferenceJoined({ dispatch, getState }: IStore, next: Function, actio
     if (requireDisplayName
         && !getLocalParticipant(getState)?.name
         && !conference.isHidden()) {
-        dispatch(openDisplayNamePrompt({
-            validateInput: hasDisplayName
-        }));
+        dispatch(openDisplayNamePrompt(undefined));
     }
 
     return result;
@@ -307,7 +360,7 @@ async function _connectionEstablished({ dispatch, getState }: IStore, next: Func
 
     // if there is token auth URL defined and local participant is using jwt
     // this means it is logged in when connection is established, so we can change the state
-    if (tokenAuthUrl && !isVpaasMeeting(getState())) {
+    if (tokenAuthUrl) {
         let email;
 
         if (getState()['features/base/jwt'].jwt) {

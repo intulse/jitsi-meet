@@ -10,7 +10,7 @@ body.welcome-page {
     flex-direction: column;
     font-family: $welcomePageFontFamily;
     justify-content: space-between;
-    min-height: 100dvh;
+    min-height: 100vh;
     position: relative;
 
     .header {
@@ -58,35 +58,6 @@ body.welcome-page {
             line-height: 26px;
             margin: 16px 0 32px 0;
             text-align: $welcomePageHeaderTextAlign;
-
-        }
-
-        .not-allow-title-character-div {
-            color: #f03e3e;
-            background-color: #fff;
-            font-size: 12px;
-            font-weight: 600;
-            margin: 10px 0px 5px 0px;
-            text-align: $welcomePageHeaderTextAlign;
-            border-radius: 5px;
-            padding: 5px;
-            .not-allow-title-character-text {
-                float: right;
-                line-height: 1.9;
-            };
-            .jitsi-icon {
-                margin-right: 9px;
-                float: left;
-
-
-                svg {
-                    fill:#f03e3e;
-
-                    & > *:first-child {
-                        fill: none !important;
-                    }
-                }
-            }
 
         }
 
@@ -257,6 +228,11 @@ body.welcome-page {
         height: 100%;
 
         .watermark.leftwatermark {
+            width: $welcomePageWatermarkWidth;
+            height: $welcomePageWatermarkHeight;
+        }
+
+        .watermark.leftwatermarknomargin {
             width: $welcomePageWatermarkWidth;
             height: $welcomePageWatermarkHeight;
         }

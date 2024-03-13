@@ -1,44 +1,40 @@
 /**
  * Percent of pixels that signal if two images should be considered different.
  */
-export const PERCENTAGE_LOWER_BOUND = 4;
+export const PERCENTAGE_LOWER_BOUND = 5;
 
 /**
  * Number of milliseconds that represent how often screenshots should be taken.
  */
-export const POLL_INTERVAL = 2000;
+export const POLL_INTERVAL = 4000;
 
 /**
- * SET_TIMEOUT constant is used to set interval and it is set in
+ * SET_INTERVAL constant is used to set interval and it is set in
  * the id property of the request.data property. TimeMs property must
  * also be set. Request.data example:
  *
  * {
- *      id: SET_TIMEOUT,
+ *      id: SET_INTERVAL,
  *      timeMs: 33
  * }.
  */
-export const SET_TIMEOUT = 1;
+export const SET_INTERVAL = 1;
 
 /**
- * CLEAR_TIMEOUT constant is used to clear the interval and it is set in
+ * CLEAR_INTERVAL constant is used to clear the interval and it is set in
  * the id property of the request.data property.
  *
  * {
- *      id: CLEAR_TIMEOUT
+ *      id: CLEAR_INTERVAL
  * }.
  */
-export const CLEAR_TIMEOUT = 2;
+export const CLEAR_INTERVAL = 2;
 
 /**
- * TIMEOUT_TICK constant is used as response and it is set in the id property.
+ * INTERVAL_TIMEOUT constant is used as response and it is set in the id property.
  *
  * {
- *      id: TIMEOUT_TICK
+ *      id: INTERVAL_TIMEOUT
  * }.
  */
-export const TIMEOUT_TICK = 3;
-
-export const SCREENSHOT_QUEUE_LIMIT = 3;
-
-export const MAX_FILE_SIZE = 1000000;
+export const INTERVAL_TIMEOUT = 3;

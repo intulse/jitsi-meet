@@ -1,7 +1,10 @@
 import { IReduxState, IStore } from '../../app/types';
+import {
+    getMultipleVideoSendingSupportFeatureFlag
+} from '../config/functions.any';
 import { JitsiTrackErrors, browser } from '../lib-jitsi-meet';
 import { gumPending } from '../media/actions';
-import { CAMERA_FACING_MODE, MEDIA_TYPE, MediaType, VIDEO_TYPE } from '../media/constants';
+import { MEDIA_TYPE, MediaType, VIDEO_TYPE } from '../media/constants';
 import { IMediaState } from '../media/reducer';
 import { IGUMPendingState } from '../media/types';
 import {
@@ -222,17 +225,6 @@ export function getTrackByMediaTypeAndParticipant(
 }
 
 /**
- * Returns track for specified participant id.
- *
- * @param {ITrack[]} tracks - List of all tracks.
- * @param {string} participantId - Participant ID.
- * @returns {(Track[]|undefined)}
- */
-export function getTrackByParticipantId(tracks: ITrack[], participantId: string) {
-    return tracks.filter(t => t.participantId === participantId);
-}
-
-/**
  * Returns screenshare track of given virtualScreenshareParticipantId.
  *
  * @param {ITrack[]} tracks - List of all tracks.
@@ -341,7 +333,8 @@ export function isLocalVideoTrackDesktop(state: IReduxState) {
  * @returns {boolean}
  */
 export function isRemoteTrackMuted(tracks: ITrack[], mediaType: MediaType, participantId: string) {
-    const track = getTrackByMediaTypeAndParticipant(tracks, mediaType, participantId);
+    const track = getTrackByMediaTypeAndParticipant(
+        tracks, mediaType, participantId);
 
     return !track || track.muted;
 }
@@ -397,7 +390,8 @@ export function setTrackMuted(track: any, muted: boolean, state: IReduxState | I
     // Ignore the check for desktop track muted operation. When the screenshare is terminated by clicking on the
     // browser's 'Stop sharing' button, the local stream is stopped before the inactive stream handler is fired.
     // We still need to proceed here and remove the track from the peerconnection.
-    if (track.isMuted() === muted && track.getVideoType() !== VIDEO_TYPE.DESKTOP) {
+    if (track.isMuted() === muted
+        && !(track.getVideoType() === VIDEO_TYPE.DESKTOP && getMultipleVideoSendingSupportFeatureFlag(state))) {
         return Promise.resolve();
     }
 
@@ -421,35 +415,4 @@ export function setTrackMuted(track: any, muted: boolean, state: IReduxState | I
             return Promise.reject(error);
         }
     });
-}
-
-/**
- * Logs the current track state for a participant.
- *
- * @param {ITrack[]} tracksState - The tracks from redux.
- * @param {string} participantId - The ID of the participant.
- * @param {string} reason - The reason for the track change.
- * @returns {void}
- */
-export function logTracksForParticipant(tracksState: ITrack[], participantId: string, reason?: string) {
-    if (!participantId) {
-        return;
-    }
-    const tracks = getTrackByParticipantId(tracksState, participantId);
-    const logStringPrefix = `Track state for participant ${participantId} changed`;
-    const trackStateStrings = tracks.map(t => `{type: ${t.mediaType}, videoType: ${t.videoType}, muted: ${
-        t.muted}, isReceivingData: ${t.isReceivingData}, jitsiTrack: ${t.jitsiTrack?.toString()}}`);
-    const tracksLogMsg = trackStateStrings.length > 0 ? `\n${trackStateStrings.join('\n')}` : ' No tracks available!';
-
-    logger.debug(`${logStringPrefix}${reason ? `(reason: ${reason})` : ''}:${tracksLogMsg}`);
-}
-
-/**
- * Gets the default camera facing mode.
- *
- * @param {Object} state - The redux state.
- * @returns {string} - The camera facing mode.
- */
-export function getCameraFacingMode(state: IReduxState) {
-    return state['features/base/config'].cameraFacingMode ?? CAMERA_FACING_MODE.USER;
 }

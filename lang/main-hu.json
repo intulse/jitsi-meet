@@ -462,6 +462,8 @@
         "youtubeTerms": "YouTube szolgáltatási feltételek"
     },
     "lobby": {
+        "admit": "Engedélyezés",
+        "admitAll": "Mindet engedélyez",
         "allow": "Engedélyez",
         "backToKnockModeButton": "Csatlakozási kérelem küldése",
         "chat": "Chat",
@@ -493,6 +495,8 @@
         "notificationTitle": "Lobby",
         "passwordField": "Adja meg az értekezlet jelszavát",
         "passwordJoinButton": "Csatlakozás",
+        "reject": "Elutasít",
+        "rejectAll": "Mindet elutasít",
         "toggleLabel": "Lobby engedélyezése"
     },
     "localRecording": {
@@ -575,8 +579,6 @@
     },
     "participantsPane": {
         "actions": {
-            "admit": "Engedélyezés",
-            "admitAll": "Mindet engedélyez",
             "allow": "Engedélyezés a résztvevőknek, hogy:",
             "allowVideo": "Videó engedélyezése",
             "askUnmute": "Kérje a némítás feloldását",
@@ -589,7 +591,6 @@
             "mute": "Némítás",
             "muteAll": "Mindenkit elnémít",
             "muteEveryoneElse": "Mute everyone else",
-            "reject": "Elutasít",
             "stopEveryonesVideo": "Mindenki videójának leállítása",
             "stopVideo": "Videó leállítása",
             "unblockEveryoneMicCamera": "Unblock everyone's mic and camera",
@@ -824,7 +825,6 @@
         "neutral": "Semleges",
         "sad": "Szomorú",
         "search": "Keresés",
-        "searchHint": "Résztvevők keresése",
         "seconds": "{{count}} mp",
         "speakerStats": "Beszélő statisztika",
         "speakerTime": "Beszélő ideje",

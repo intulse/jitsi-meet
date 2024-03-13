@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import { IReduxState } from '../../../app/types';
-import { IconUser } from '../../icons/svg';
 import { getParticipantById } from '../../participants/functions';
 import { IParticipant } from '../../participants/types';
 import { getAvatarColor, getInitials, isCORSAvatarURL } from '../functions';
@@ -183,7 +182,6 @@ class Avatar<P extends IProps> extends PureComponent<P, IState> {
 
         const avatarProps: AbstractProps & {
             className?: string;
-            iconUser?: any;
             id?: string;
             status?: string;
             testId?: string;
@@ -226,10 +224,6 @@ class Avatar<P extends IProps> extends PureComponent<P, IState> {
             }
 
             avatarProps.initials = initials;
-        }
-
-        if (navigator.product !== 'ReactNative') {
-            avatarProps.iconUser = IconUser;
         }
 
         return (

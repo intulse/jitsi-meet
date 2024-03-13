@@ -1,6 +1,5 @@
 import { IReduxState } from '../app/types';
 import { getCurrentConference } from '../base/conference/functions';
-import { getVisitorsCount } from '../visitors/functions';
 
 import { IKnockingParticipant } from './types';
 
@@ -92,14 +91,4 @@ export function showLobbyChatButton(
 
         return false;
     };
-}
-
-/**
- * Returns true if enabling lobby is allowed and false otherwise.
- *
- * @param {IReduxState} state - State object.
- * @returns {boolean}
- */
-export function isEnablingLobbyAllowed(state: IReduxState) {
-    return getVisitorsCount(state) <= 0;
 }

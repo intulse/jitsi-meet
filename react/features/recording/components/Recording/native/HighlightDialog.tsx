@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleProp, Text, TextStyle, View, ViewStyle } from 'react-native';
+import { Text, View, ViewStyle } from 'react-native';
 import { batch, useDispatch } from 'react-redux';
 
 import { hideSheet } from '../../../../base/dialog/actions';
@@ -23,20 +23,18 @@ const HighlightDialog = () => {
 
     return (
         <BottomSheet>
-            <View style = { styles.highlightDialog as StyleProp<ViewStyle> }>
-                <Text style = { styles.highlightDialogHeading as StyleProp<TextStyle> }>
-                    { `${t('recording.highlightMoment')}?` }
-                </Text>
-                <Text style = { styles.highlightDialogText as StyleProp<TextStyle> }>
+            <View style = { styles.highlightDialog }>
+                <Text style = { styles.highlightDialogHeading }>{ `${t('recording.highlightMoment')}?` }</Text>
+                <Text style = { styles.highlightDialogText }>
                     { t('recording.highlightMomentSucessDescription') }
                 </Text>
-                <View style = { styles.highlightDialogButtonsContainer as StyleProp<ViewStyle> } >
+                <View style = { styles.highlightDialogButtonsContainer as ViewStyle } >
                     <Button
                         accessibilityLabel = 'dialog.Cancel'
                         labelKey = 'dialog.Cancel'
                         onClick = { closeDialog }
                         type = { BUTTON_TYPES.SECONDARY } />
-                    <View style = { styles.highlightDialogButtonsSpace as StyleProp<ViewStyle> } />
+                    <View style = { styles.highlightDialogButtonsSpace } />
                     <Button
                         accessibilityLabel = 'recording.highlight'
                         labelKey = 'recording.highlight'

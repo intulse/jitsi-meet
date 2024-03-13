@@ -13,7 +13,7 @@ import Checkbox from '../../../../base/ui/components/web/Checkbox';
 import ContextMenu from '../../../../base/ui/components/web/ContextMenu';
 import ContextMenuItem from '../../../../base/ui/components/web/ContextMenuItem';
 import ContextMenuItemGroup from '../../../../base/ui/components/web/ContextMenuItemGroup';
-import { checkBlurSupport, checkVirtualBackgroundEnabled } from '../../../../virtual-background/functions';
+import { checkBlurSupport } from '../../../../virtual-background/functions';
 import { openSettingsDialog } from '../../../actions';
 import { SETTINGS_TABS } from '../../../constants';
 import { createLocalVideoTracks } from '../../../functions.web';
@@ -57,17 +57,12 @@ export interface IProps {
      * All the camera device ids currently connected.
      */
     videoDeviceIds: string[];
-
-    /**
-    * Whether or not the virtual background is visible.
-    */
-    visibleVirtualBackground: boolean;
 }
 
 const useStyles = makeStyles()(theme => {
     return {
         container: {
-            maxHeight: 'calc(100dvh - 100px)',
+            maxHeight: 'calc(100vh - 100px)',
             overflow: 'auto',
             margin: 0,
             marginBottom: theme.spacing(1),
@@ -150,8 +145,7 @@ const VideoSettingsContent = ({
     selectBackground,
     setVideoInputDevice,
     toggleVideoSettings,
-    videoDeviceIds,
-    visibleVirtualBackground
+    videoDeviceIds
 }: IProps) => {
     const _componentWasUnmounted = useRef(false);
     const [ trackData, setTrackData ] = useState(new Array(videoDeviceIds.length).fill({
@@ -293,6 +287,8 @@ const VideoSettingsContent = ({
         }
     }, [ videoDeviceIds ]);
 
+    const virtualBackgroundSupported = checkBlurSupport();
+
     return (
         <ContextMenu
             aria-labelledby = 'video-settings-button'
@@ -305,7 +301,7 @@ const VideoSettingsContent = ({
                 {trackData.map((data, i) => _renderPreviewEntry(data, i))}
             </ContextMenuItemGroup>
             <ContextMenuItemGroup>
-                { visibleVirtualBackground && <ContextMenuItem
+                { virtualBackgroundSupported && <ContextMenuItem
                     accessibilityLabel = { t('virtualBackground.title') }
                     icon = { IconImage }
                     onClick = { selectBackground }
@@ -327,9 +323,7 @@ const mapStateToProps = (state: IReduxState) => {
     const { localFlipX } = state['features/base/settings'];
 
     return {
-        localFlipX: Boolean(localFlipX),
-        visibleVirtualBackground: checkBlurSupport()
-        && checkVirtualBackgroundEnabled(state)
+        localFlipX: Boolean(localFlipX)
     };
 };
 

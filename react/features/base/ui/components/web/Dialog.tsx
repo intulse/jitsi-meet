@@ -92,12 +92,10 @@ const Dialog = ({
     disableBackdropClose,
     hideCloseButton,
     disableEnter,
-    disableEscape,
     ok = { translationKey: 'dialog.Ok' },
     onCancel,
     onSubmit,
     size,
-    testId,
     title,
     titleKey
 }: IDialogProps) => {
@@ -126,11 +124,9 @@ const Dialog = ({
             description = { description }
             disableBackdropClose = { disableBackdropClose }
             disableEnter = { disableEnter }
-            disableEscape = { disableEscape }
             onClose = { onClose }
             size = { size }
             submit = { submit }
-            testId = { testId }
             title = { title }
             titleKey = { titleKey }>
             <div className = { classes.header }>
@@ -172,7 +168,7 @@ const Dialog = ({
                     id = 'modal-dialog-ok-button'
                     isSubmit = { true }
                     labelKey = { ok.translationKey }
-                    { ...(!ok.disabled && { onClick: submit }) } />}
+                    onClick = { submit } />}
             </div>
         </BaseDialog>
     );

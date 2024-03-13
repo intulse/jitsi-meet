@@ -9,7 +9,6 @@ import { isLocalParticipantModerator } from '../../../../base/participants/funct
 import Dialog from '../../../../base/ui/components/web/Dialog';
 import E2EESection from '../../../../e2ee/components/E2EESection';
 import LobbySection from '../../../../lobby/components/web/LobbySection';
-import { isEnablingLobbyAllowed } from '../../../../lobby/functions';
 
 import PasswordSection from './PasswordSection';
 
@@ -40,11 +39,6 @@ interface IProps {
      * Whether to hide the lobby password section.
      */
     _disableLobbyPassword?: boolean;
-
-    /**
-     * Whether to hide the lobby section.
-     */
-    _isEnablingLobbyAllowed: boolean;
 
     /**
      * The value for how the conference is locked (or undefined if not locked)
@@ -83,7 +77,6 @@ function SecurityDialog({
     _canEditPassword,
     _conference,
     _disableLobbyPassword,
-    _isEnablingLobbyAllowed,
     _locked,
     _password,
     _passwordNumberOfDigits,
@@ -104,29 +97,25 @@ function SecurityDialog({
             ok = {{ hidden: true }}
             titleKey = 'security.title'>
             <div className = 'security-dialog'>
-                {
-                    _isEnablingLobbyAllowed && <LobbySection />
-                }
-                {
-                    !_disableLobbyPassword && (
-                        <>
-                            { _isEnablingLobbyAllowed && <div className = 'separator-line' /> }
-                            <PasswordSection
-                                buttonsWithNotifyClick = { _buttonsWithNotifyClick }
-                                canEditPassword = { _canEditPassword }
-                                conference = { _conference }
-                                locked = { _locked }
-                                password = { _password }
-                                passwordEditEnabled = { passwordEditEnabled }
-                                passwordNumberOfDigits = { _passwordNumberOfDigits }
-                                setPassword = { setPassword }
-                                setPasswordEditEnabled = { setPasswordEditEnabled } />
-                        </>
-                    )
-                }
+                <LobbySection />
+                {!_disableLobbyPassword && (
+                    <>
+                        <div className = 'separator-line' />
+                        <PasswordSection
+                            buttonsWithNotifyClick = { _buttonsWithNotifyClick }
+                            canEditPassword = { _canEditPassword }
+                            conference = { _conference }
+                            locked = { _locked }
+                            password = { _password }
+                            passwordEditEnabled = { passwordEditEnabled }
+                            passwordNumberOfDigits = { _passwordNumberOfDigits }
+                            setPassword = { setPassword }
+                            setPasswordEditEnabled = { setPasswordEditEnabled } />
+                    </>
+                )}
                 {
                     _showE2ee ? <>
-                        { (_isEnablingLobbyAllowed || !_disableLobbyPassword) && <div className = 'separator-line' /> }
+                        <div className = 'separator-line' />
                         <E2EESection />
                     </> : null
                 }
@@ -156,7 +145,6 @@ function mapStateToProps(state: IReduxState) {
         buttonsWithNotifyClick
     } = state['features/base/config'];
     const { disableLobbyPassword } = getSecurityUiConfig(state);
-    const _isEnablingLobbyAllowed = isEnablingLobbyAllowed(state);
 
     const showE2ee = Boolean(e2eeSupported) && isLocalParticipantModerator(state);
 
@@ -166,7 +154,6 @@ function mapStateToProps(state: IReduxState) {
         _conference: conference,
         _dialIn: state['features/invite'],
         _disableLobbyPassword: disableLobbyPassword,
-        _isEnablingLobbyAllowed,
         _locked: locked,
         _password: password,
         _passwordNumberOfDigits: roomPasswordNumberOfDigits,

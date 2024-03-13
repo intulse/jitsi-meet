@@ -37,7 +37,7 @@ module:hook("pre-iq/full", function(event)
                 end
 
                 if token == nil
-                    or not is_feature_allowed(session.jitsi_meet_context_features,
+                    or not is_feature_allowed(session,
                     (jibri.attr.recording_mode == 'file' and 'recording' or 'livestreaming')
                 ) then
                     module:log("info",

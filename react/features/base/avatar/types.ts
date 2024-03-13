@@ -6,11 +6,6 @@ export interface IAvatarProps {
     color?: string;
 
     /**
-     * The user icon(browser only).
-     */
-    iconUser?: any;
-
-    /**
      * Initials to be used to render the initials based avatars.
      */
     initials?: string;

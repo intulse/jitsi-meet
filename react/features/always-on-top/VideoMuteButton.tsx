@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 // We need to reference these files directly to avoid loading things that are not available
 // in this environment (e.g. JitsiMeetJS or interfaceConfig)
-import { DEFAULT_ICON } from '../base/icons/svg/constants';
+import { IconVideo, IconVideoOff } from '../base/icons/svg';
 import { IProps } from '../base/toolbox/components/AbstractButton';
 
 import ToolbarButton from './ToolbarButton';
@@ -32,8 +32,8 @@ type State = {
  */
 export default class VideoMuteButton extends Component<Props, State> {
 
-    icon = DEFAULT_ICON.IconVideo;
-    toggledIcon = DEFAULT_ICON.IconVideoOff;
+    icon = IconVideo;
+    toggledIcon = IconVideoOff;
     accessibilityLabel = 'Video mute';
 
     /**

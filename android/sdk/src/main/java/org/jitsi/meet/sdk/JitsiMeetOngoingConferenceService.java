@@ -23,7 +23,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -95,11 +94,8 @@ public class JitsiMeetOngoingConferenceService extends Service
             stopSelf();
             JitsiMeetLogger.w(TAG + " Couldn't start service, notification is null");
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(OngoingNotification.NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-            } else {
-                startForeground(OngoingNotification.NOTIFICATION_ID, notification);
-            }
+            startForeground(OngoingNotification.NOTIFICATION_ID, notification);
+            JitsiMeetLogger.i(TAG + " Service started");
         }
 
         OngoingConferenceTracker.getInstance().addListener(this);

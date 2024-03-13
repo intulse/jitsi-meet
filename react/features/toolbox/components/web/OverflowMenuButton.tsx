@@ -72,15 +72,15 @@ const useStyles = makeStyles<{ overflowDrawer: boolean; reactionsMenuHeight: num
 (_theme, { reactionsMenuHeight, overflowDrawer }) => {
     return {
         overflowMenuDrawer: {
-            overflowY: 'scroll',
-            height: `calc(${DRAWER_MAX_HEIGHT})`
+            overflow: 'hidden',
+            height: `calc(${DRAWER_MAX_HEIGHT} - ${reactionsMenuHeight}px - 16px)`
         },
         contextMenu: {
             position: 'relative' as const,
             right: 'auto',
             margin: 0,
             marginBottom: '8px',
-            maxHeight: overflowDrawer ? undefined : 'calc(100dvh - 100px)',
+            maxHeight: overflowDrawer ? undefined : 'calc(100vh - 100px)',
             paddingBottom: overflowDrawer ? undefined : 0,
             minWidth: '240px',
             overflow: 'hidden'
@@ -88,17 +88,12 @@ const useStyles = makeStyles<{ overflowDrawer: boolean; reactionsMenuHeight: num
         content: {
             position: 'relative',
             maxHeight: overflowDrawer
-                ? `calc(100% - ${reactionsMenuHeight}px - 16px)` : `calc(100dvh - 100px - ${reactionsMenuHeight}px)`,
+                ? `calc(100% - ${reactionsMenuHeight}px - 16px)` : `calc(100vh - 100px - ${reactionsMenuHeight}px)`,
             overflowY: 'auto'
         },
         footer: {
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0
-        },
-        reactionsPadding: {
-            height: `${reactionsMenuHeight}px`
+            position: 'relative',
+            bottom: 0
         }
     };
 });
@@ -216,11 +211,10 @@ const OverflowMenuButton = ({
                             <>
                                 <div className = { classes.overflowMenuDrawer }>
                                     { overflowMenu }
-                                    <div className = { classes.reactionsPadding } />
                                 </div>
                             </>
                         </Drawer>
-                        {showReactionsMenu && <div className = 'reactions-animations-overflow-container'>
+                        {showReactionsMenu && <div className = 'reactions-animations-container'>
                             {reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
                                 index = { index }
                                 key = { uid }
@@ -244,7 +238,6 @@ const OverflowMenuButton = ({
                 trigger = 'click'
                 visible = { isOpen }>
                 <OverflowToggleButton
-                    isMenuButton = { true }
                     isOpen = { isOpen }
                     onKeyDown = { onEscClick } />
             </Popover>

@@ -41,15 +41,13 @@ export const sharingFeatures = {
  *
  * @param {string} dialNumber - The dial number to check for validity.
  * @param {string} dialOutAuthUrl - The endpoint to use for checking validity.
- * @param {string} region - The region we are connected to.
  * @returns {Promise} - The promise created by the request.
  */
 export function checkDialNumber(
         dialNumber: string,
-        dialOutAuthUrl: string,
-        region: string
+        dialOutAuthUrl: string
 ): Promise<{ allow?: boolean; country?: string; phone?: string; }> {
-    const fullUrl = `${dialOutAuthUrl}?phone=${dialNumber}&region=${region}`;
+    const fullUrl = `${dialOutAuthUrl}?phone=${dialNumber}`;
 
     return new Promise((resolve, reject) =>
         fetch(fullUrl)
@@ -149,11 +147,6 @@ export type GetInviteResultsOptions = {
     peopleSearchUrl: string;
 
     /**
-     * The region we are connected to.
-     */
-    region: string;
-
-    /**
      * Whether or not to check sip invites.
      */
     sipInviteEnabled: boolean;
@@ -181,7 +174,6 @@ export function getInviteResultsForQuery(
         dialOutEnabled,
         peopleSearchQueryTypes,
         peopleSearchUrl,
-        region,
         sipInviteEnabled,
         jwt
     } = options;
@@ -225,7 +217,7 @@ export function getInviteResultsForQuery(
         // so ensure only digits get sent.
         numberToVerify = getDigitsOnly(numberToVerify);
 
-        phoneNumberPromise = checkDialNumber(numberToVerify, dialOutAuthUrl, region);
+        phoneNumberPromise = checkDialNumber(numberToVerify, dialOutAuthUrl);
     } else if (dialOutEnabled && !dialOutAuthUrl) {
         // fake having a country code to hide the country code reminder
         hasCountryCode = true;
@@ -571,13 +563,12 @@ export function searchDirectory( // eslint-disable-line max-params
  * @param {IReduxState} state - The current state.
  * @param {string} inviteUrl - The conference/location URL.
  * @param {boolean} useHtml - Whether to return html text.
- * @param {boolean} skipDialIn - Whether to skip dial-in options or not.
  * @returns {Promise<string>} A {@code Promise} resolving with a
  * descriptive text that can be used to invite participants to a meeting.
  */
-export function getShareInfoText(
-        state: IReduxState, inviteUrl: string, useHtml?: boolean, skipDialIn?: boolean): Promise<string> {
+export function getShareInfoText(state: IReduxState, inviteUrl: string, useHtml?: boolean): Promise<string> {
     let roomUrl = _decodeRoomURI(inviteUrl);
+    const includeDialInfo = state['features/base/config'] !== undefined;
 
     if (useHtml) {
         roomUrl = `<a href="${roomUrl}">${roomUrl}</a>`;
@@ -585,72 +576,85 @@ export function getShareInfoText(
 
     let infoText = i18next.t('share.mainText', { roomUrl });
 
-    const { room } = parseURIString(inviteUrl);
-    const { dialInConfCodeUrl, dialInNumbersUrl, hosts } = state['features/base/config'];
-    const { locationURL = {} } = state['features/base/connection'];
-    const mucURL = hosts?.muc;
+    if (includeDialInfo) {
+        const { room } = parseURIString(inviteUrl);
+        let numbersPromise;
+        let hasPaymentError = false;
 
-    if (skipDialIn || !dialInConfCodeUrl || !dialInNumbersUrl || !mucURL) {
-        // URLs for fetching dial in numbers not defined.
-        return Promise.resolve(infoText);
+        if (state['features/invite'].numbers
+            && state['features/invite'].conferenceID) {
+            numbersPromise = Promise.resolve(state['features/invite']);
+        } else {
+            // we are requesting numbers and conferenceId directly
+            // not using updateDialInNumbers, because custom room
+            // is specified and we do not want to store the data
+            // in the state
+            const { dialInConfCodeUrl, dialInNumbersUrl, hosts }
+                = state['features/base/config'];
+            const { locationURL = {} } = state['features/base/connection'];
+            const mucURL = hosts?.muc;
+
+            if (!dialInConfCodeUrl || !dialInNumbersUrl || !mucURL) {
+                // URLs for fetching dial in numbers not defined
+                return Promise.resolve(infoText);
+            }
+
+            numbersPromise = Promise.all([
+                getDialInNumbers(dialInNumbersUrl, room, mucURL), // @ts-ignore
+                getDialInConferenceID(dialInConfCodeUrl, room, mucURL, locationURL)
+            ]).then(([ numbers, {
+                conference, id, message } ]) => {
+
+                if (!conference || !id) {
+                    return Promise.reject(message);
+                }
+
+                return {
+                    numbers,
+                    conferenceID: id
+                };
+            });
+        }
+
+        return numbersPromise.then(
+            ({ conferenceID, numbers }) => {
+                const phoneNumber = _getDefaultPhoneNumber(numbers) || '';
+
+                return `${
+                    i18next.t('info.dialInNumber')} ${
+                    phoneNumber} ${
+                    i18next.t('info.dialInConferenceID')} ${
+                    conferenceID}#\n\n`;
+            })
+            .catch(error => {
+                logger.error('Error fetching numbers or conferenceID', error);
+                hasPaymentError = error?.status === StatusCode.PaymentRequired;
+            })
+            .then(defaultDialInNumber => {
+                if (hasPaymentError) {
+                    infoText += `${
+                        i18next.t('info.dialInNumber')} ${i18next.t('info.reachedLimit')} ${
+                        i18next.t('info.upgradeOptions')} ${UPGRADE_OPTIONS_TEXT}`;
+
+                    return infoText;
+                }
+
+                let dialInfoPageUrl = getDialInfoPageURL(state, room);
+
+                if (useHtml) {
+                    dialInfoPageUrl
+                        = `<a href="${dialInfoPageUrl}">${dialInfoPageUrl}</a>`;
+                }
+
+                infoText += i18next.t('share.dialInfoText', {
+                    defaultDialInNumber,
+                    dialInfoPageUrl });
+
+                return infoText;
+            });
     }
 
-    let hasPaymentError = false;
-
-    // We are requesting numbers and conferenceId directly
-    // not using updateDialInNumbers, because custom room
-    // is specified and we do not want to store the data
-    // in the state.
-    const numbersPromise = Promise.all([
-        getDialInNumbers(dialInNumbersUrl, room, mucURL), // @ts-ignore
-        getDialInConferenceID(dialInConfCodeUrl, room, mucURL, locationURL)
-    ]).then(([ numbers, {
-        conference, id, message } ]) => {
-
-        if (!conference || !id) {
-            return Promise.reject(message);
-        }
-
-        return {
-            numbers,
-            conferenceID: id
-        };
-    });
-
-    return numbersPromise.then(({ conferenceID, numbers }) => {
-        const phoneNumber = _getDefaultPhoneNumber(numbers) || '';
-
-        return `${
-            i18next.t('info.dialInNumber')} ${
-            phoneNumber} ${
-            i18next.t('info.dialInConferenceID')} ${
-            conferenceID}#\n\n`;
-    })
-    .catch(error => {
-        logger.error('Error fetching numbers or conferenceID', error);
-        hasPaymentError = error?.status === StatusCode.PaymentRequired;
-    })
-    .then(defaultDialInNumber => {
-        if (hasPaymentError) {
-            infoText += `${
-                i18next.t('info.dialInNumber')} ${i18next.t('info.reachedLimit')} ${
-                i18next.t('info.upgradeOptions')} ${UPGRADE_OPTIONS_TEXT}`;
-
-            return infoText;
-        }
-
-        let dialInfoPageUrl = getDialInfoPageURL(state, room);
-
-        if (useHtml) {
-            dialInfoPageUrl = `<a href="${dialInfoPageUrl}">${dialInfoPageUrl}</a>`;
-        }
-
-        infoText += i18next.t('share.dialInfoText', {
-            defaultDialInNumber,
-            dialInfoPageUrl });
-
-        return infoText;
-    });
+    return Promise.resolve(infoText);
 }
 
 /**

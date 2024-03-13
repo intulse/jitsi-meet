@@ -463,6 +463,8 @@
         "youtubeTerms": "YouTuberen erabilpen baldintzak"
     },
     "lobby": {
+        "admit": "Onartu",
+        "admitAll": "Onartu guztiak",
         "allow": "Baimendu",
         "backToKnockModeButton": "Ez du pasahitza erabili, baina sartzea eskatu du",
         "dialogTitle": "Itxaron-gela modua",
@@ -492,6 +494,7 @@
         "notificationTitle": "Itxaron-gela",
         "passwordField": "Idatzi bileraren pasahitza",
         "passwordJoinButton": "Sartu",
+        "reject": "Baztertu",
         "title": "Itxaron-gela",
         "toggleLabel": "Itxaron-gela aktibatu"
     },
@@ -573,11 +576,8 @@
     },
     "participantsPane": {
         "actions": {
-            "admit": "Onartu",
-            "admitAll": "Onartu guztiak",
             "invite": "Gonbidatu norbait",
             "muteAll": "Ixilarazi guztiak",
-            "reject": "Baztertu",
             "stopVideo": "Gelditu bideoa"
         },
         "close": "Itxi",
@@ -766,8 +766,6 @@
         "hours": "{{count}}h",
         "minutes": "{{count}}m",
         "name": "Izena",
-        "search": "Bilatu",
-        "searchHint": "Bilatu parte-hartzaileak",
         "seconds": "{{count}}s",
         "speakerStats": "Hizlariaren estatistikak",
         "speakerTime": "Hizlariaren denbora"

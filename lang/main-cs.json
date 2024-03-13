@@ -557,6 +557,8 @@
         "youtubeTerms": "Podmínky používání YouTube"
     },
     "lobby": {
+        "admit": "",
+        "admitAll": "",
         "allow": "Povolit",
         "backToKnockModeButton": "Žádné heslo, místo toho požádat o přijetí",
         "chat": "",
@@ -591,6 +593,7 @@
         "notificationTitle": "Předsálí",
         "passwordField": "Zadejte heslo setkání",
         "passwordJoinButton": "Vstoupit",
+        "reject": "Odmítnout",
         "title": "Předsálí",
         "toggleLabel": "Zapnout předsálí"
     },
@@ -716,7 +719,22 @@
     },
     "participantsPane": {
         "actions": {
-            "reject": "Odmítnout"
+            "allow": "",
+            "allowVideo": "",
+            "askUnmute": "",
+            "audioModeration": "",
+            "blockEveryoneMicCamera": "",
+            "invite": "",
+            "moreModerationActions": "",
+            "moreModerationControls": "",
+            "moreParticipantOptions": "",
+            "mute": "",
+            "muteAll": "",
+            "muteEveryoneElse": "",
+            "stopEveryonesVideo": "",
+            "stopVideo": "",
+            "unblockEveryoneMicCamera": "",
+            "videoModeration": ""
         },
         "close": "",
         "header": "",
@@ -725,7 +743,7 @@
             "participantsList": "",
             "waitingLobby": ""
         },
-        "search": "Hledat účastníky"
+        "search": ""
     },
     "passwordDigitsOnly": "Až {{number}} číslic",
     "passwordSetRemotely": "nastaveno jiným účastníkem",
@@ -1008,8 +1026,7 @@
         "name": "Jméno",
         "neutral": "",
         "sad": "",
-        "search": "Prohledat",
-        "searchHint": "Hledat účastníky",
+        "search": "",
         "seconds": "{{count}} s",
         "speakerStats": "Statistika řečníků",
         "speakerTime": "Mluvil/a již",
