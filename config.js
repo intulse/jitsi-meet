@@ -463,10 +463,10 @@ var config = {
     //    // With the default config value below the application will use 'low' quality until the thumbnails are
     //    // at least 360 pixels tall. If the thumbnail height reaches 720 pixels then the application will switch to
     //    // the high quality.
-    //    minHeightForQualityLvl: {
+       minHeightForQualityLvl: {
     //        360: 'standard',
-    //        720: 'high',
-    //    },
+           720: 'high',
+       },
     //
         // Provides a way to set the codec preference on mobile devices, both on RN and mobile browser based endpoint
         mobileCodecPreferenceOrder: [ 'VP9', 'VP8' ],
@@ -587,20 +587,20 @@ var config = {
     },
 
     // Configs for the lobby screen.
-    // lobby {
+    lobby: {
     //     // If Lobby is enabled, it starts knocking automatically. Replaces `autoKnockLobby`.
     //     autoKnock: false,
     //     // Enables the lobby chat. Replaces `enableLobbyChat`.
     //     enableChat: true,
-    // },
+    },
 
     // Configs for the security related UI elements.
-    // securityUi: {
+    securityUi: {
     //     // Hides the lobby button. Replaces `hideLobbyButton`.
     //     hideLobbyButton: false,
     //     // Hides the possibility to set and enter a lobby password.
     //     disableLobbyPassword: false,
-    // },
+    },
 
     // Disable app shortcuts that are registered upon joining a conference
     // disableShortcuts: false,
@@ -622,7 +622,7 @@ var config = {
     // defaultLocalDisplayName: 'me',
 
     // Default remote name to be displayed
-    // defaultRemoteDisplayName: 'Fellow Jitster',
+    defaultRemoteDisplayName: 'Intulse User',
 
     // Hides the display name from the participant thumbnail
     // hideDisplayName: false,
@@ -652,17 +652,17 @@ var config = {
     // enableCalendarIntegration: false,
 
     // Configs for prejoin page.
-    // prejoinConfig: {
+    prejoinConfig: {
     //     // When 'true', it shows an intermediate page before joining, where the user can configure their devices.
     //     // This replaces `prejoinPageEnabled`.
-    //     enabled: true,
+        enabled: true,
     //     // Hides the participant name editing field in the prejoin screen.
     //     // If requireDisplayName is also set as true, a name should still be provided through
     //     // either the jwt or the userInfo from the iframe api init object in order for this to have an effect.
     //     hideDisplayName: false,
     //     // List of buttons to hide from the extra join options dropdown.
     //     hideExtraJoinButtons: ['no-audio', 'by-phone'],
-    // },
+    },
 
     // When 'true', the user cannot edit the display name.
     // (Mainly useful when used in conjunction with the JWT so the JWT name becomes read only.)
@@ -692,12 +692,12 @@ var config = {
     // gravatarBaseURL: 'https://www.gravatar.com/avatar/',
 
     // Setup for Gravatar-compatible services.
-    // gravatar: {
+    gravatar: {
     //     // Defaults to Gravatar.
     //     baseUrl: 'https://www.gravatar.com/avatar/',
     //     // True if Gravatar should be disabled.
     //     disabled: false,
-    // },
+    },
 
     // App name to be displayed in the invitation email subject, as an alternative to
     // interfaceConfig.APP_NAME.
@@ -1161,7 +1161,7 @@ var config = {
     // For information about the properties of
     // deeplinking.[ios/android].dynamicLink check:
     // https://firebase.google.com/docs/dynamic-links/create-manually
-    // deeplinking: {
+    deeplinking: {
     //
     //     // The desktop deeplinking config.
     //     desktop: {
@@ -1169,7 +1169,7 @@ var config = {
     //     },
     //     // If true, any checks to handoff to another application will be prevented
     //     // and instead the app will continue to display in the current browser.
-    //     disabled: false,
+        disabled: true,
 
     //     // whether to hide the logo on the deep linking pages.
     //     hideLogo: false,
@@ -1188,7 +1188,7 @@ var config = {
     //             ibi: 'com.atlassian.JitsiMeet.ios',
     //             isi: '1165103905'
     //         }
-    //     },
+        },
 
     //     // The android deeplinking config.
     //     android: {
@@ -1641,13 +1641,13 @@ var config = {
     // defaultLogoUrl: 'images/watermark.svg',
 
     // Settings for the Excalidraw whiteboard integration.
-    // whiteboard: {
+    whiteboard: {
     //     // Whether the feature is enabled or not.
-    //     enabled: true,
+        enabled: true,
     //     // The server used to support whiteboard collaboration.
     //     // https://github.com/jitsi/excalidraw-backend
-    //     collabServerBaseUrl: 'https://excalidraw-backend.example.com',
-    // },
+        collabServerBaseUrl: 'https://excalidraw-backend.example.com',
+    },
 
     // The watchRTC initialize config params as described :
     // https://testrtc.com/docs/installing-the-watchrtc-javascript-sdk/#h-set-up-the-sdk
