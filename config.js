@@ -1641,13 +1641,13 @@ var config = {
     // defaultLogoUrl: 'images/watermark.svg',
 
     // Settings for the Excalidraw whiteboard integration.
-    whiteboard: {
+    // whiteboard: {
     //     // Whether the feature is enabled or not.
-        enabled: true,
+        // enabled: true,
     //     // The server used to support whiteboard collaboration.
     //     // https://github.com/jitsi/excalidraw-backend
-        collabServerBaseUrl: 'https://excalidraw-backend.example.com',
-    },
+        // collabServerBaseUrl: 'https://excalidraw-backend.example.com',
+    // },
 
     // The watchRTC initialize config params as described :
     // https://testrtc.com/docs/installing-the-watchrtc-javascript-sdk/#h-set-up-the-sdk
