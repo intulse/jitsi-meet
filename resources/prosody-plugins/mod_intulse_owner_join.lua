@@ -3,10 +3,32 @@
 --- This module should be added to the main muc component.
 ---
 local LOGLEVEL = "debug";
+local cipher = require 'openssl.cipher';
+local basexx = require 'basexx';
 
 local is_healthcheck_room = module:require "util".is_healthcheck_room;
-local intulse = require "intulse/util.lib".new(module);
 
+function get_intulse_cfg(cfg)
+	local intulse_key = module:get_option_string("intulse_key")
+	local intulse_iv = module:get_option_string("intulse_iv")
+
+	if intulse_key == nil or intulse_iv == nil then
+		return nil, "Intulse cfg settings must be set";	
+	end
+
+	if not cfg then
+		return nil, 'INTULSE error: No valid intulse cfg data found in the token.';
+	end
+	
+	local password, error = "", nil;
+	local str = basexx.from_base64(cfg);
+
+	if string.len(cfg) > 0 then
+		password, error = cipher.new("aes-128-cbc"):decrypt(intulse_key, intulse_iv):final(str);
+	end 
+
+	return password, error;
+end
 
 module:hook("muc-occupant-joined", function (event)
     local room = event.room;
@@ -17,13 +39,13 @@ module:hook("muc-occupant-joined", function (event)
     end
 
     if not event.origin.auth_token then
-        module:log(LOGLEVEL,
-            "skip security on demand, no token");
+        module:log(LOGLEVEL, "skip security on demand, no token");
         return;
     end
 
     local context_room = event.origin.jitsi_meet_context_room;
-    if not context_room then
+    if not context_room and not affiliation then
+        module:log("error", "INTULSE error: No context data from token");
         return;
     end
 
@@ -32,10 +54,7 @@ module:hook("muc-occupant-joined", function (event)
 	if affiliation == "moderator" then 
     	-- create lobby if requested
     	if context_room["lobby"] == true and not lobby_enabled then
-    	    prosody.events.fire_event("create-persistent-lobby-room", {
-    	        room = room,
-    	        skip_display_name_check = true,
-    	    });
+    	    prosody.events.fire_event("create-persistent-lobby-room", { room = room });
     	end
 
 	    -- destroy lobby if requested
@@ -47,9 +66,15 @@ module:hook("muc-occupant-joined", function (event)
 	        });
 	    end
 
+		local room_password, error = get_intulse_cfg(context_room["intulse_cfg"])
+		if error then
+			module:log("error", error);
+			return; 
+		end 
+
 	    -- update password if set
-	    if type(context_room["password"]) == "string" then
-	        room:set_password(context_room["password"]);
+	    if type(room_password) == "string" then
+	        room:set_password(room_password);
 	    end
     end
 end);
@@ -81,7 +106,7 @@ module:hook("muc-occupant-pre-join", function (event)
             room.jid, occupant.bare_jid);
 
         -- bypass password if exists
-		local room_password, error = intulse:get_intulse_cfg(context_room["intulse_cfg"])
+		local room_password, error = get_intulse_cfg(context_room["intulse_cfg"])
 		
 		if error then 
 			module:log("error", error);
@@ -99,7 +124,7 @@ module:hook("muc-occupant-pre-join", function (event)
         end
 
         -- bypass lobby if exists
-        room:set_affiliation(true, occupant.bare_jid, 'owner');
+        room:set_affiliation(true, occupant.bare_jid, 'member');
     end
 end, -3);
 --- Run just before lobby_bypass (priority -3), lobby(-4) and members_only (-5).

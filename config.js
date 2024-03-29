@@ -469,7 +469,7 @@ var config = {
        },
     //
         // Provides a way to set the codec preference on mobile devices, both on RN and mobile browser based endpoint
-        mobileCodecPreferenceOrder: [ 'VP9', 'VP8' ],
+        mobileCodecPreferenceOrder: [ 'VP9', 'VP8', 'H264' ],
     //
     //    // DEPRECATED! Use `codecPreferenceOrder/mobileCodecPreferenceOrder` instead.
     //    // Provides a way to prevent a video codec from being negotiated on the JVB connection. The codec specified
