@@ -8,6 +8,12 @@ local basexx = require 'basexx';
 
 local is_healthcheck_room = module:require "util".is_healthcheck_room;
 
+local muc_domain_base = module:get_option_string("muc_mapper_domain_base");
+if not muc_domain_base then
+    module:log("warn", "No 'muc_mapper_domain_base' option set, disabling muc_mapper plugin inactive");
+    return
+end
+
 function get_intulse_cfg(cfg)
 	local intulse_key = module:get_option_string("intulse_key")
 	local intulse_iv = module:get_option_string("intulse_iv")
@@ -32,8 +38,10 @@ end
 
 module:hook("muc-occupant-joined", function (event)
     local room = event.room;
-	local affiliation = event.origin.jitsi_meet_context_user["affiliation"];
+    local context_user = event.origin.jitsi_meet_context_user;
+    local context_room = event.origin.jitsi_meet_context_room;
 
+	module:log("info","ANDRES ROOM-INFO" .. tostring(room.jid));
     if is_healthcheck_room(room.jid) then
         return;
     end
@@ -43,18 +51,17 @@ module:hook("muc-occupant-joined", function (event)
         return;
     end
 
-    local context_room = event.origin.jitsi_meet_context_room;
-    if not context_room and not affiliation then
+    if not context_room and not context_user then
         module:log("error", "INTULSE error: No context data from token");
         return;
     end
 
     local lobby_enabled = (room._data.lobbyroom ~= nil);
 
-	if affiliation == "moderator" then 
+	if context_user["affiliation"] == "moderator" then 
     	-- create lobby if requested
     	if context_room["lobby"] == true and not lobby_enabled then
-    	    prosody.events.fire_event("create-persistent-lobby-room", { room = room });
+			prosody.events.fire_event("create-persistent-lobby-room", { room = room });
     	end
 
 	    -- destroy lobby if requested
@@ -73,7 +80,7 @@ module:hook("muc-occupant-joined", function (event)
 		end 
 
 	    -- update password if set
-	    if type(room_password) == "string" then
+	    if type(room_password) == "string" and room:get_password() ~= room_password then
 	        room:set_password(room_password);
 	    end
     end
@@ -93,22 +100,22 @@ module:hook("muc-occupant-pre-join", function (event)
 		return;
 	end
 
-    local context_user = event.origin.jitsi_meet_context_user;
-    local context_room = event.origin.jitsi_meet_context_room;
+    local context_user = session.jitsi_meet_context_user;
+    local context_room = session.jitsi_meet_context_room;
 
     if not context_user and not context_room then
         return;
     end
 
     -- bypass security if allowed
-    if context_user["affiliation"] == "moderator" then
+    if context_user["affiliation"] == "moderator"  and string.len(context_room["intulse_cfg"]) > 0 then
         module:log(LOGLEVEL, "Bypassing security for room %s occupant %s",
             room.jid, occupant.bare_jid);
 
         -- bypass password if exists
 		local room_password, error = get_intulse_cfg(context_room["intulse_cfg"])
 		
-		if error then 
+		if error and not room_password then 
 			module:log("error", error);
 			return;
 		end
@@ -122,10 +129,7 @@ module:hook("muc-occupant-pre-join", function (event)
 
             join:tag("password", { xmlns = MUC_NS }):text(room_password);
         end
-
-        -- bypass lobby if exists
-        room:set_affiliation(true, occupant.bare_jid, 'member');
     end
-end, -3);
---- Run just before lobby_bypass (priority -3), lobby(-4) and members_only (-5).
---- Must run after token_verification (99), max_occupants (10), allowners (2).
+end, -2);
+-- - Run just before lobby_bypass (priority -3), lobby(-4) and members_only (-5).
+-- - Must run after token_verification (99), max_occupants (10), allowners (2).
