@@ -36,6 +36,9 @@ cp "${SRC_DIR}/manifest.json" "${DST_DIR}/manifest.json"
 cp "${SRC_DIR}/phoneNumberList.json" "${DST_DIR}/phoneNumberList.json"
 cp "${SRC_DIR}/plugin.head.html" "${DST_DIR}/plugin.head.html"
 
+#mkdir "${DST_DIR}/prosody-plugins"
+cp -r "${SRC_DIR}/resources/prosody-plugins/." "${DST_DIR}/prosody-plugins"
+
 cp "${SRC_DIR}/pwa-worker.js" "${DST_DIR}/pwa-worker.js"
 
 #mkdir "${DST_DIR}/sounds/"

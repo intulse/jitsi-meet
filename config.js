@@ -433,7 +433,7 @@ var config = {
     // Specify the settings for video quality optimizations on the client.
     videoQuality: {
         // Provides a way to set the codec preference on desktop based endpoints.
-        codecPreferenceOrder: [ 'VP9', 'VP8' ],
+        codecPreferenceOrder: [ 'VP9', 'VP8', 'H264' ],
 
         // Provides a way to configure the maximum bitrates that will be enforced on the simulcast streams for
         // video tracks. The keys in the object represent the type of the stream (LD, SD or HD) and the values
