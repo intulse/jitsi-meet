@@ -123,6 +123,7 @@
         "privateNotice": "Private message to {{recipient}}",
         "sendButton": "Send",
         "smileysPanel": "Emoji panel",
+        "systemDisplayName": "System",
         "tabs": {
             "chat": "Chat",
             "polls": "Polls"
@@ -295,6 +296,8 @@
         "contactSupport": "Contact support",
         "copied": "Copied",
         "copy": "Copy",
+        "demoteParticipantDialog": "Are you sure you want to move this participant to visitor?",
+        "demoteParticipantTitle": "Move to visitor",
         "dismiss": "Dismiss",
         "displayNameRequired": "Hi! What’s your name?",
         "done": "Done",
@@ -544,13 +547,15 @@
         "noNumbers": "No dial-in numbers.",
         "noPassword": "None",
         "noRoom": "No room was specified to dial-in into.",
+        "noWhiteboard": "Could not load the whiteboard.",
         "numbers": "Dial-in Numbers",
         "password": "$t(lockRoomPasswordUppercase): ",
         "reachedLimit": "You have reached the limit of your plan.",
         "sip": "SIP address",
         "title": "Share",
         "tooltip": "Share link and dial-in info for this meeting",
-        "upgradeOptions": "Please check the upgrade options on"
+        "upgradeOptions": "Please check the upgrade options on",
+        "whiteboardError": "Error loading the whiteboard. Please try again later."
     },
     "inlineDialogFailure": {
         "msg": "We stumbled a bit.",
@@ -794,7 +799,10 @@
         "videoUnmuteBlockedDescription": "Camera unmute and desktop sharing operation have been temporarily blocked because of system limits.",
         "videoUnmuteBlockedTitle": "Camera unmute and desktop sharing blocked!",
         "viewLobby": "View lobby",
-        "waitingParticipants": "{{waitingParticipants}} people"
+        "viewVisitors": "View visitors",
+        "waitingParticipants": "{{waitingParticipants}} people",
+        "whiteboardLimitDescription": "Please save your progress, as the user limit will soon be reached and the whiteboard will close.",
+        "whiteboardLimitTitle": "Whiteboard usage"
     },
     "participantsPane": {
         "actions": {
@@ -845,6 +853,9 @@
             "questionPlaceholder": "Ask a question",
             "removeOption": "Remove option",
             "send": "Send"
+        },
+        "errors": {
+            "notUniqueOption": "Options must be unique"
         },
         "notification": {
             "description": "Open polls tab to vote",
@@ -913,6 +924,7 @@
         "or": "or",
         "premeeting": "Pre meeting",
         "proceedAnyway": "Proceed anyway",
+        "recordingWarning": "Other participants may be recording this call",
         "screenSharingError": "Screen sharing error:",
         "showScreen": "Enable pre meeting screen",
         "startWithPhone": "Start with phone audio",
@@ -1393,6 +1405,7 @@
     },
     "videothumbnail": {
         "connectionInfo": "Connection Info",
+        "demote": "Move to visitor",
         "domute": "Mute",
         "domuteOthers": "Mute everyone else",
         "domuteVideo": "Disable camera",
@@ -1447,6 +1460,7 @@
         "chatIndicator": "(visitor)",
         "labelTooltip": "Number of visitors: {{count}}",
         "notification": {
+            "demoteDescription": "Sent here by {{actor}}, raise your hand to participate",
             "description": "To participate raise your hand",
             "title": "You are a visitor in the meeting"
         }
@@ -1507,6 +1521,7 @@
     "whiteboard": {
         "accessibilityLabel": {
             "heading": "Whiteboard"
-        }
+        },
+        "screenTitle": "Whiteboard"
     }
 }

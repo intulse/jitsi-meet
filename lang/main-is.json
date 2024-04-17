@@ -472,7 +472,41 @@
         "unmute": "Afþagga"
     },
     "passwordDigitsOnly": "Allt að {{number}} stafir",
-    "passwordSetRemotely": "sett af öðrum þátttakanda",
+    "passwordSetRemotely": "Sett af öðrum þátttakanda",
+    "pinParticipant": "{{participantName}} - Festa",
+    "pinnedParticipant": "Þátttakandinn er festur",
+    "polls": {
+        "answer": {
+            "skip": "Sleppa",
+            "submit": "Senda inn"
+        },
+        "by": "Eftir {{ name }}",
+        "create": {
+            "addOption": "Bæta við valkosti",
+            "answerPlaceholder": "Valkostur {{index}}",
+            "cancel": "Hætta við",
+            "create": "Búa til könnun",
+            "pollOption": "Valkostur í könnun {{index}}",
+            "pollQuestion": "Spurning könnunar",
+            "questionPlaceholder": "Spurðu spurningar",
+            "removeOption": "Fjarlægja valkost",
+            "send": "Senda"
+        },
+        "errors": {
+            "notUniqueOption": "Valkostir hljóta að vera einstök"
+        },
+        "notification": {
+            "description": "Opnaðu könnunarflipann til að greiða atkvæði",
+            "title": "Nýrri könnun var bætt á þennan fund"
+        },
+        "results": {
+            "changeVote": "Breyta atkvæði",
+            "empty": "Það eru ennþá engar kannanir á fundinum. Byrjaðu könnun hér!",
+            "hideDetailedResults": "Fela nánari upplýsingar",
+            "showDetailedResults": "Birta nánari upplýsingar",
+            "vote": "Greiða atkvæði"
+        }
+    },
     "poweredby": "keyrt með",
     "presenceStatus": {
         "busy": "Upptekinn",

@@ -13,8 +13,10 @@ import {
     CONNECTION_DISCONNECTED,
     CONNECTION_ESTABLISHED,
     CONNECTION_FAILED,
+    CONNECTION_PROPERTIES_UPDATED,
     CONNECTION_WILL_CONNECT,
-    SET_LOCATION_URL
+    SET_LOCATION_URL,
+    SET_PREFER_VISITOR
 } from './actionTypes';
 import { JITSI_CONNECTION_URL_KEY } from './constants';
 import logger from './logger';
@@ -149,7 +151,15 @@ export function constructOptions(state: IReduxState) {
     // redux store.
     const options = _.cloneDeep(state['features/base/config']);
 
-    const { bosh } = options;
+    const { locationURL, preferVisitor } = state['features/base/connection'];
+    const params = parseURLParams(locationURL || '');
+    const iceServersOverride = params['iceServers.replace'];
+
+    if (iceServersOverride) {
+        options.iceServersOverride = iceServersOverride;
+    }
+
+    const { bosh, preferBosh, flags } = options;
     let { websocket } = options;
 
     // TESTING: Only enable WebSocket for some percentage of users.
@@ -180,6 +190,20 @@ export function constructOptions(state: IReduxState) {
         }
     }
 
+    if (preferVisitor) {
+        options.preferVisitor = true;
+    }
+
+    // Enable ssrc-rewriting by default.
+    if (typeof flags?.ssrcRewritingEnabled === 'undefined') {
+        const { ...otherFlags } = flags ?? {};
+
+        options.flags = {
+            ...otherFlags,
+            ssrcRewritingEnabled: true
+        };
+    }
+
     return options;
 }
 
@@ -197,6 +221,22 @@ export function setLocationURL(locationURL?: URL) {
     return {
         type: SET_LOCATION_URL,
         locationURL
+    };
+}
+
+/**
+ * To change prefer visitor in the store. Used later to decide what to request from jicofo on connection.
+ *
+ * @param {boolean} preferVisitor - The value to set.
+ * @returns {{
+ *     type: SET_PREFER_VISITOR,
+ *     preferVisitor: boolean
+ * }}
+ */
+export function setPreferVisitor(preferVisitor: boolean) {
+    return {
+        type: SET_PREFER_VISITOR,
+        preferVisitor
     };
 }
 
@@ -230,6 +270,12 @@ export function _connectInternal(id?: string, password?: string) {
             connection.addEventListener(
                 JitsiConnectionEvents.CONNECTION_FAILED,
                 _onConnectionFailed);
+            connection.addEventListener(
+                JitsiConnectionEvents.CONNECTION_REDIRECTED,
+                _onConnectionRedirected);
+            connection.addEventListener(
+                JitsiConnectionEvents.PROPERTIES_UPDATED,
+                _onPropertiesUpdate);
 
             /**
              * Unsubscribe the connection instance from
@@ -241,6 +287,7 @@ export function _connectInternal(id?: string, password?: string) {
                 connection.removeEventListener(
                     JitsiConnectionEvents.CONNECTION_DISCONNECTED, _onConnectionDisconnected);
                 connection.removeEventListener(JitsiConnectionEvents.CONNECTION_FAILED, _onConnectionFailed);
+                connection.removeEventListener(JitsiConnectionEvents.PROPERTIES_UPDATED, _onPropertiesUpdate);
             }
 
             /**
@@ -298,6 +345,35 @@ export function _connectInternal(id?: string, password?: string) {
                 resolve(connection);
             }
 
+            /**
+             * Connection was redirected.
+             *
+             * @param {string|undefined} vnode - The vnode to connect to.
+             * @param {string} focusJid - The focus jid to use.
+             * @param {string|undefined} username - The username to use when joining. This is after promotion from
+             * visitor to main participant.
+             * @private
+             * @returns {void}
+             */
+            function _onConnectionRedirected(vnode: string, focusJid: string, username: string) {
+                connection.removeEventListener(JitsiConnectionEvents.CONNECTION_REDIRECTED, _onConnectionRedirected);
+                dispatch(redirect(vnode, focusJid, username));
+            }
+
+            /**
+             * Connection properties were updated.
+             *
+             * @param {Object} properties - The properties which were updated.
+             * @private
+             * @returns {void}
+             */
+            function _onPropertiesUpdate(properties: object) {
+                dispatch(_propertiesUpdate(properties));
+            }
+
+            // in case of configured http url for conference request we need the room name
+            const name = getBackendSafeRoomName(state['features/base/conference'].room);
+
             connection.connect({
                 id,
                 password
@@ -321,6 +397,23 @@ function _connectionWillConnect(connection: Object) {
     return {
         type: CONNECTION_WILL_CONNECT,
         connection
+    };
+}
+
+/**
+ * Create an action for when connection properties are updated.
+ *
+ * @param {Object} properties - The properties which were updated.
+ * @private
+ * @returns {{
+ *     type: CONNECTION_PROPERTIES_UPDATED,
+ *     properties: Object
+ * }}
+ */
+function _propertiesUpdate(properties: object) {
+    return {
+        type: CONNECTION_PROPERTIES_UPDATED,
+        properties
     };
 }
 

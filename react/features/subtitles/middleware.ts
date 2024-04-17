@@ -1,10 +1,10 @@
 import { AnyAction } from 'redux';
 
 import { IStore } from '../app/types';
+import { ENDPOINT_MESSAGE_RECEIVED } from '../base/conference/actionTypes';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 
 import {
-    ENDPOINT_MESSAGE_RECEIVED,
     SET_REQUESTING_SUBTITLES,
     TOGGLE_REQUESTING_SUBTITLES
 } from './actionTypes';
@@ -12,7 +12,8 @@ import {
     removeTranscriptMessage,
     updateTranscriptMessage
 } from './actions.any';
-import logger from './logger';
+import { notifyTranscriptionChunkReceived } from './functions';
+
 
 /**
  * The type of json-message which indicates that json carries a
@@ -42,6 +43,12 @@ const P_NAME_TRANSLATION_LANGUAGE = 'translation_language';
 * Time after which the rendered subtitles will be removed.
 */
 const REMOVE_AFTER_MS = 3000;
+
+/**
+ * Stability factor for a transcription. We'll treat a transcript as stable
+ * beyond this value.
+ */
+const STABLE_TRANSCRIPTION_FACTOR = 0.85;
 
 /**
  * Middleware that catches actions related to transcript messages to be rendered
@@ -81,8 +88,8 @@ MiddlewareRegistry.register(store => next => action => {
  * @private
  * @returns {Object} The value returned by {@code next(action)}.
  */
-function _endpointMessageReceived({ dispatch, getState }: IStore, next: Function, action: AnyAction) {
-    const { json } = action;
+function _endpointMessageReceived(store: IStore, next: Function, action: AnyAction) {
+    const { data: json } = action;
 
     if (!(json
             && (json.type === JSON_TYPE_TRANSCRIPTION_RESULT
@@ -90,10 +97,12 @@ function _endpointMessageReceived({ dispatch, getState }: IStore, next: Function
         return next(action);
     }
 
+    const { dispatch, getState } = store;
     const state = getState();
     const translationLanguage
         = state['features/base/conference'].conference
             ?.getLocalParticipantProperty(P_NAME_TRANSLATION_LANGUAGE);
+    const { dumpTranscript, skipInterimTranscriptions } = state['features/base/config'].testing ?? {};
 
     try {
         const transcriptMessageID = json.message_id;
@@ -120,7 +129,9 @@ function _endpointMessageReceived({ dispatch, getState }: IStore, next: Function
             // Displays interim and final results without any translation if
             // translations are disabled.
 
-            const { text } = json.transcript[0];
+        // First, notify the external API.
+        if (!(json.is_interim && skipInterimTranscriptions)) {
+            const txt: any = {};
 
             // We update the previous transcript message with the same
             // message ID or adds a new transcript message if it does not
@@ -131,8 +142,34 @@ function _endpointMessageReceived({ dispatch, getState }: IStore, next: Function
                     || { participantName }
             };
 
-            _setClearerOnTranscriptMessage(dispatch,
-                transcriptMessageID, newTranscriptMessage);
+            notifyTranscriptionChunkReceived(
+                transcriptMessageID,
+                json.language,
+                participant,
+                txt,
+                store
+            );
+
+            if (navigator.product !== 'ReactNative') {
+
+                // Dump transcript in a <transcript> element for debugging purposes.
+                if (!json.is_interim && dumpTranscript) {
+                    try {
+                        let elem = document.body.getElementsByTagName('transcript')[0];
+
+                        // eslint-disable-next-line max-depth
+                        if (!elem) {
+                            elem = document.createElement('transcript');
+                            document.body.appendChild(elem);
+                        }
+
+                        elem.append(`${new Date(json.timestamp).toISOString()} ${participant.name}: ${text}`);
+                    } catch (_) {
+                        // Ignored.
+                    }
+                }
+            }
+        }
 
             // If this is final result, update the state as a final result
             // and start a count down to remove the subtitle from the state

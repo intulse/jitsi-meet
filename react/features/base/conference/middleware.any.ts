@@ -6,6 +6,7 @@ import { MIN_ASSUMED_BANDWIDTH_BPS } from '../../../../modules/API/constants';
 import {
     ACTION_PINNED,
     ACTION_UNPINNED,
+    createNotAllowedErrorEvent,
     createOfferAnswerFailedEvent,
     createPinnedEvent
 } from '../../analytics/AnalyticsEvents';
@@ -25,7 +26,7 @@ import { overwriteConfig } from '../config/actions';
 import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from '../connection/actionTypes';
 import { connect, connectionDisconnected, disconnect } from '../connection/actions';
 import { validateJwt } from '../jwt/functions';
-import { JitsiConferenceErrors, JitsiConnectionErrors } from '../lib-jitsi-meet';
+import { JitsiConferenceErrors, JitsiConferenceEvents, JitsiConnectionErrors } from '../lib-jitsi-meet';
 import { PARTICIPANT_UPDATED, PIN_PARTICIPANT } from '../participants/actionTypes';
 import { PARTICIPANT_ROLE } from '../participants/constants';
 import {
@@ -34,6 +35,7 @@ import {
     getPinnedParticipant
 } from '../participants/functions';
 import MiddlewareRegistry from '../redux/MiddlewareRegistry';
+import StateListenerRegistry from '../redux/StateListenerRegistry';
 import { TRACK_ADDED, TRACK_REMOVED } from '../tracks/actionTypes';
 import { destroyLocalTracks } from '../tracks/actions.any';
 import { getLocalTracks } from '../tracks/functions.any';
@@ -57,7 +59,8 @@ import {
     createConference,
     leaveConference,
     setLocalSubject,
-    setSubject
+    setSubject,
+    updateConferenceMetadata
 } from './actions';
 import {
     CONFERENCE_DESTROYED_LEAVE_TIMEOUT,
@@ -73,6 +76,7 @@ import {
     restoreConferenceOptions
 } from './functions';
 import logger from './logger';
+import { IConferenceMetadata } from './reducer';
 
 /**
  * Handler for before unload event.
@@ -131,6 +135,24 @@ MiddlewareRegistry.register(store => next => action => {
 
     return next(action);
 });
+
+/**
+ * Set up state change listener to perform maintenance tasks when the conference
+ * is left or failed.
+ */
+StateListenerRegistry.register(
+    state => getCurrentConference(state),
+    (conference, { dispatch }, previousConference): void => {
+        if (conference && !previousConference) {
+            conference.on(JitsiConferenceEvents.METADATA_UPDATED, (metadata: IConferenceMetadata) => {
+                dispatch(updateConferenceMetadata(metadata));
+            });
+        }
+
+        if (conference !== previousConference) {
+            dispatch(updateConferenceMetadata(null));
+        }
+    });
 
 /**
  * Makes sure to leave a failed conference in order to release any allocated
@@ -222,6 +244,12 @@ function _conferenceFailed({ dispatch, getState }: IStore, next: Function, actio
                 });
         }
 
+        break;
+    }
+    case JitsiConferenceErrors.NOT_ALLOWED_ERROR: {
+        const [ msg ] = error.params;
+
+        sendAnalytics(createNotAllowedErrorEvent(msg));
         break;
     }
     case JitsiConferenceErrors.OFFER_ANSWER_FAILED:
@@ -425,7 +453,7 @@ function _connectionFailed({ dispatch, getState }: IStore, next: Function, actio
                 descriptionKey: errors ? 'dialog.tokenAuthFailedWithReasons' : 'dialog.tokenAuthFailed',
                 descriptionArguments: { reason: errors },
                 titleKey: 'dialog.tokenAuthFailedTitle'
-            }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+            }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
         }
     }
 
@@ -617,8 +645,8 @@ function _setRoom({ dispatch, getState }: IStore, next: Function, action: AnyAct
 
     if (room) {
         // Set the stored subject.
-        dispatch(setLocalSubject(localSubject ?? ''));
-        dispatch(setSubject(subject ?? ''));
+        localSubject && dispatch(setLocalSubject(localSubject));
+        subject && dispatch(setSubject(subject));
     }
 
     return next(action);

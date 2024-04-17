@@ -54,6 +54,69 @@ class StartRecordingDialogContent extends AbstractStartRecordingDialogContent<IP
     }
 
     /**
+     * Renders the switch for saving the transcription.
+     *
+     * @returns {React$Component}
+     */
+    _renderAdvancedOptions() {
+        const { selectedRecordingService } = this.props;
+
+        if (selectedRecordingService !== RECORDING_TYPES.JITSI_REC_SERVICE || !this._canStartTranscribing()) {
+            return null;
+        }
+
+        const { showAdvancedOptions } = this.state;
+        const { shouldRecordAudioAndVideo, shouldRecordTranscription, t } = this.props;
+
+        return (
+            <>
+                <div className = 'recording-header-line' />
+                <div
+                    className = 'recording-header'
+                    onClick = { this._onToggleShowOptions }>
+                    <label className = 'recording-title-no-space'>
+                        {t('recording.showAdvancedOptions')}
+                    </label>
+                    <Icon
+                        ariaPressed = { showAdvancedOptions }
+                        onClick = { this._onToggleShowOptions }
+                        role = 'button'
+                        size = { 24 }
+                        src = { showAdvancedOptions ? IconArrowDown : IconArrowRight } />
+                </div>
+                {showAdvancedOptions && (
+                    <>
+                        <div className = 'recording-header space-top'>
+                            <label
+                                className = 'recording-title'
+                                htmlFor = 'recording-switch-transcription'>
+                                { t('recording.recordTranscription') }
+                            </label>
+                            <Switch
+                                checked = { shouldRecordTranscription }
+                                className = 'recording-switch'
+                                id = 'recording-switch-transcription'
+                                onChange = { this._onTranscriptionSwitchChange } />
+                        </div>
+                        <div className = 'recording-header space-top'>
+                            <label
+                                className = 'recording-title'
+                                htmlFor = 'recording-switch-transcription'>
+                                { t('recording.recordAudioAndVideo') }
+                            </label>
+                            <Switch
+                                checked = { shouldRecordAudioAndVideo }
+                                className = 'recording-switch'
+                                id = 'recording-switch-transcription'
+                                onChange = { this._onRecordAudioAndVideoSwitchChange } />
+                        </div>
+                    </>
+                )}
+            </>
+        );
+    }
+
+    /**
      * Renders the content in case no integrations were enabled.
      *
      * @returns {React$Component}

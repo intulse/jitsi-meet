@@ -56,5 +56,4 @@ const externalAPIEnabled = isExternalAPIAvailable();
     }
 
     return result;
-}
-);
+});

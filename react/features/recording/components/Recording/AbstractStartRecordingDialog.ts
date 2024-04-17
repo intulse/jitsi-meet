@@ -12,8 +12,8 @@ import { showErrorNotification } from '../../../notifications/actions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../../../notifications/constants';
 import { toggleRequestingSubtitles } from '../../../subtitles/actions';
 import { setSelectedRecordingService, startLocalVideoRecording } from '../../actions';
-import { RECORDING_TYPES } from '../../constants';
-import { supportsLocalRecording } from '../../functions';
+import { RECORDING_METADATA_ID, RECORDING_TYPES } from '../../constants';
+import { isRecordingSharingEnabled, shouldAutoTranscribeOnRecord, supportsLocalRecording } from '../../functions';
 
 export interface IProps extends WithTranslation {
 
@@ -31,6 +31,11 @@ export interface IProps extends WithTranslation {
      * The {@code JitsiConference} for the current conference.
      */
     _conference?: IJitsiConference;
+
+    /**
+     * Whether subtitles should be displayed or not.
+     */
+    _displaySubtitles?: boolean;
 
     /**
      * Whether to show file recordings service, even if integrations
@@ -60,6 +65,11 @@ export interface IProps extends WithTranslation {
     _rToken: string;
 
     /**
+     * Whether the record audio / video option is enabled by default.
+     */
+    _recordAudioAndVideo: boolean;
+
+    /**
      * Whether or not the local participant is screensharing.
      */
     _screensharing: boolean;
@@ -68,6 +78,11 @@ export interface IProps extends WithTranslation {
      * Whether or not the screenshot capture feature is enabled.
      */
     _screenshotCaptureEnabled: boolean;
+
+    /**
+     * The selected language for subtitles.
+     */
+    _subtitlesLanguage: string | null;
 
     /**
      * The dropbox access token.
@@ -165,6 +180,8 @@ class AbstractStartRecordingDialog extends Component<IProps, IState> {
             isValidating: false,
             userName: undefined,
             sharingEnabled: true,
+            shouldRecordAudioAndVideo: this.props._recordAudioAndVideo,
+            shouldRecordTranscription: this.props._autoTranscribeOnRecord,
             spaceLeft: undefined,
             selectedRecordingService,
             localRecordingOnlySelf: false
@@ -297,10 +314,11 @@ class AbstractStartRecordingDialog extends Component<IProps, IState> {
     _onSubmit() {
         const {
             _appKey,
-            _autoCaptionOnRecord,
             _conference,
+            _displaySubtitles,
             _isDropboxEnabled,
             _rToken,
+            _subtitlesLanguage,
             _token,
             dispatch
         } = this.props;
@@ -344,23 +362,15 @@ class AbstractStartRecordingDialog extends Component<IProps, IState> {
         case RECORDING_TYPES.LOCAL: {
             dispatch(startLocalVideoRecording(this.state.localRecordingOnlySelf));
 
-            return true;
+        if (this.state.selectedRecordingService === RECORDING_TYPES.JITSI_REC_SERVICE
+                && this.state.shouldRecordTranscription) {
+            dispatch(setRequestingSubtitles(true, _displaySubtitles, _subtitlesLanguage));
         }
         }
 
-        sendAnalytics(
-            createRecordingDialogEvent('start', 'confirm.button', attributes)
-        );
-
-        this._toggleScreenshotCapture();
-        _conference?.startRecording({
-            mode: JitsiRecordingConstants.mode.FILE,
-            appData
+        _conference?.getMetadataHandler().setMetadata(RECORDING_METADATA_ID, {
+            isTranscribingEnabled: this.state.shouldRecordTranscription
         });
-
-        if (_autoCaptionOnRecord) {
-            dispatch(toggleRequestingSubtitles());
-        }
 
         return true;
     }
@@ -390,35 +400,33 @@ class AbstractStartRecordingDialog extends Component<IProps, IState> {
  * @param {Object} state - The Redux state.
  * @param {any} _ownProps - Component's own props.
  * @private
- * @returns {{
- *     _appKey: string,
- *     _autoCaptionOnRecord: boolean,
- *     _conference: JitsiConference,
- *     _fileRecordingsServiceEnabled: boolean,
- *     _fileRecordingsServiceSharingEnabled: boolean,
- *     _isDropboxEnabled: boolean,
- *     _rToken:string,
- *     _tokenExpireDate: number,
- *     _token: string
- * }}
+ * @returns {IProps}
  */
 export function mapStateToProps(state: IReduxState, _ownProps: any) {
     const {
         transcription,
         recordingService,
         dropbox = { appKey: undefined },
-        localRecording
+        localRecording,
+        recordings = { recordAudioAndVideo: true }
     } = state['features/base/config'];
+    const {
+        _displaySubtitles,
+        _language: _subtitlesLanguage
+    } = state['features/subtitles'];
 
     return {
         _appKey: dropbox.appKey ?? '',
         _autoCaptionOnRecord: transcription?.autoCaptionOnRecord ?? false,
         _conference: state['features/base/conference'].conference,
+        _displaySubtitles,
         _fileRecordingsServiceEnabled: recordingService?.enabled ?? false,
         _fileRecordingsServiceSharingEnabled: recordingService?.sharingEnabled ?? false,
         _isDropboxEnabled: isDropboxEnabled(state),
         _localRecordingEnabled: !localRecording?.disable,
         _rToken: state['features/dropbox'].rToken ?? '',
+        _recordAudioAndVideo: recordings?.recordAudioAndVideo ?? true,
+        _subtitlesLanguage,
         _tokenExpireDate: state['features/dropbox'].expireDate,
         _token: state['features/dropbox'].token ?? ''
     };

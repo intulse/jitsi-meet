@@ -56,6 +56,10 @@ var config = {
     // https://github.com/jitsi/jitsi-meet/issues/7376
     // focusUserJid: 'focus@auth.jitsi-meet.example.com',
 
+    // Option to send conference requests to jicofo over http (requires nginx rule for it)
+    // conferenceRequestUrl:
+    //   'https://<!--# echo var="http_host" default="jitsi-meet.example.com" -->/' + subdir + 'conference-request/v1',
+
     // Options related to the bridge (colibri) data channel
     bridgeChannel: {
         // If the backend advertises multiple colibri websockets, this options allows
@@ -81,6 +85,9 @@ var config = {
         // issues related to insertable streams.
         // disableE2EE: false,
 
+        // Enables supports for AV1 codec.
+        // enableAv1Support: false,
+
         // Enables XMPP WebSocket (as opposed to BOSH) for the given amount of users.
         // mobileXmppWsThreshold: 10, // enable XMPP WebSockets on mobile for 10% of the users
 
@@ -95,10 +102,11 @@ var config = {
         // This is useful when the client runs on a host with limited resources.
         // noAutoPlayVideo: false,
 
-        // Enable callstats only for a percentage of users.
-        // This takes a value between 0 and 100 which determines the probability for
-        // the callstats to be enabled.
-        // callStatsThreshold: 5, // enable callstats for 5% of the users.
+        // Experiment: Whether to skip interim transcriptions.
+        // skipInterimTranscriptions: false,
+
+        // Dump transcripts to a <transcript> element for debugging.
+        // dumpTranscript: false,
     },
 
     // Disables moderator indicators.
@@ -313,6 +321,18 @@ var config = {
     //     // 'https://jitsi-meet.example.com/static/oauth.html'
     //     redirectURI:
     //          'https://jitsi-meet.example.com/subfolder/static/oauth.html',
+    // },
+
+    // configuration for all things recording related. Existing settings will be migrated here in the future.
+    // recordings: {
+    //    // IF true (default) recording audio and video is selected by default in the recording dialog.
+    //    // recordAudioAndVideo: true,
+    //    // If true, shows a notification at the start of the meeting with a call to action button
+    //    // to start recording (for users who can do so).
+    //    // suggestRecording: true,
+    //    // If true, shows a warning label in the prejoin screen to point out the possibility that
+    //    // the call you're joining might be recorded.
+    //    // showPrejoinWarning: true,
     // },
 
     // recordingService: {
@@ -654,8 +674,8 @@ var config = {
     // Configs for prejoin page.
     prejoinConfig: {
     //     // When 'true', it shows an intermediate page before joining, where the user can configure their devices.
-    //     // This replaces `prejoinPageEnabled`.
-        enabled: true,
+    //     // This replaces `prejoinPageEnabled`. Defaults to true.
+    //     enabled: true,
     //     // Hides the participant name editing field in the prejoin screen.
     //     // If requireDisplayName is also set as true, a name should still be provided through
     //     // either the jwt or the userInfo from the iframe api init object in order for this to have an effect.
@@ -1248,6 +1268,8 @@ var config = {
     // remoteVideoMenu: {
     //     // Whether the remote video context menu to be rendered or not.
     //     disabled: true,
+    //     // If set to true the 'Switch to visitor' button will be disabled.
+    //     disableDemote: true,
     //     // If set to true the 'Kick out' button will be disabled.
     //     disableKick: true,
     //     // If set to true the 'Grant moderator' button will be disabled.
@@ -1329,6 +1351,8 @@ var config = {
 
     // Options related to the participants pane.
     // participantsPane: {
+    //     // Enables feature
+    //     enabled: true,
     //     // Hides the moderator settings tab.
     //     hideModeratorSettingsTab: false,
     //     // Hides the more actions button.

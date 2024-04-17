@@ -1,14 +1,24 @@
+// @ts-expect-error
+import UIEvents from '../../../../service/UI/UIEvents';
 import { createStartMutedConfigurationEvent } from '../../analytics/AnalyticsEvents';
 import { sendAnalytics } from '../../analytics/functions';
 import { IReduxState, IStore } from '../../app/types';
-import { endpointMessageReceived } from '../../subtitles/actions.any';
+import { setIAmVisitor } from '../../visitors/actions';
 import { iAmVisitor } from '../../visitors/functions';
 import { getReplaceParticipant } from '../config/functions';
 import { hangup } from '../connection/actions';
 import { JITSI_CONNECTION_CONFERENCE_KEY } from '../connection/constants';
+import { hasAvailableDevices } from '../devices/functions.any';
 import { JitsiConferenceEvents, JitsiE2ePingEvents } from '../lib-jitsi-meet';
-import { setAudioMuted, setAudioUnmutePermissions, setVideoMuted, setVideoUnmutePermissions } from '../media/actions';
-import { MEDIA_TYPE } from '../media/constants';
+import {
+    gumPending,
+    setAudioMuted,
+    setAudioUnmutePermissions,
+    setVideoMuted,
+    setVideoUnmutePermissions
+} from '../media/actions';
+import { MEDIA_TYPE, VIDEO_MUTISM_AUTHORITY } from '../media/constants';
+import { IGUMPendingState } from '../media/types';
 import {
     dominantSpeakerChanged,
     participantKicked,
@@ -46,6 +56,7 @@ import {
     DATA_CHANNEL_CLOSED,
     DATA_CHANNEL_OPENED,
     E2E_RTT_CHANGED,
+    ENDPOINT_MESSAGE_RECEIVED,
     KICKED_OUT,
     LOCK_STATE_CHANGED,
     NON_PARTICIPANT_MESSAGE_RECEIVED,
@@ -59,7 +70,8 @@ import {
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
     SET_START_MUTED_POLICY,
-    SET_START_REACTIONS_MUTED
+    SET_START_REACTIONS_MUTED,
+    UPDATE_CONFERENCE_METADATA
 } from './actionTypes';
 import {
     AVATAR_URL_COMMAND,
@@ -76,7 +88,7 @@ import {
     sendLocalParticipant
 } from './functions';
 import logger from './logger';
-import { IJitsiConference } from './reducer';
+import { IConferenceMetadata, IJitsiConference } from './reducer';
 
 /**
  * Adds conference (event) listeners.
@@ -272,6 +284,21 @@ function _addConferenceListeners(conference: IJitsiConference, dispatch: IStore[
         })));
 }
 
+/**
+ * Action for updating the conference metadata.
+ *
+ * @param {IConferenceMetadata} metadata - The metadata object.
+ * @returns {{
+ *    type: UPDATE_CONFERENCE_METADATA,
+ *    metadata: IConferenceMetadata
+ * }}
+ */
+export function updateConferenceMetadata(metadata: IConferenceMetadata | null) {
+    return {
+        type: UPDATE_CONFERENCE_METADATA,
+        metadata
+    };
+}
 
 /**
  * Create an action for when the end-to-end RTT against a specific remote participant has changed.
@@ -625,6 +652,25 @@ export function dataChannelClosed(code: number, reason: string) {
 }
 
 /**
+ * Signals that a participant sent an endpoint message on the data channel.
+ *
+ * @param {Object} participant - The participant details sending the message.
+ * @param {Object} data - The data carried by the endpoint message.
+ * @returns {{
+*      type: ENDPOINT_MESSAGE_RECEIVED,
+*      participant: Object,
+*      data: Object
+* }}
+*/
+export function endpointMessageReceived(participant: Object, data: Object) {
+    return {
+        type: ENDPOINT_MESSAGE_RECEIVED,
+        participant,
+        data
+    };
+}
+
+/**
  * Action to end a conference for all participants.
  *
  * @returns {Function}
@@ -936,7 +982,7 @@ export function setStartMutedPolicy(
  * @param {string} subject - The new subject.
  * @returns {void}
  */
-export function setSubject(subject: string) {
+export function setSubject(subject: string | undefined) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const { conference } = getState()['features/base/conference'];
 
@@ -960,7 +1006,7 @@ export function setSubject(subject: string) {
  *     localSubject: string
  * }}
  */
-export function setLocalSubject(localSubject: string) {
+export function setLocalSubject(localSubject: string | undefined) {
     return {
         type: CONFERENCE_LOCAL_SUBJECT_CHANGED,
         localSubject
@@ -981,5 +1027,77 @@ export function setAssumedBandwidthBps(assumedBandwidthBps: number) {
     return {
         type: SET_ASSUMED_BANDWIDTH_BPS,
         assumedBandwidthBps
+    };
+}
+
+/**
+ * Redirects to a new visitor node.
+ *
+ * @param {string | undefined} vnode - The vnode to use or undefined if moving back to the main room.
+ * @param {string} focusJid - The focus jid to use.
+ * @param {string} username - The username to use.
+ * @returns {void}
+ */
+export function redirect(vnode: string, focusJid: string, username: string) {
+    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+        const newConfig = getVisitorOptions(getState, vnode, focusJid, username);
+
+        if (!newConfig) {
+            logger.warn('Not redirected missing params');
+
+            return;
+        }
+
+        dispatch(overwriteConfig(newConfig)) // @ts-ignore
+            .then(() => dispatch(disconnect(true)))
+            .then(() => dispatch(setIAmVisitor(Boolean(vnode))))
+
+            // we do not clear local tracks on error, so we need to manually clear them
+            .then(() => dispatch(destroyLocalTracks()))
+            .then(() => dispatch(conferenceWillInit()))
+            .then(() => dispatch(connect()))
+            .then(() => {
+                // Clear the gum pending state in case we have set it to pending since we are starting the
+                // conference without tracks.
+                dispatch(gumPending([ MEDIA_TYPE.AUDIO, MEDIA_TYPE.VIDEO ], IGUMPendingState.NONE));
+
+                // FIXME: Workaround for the web version. To be removed once we get rid of conference.js
+                if (typeof APP !== 'undefined') {
+                    if (!vnode) {
+                        const state = getState();
+                        const { enableMediaOnPromote = {} } = state['features/base/config'].visitors ?? {};
+                        const { audio = false, video = false } = enableMediaOnPromote;
+
+                        if (audio) {
+                            const { available, muted, unmuteBlocked } = state['features/base/media'].audio;
+                            const { startSilent } = state['features/base/config'];
+
+                            // do not unmute the user if he was muted before (on the prejoin, the config
+                            // or URL param, etc.)
+                            if (!unmuteBlocked && !muted && !startSilent && available) {
+                                dispatch(setAudioMuted(false, true));
+
+                                // // FIXME: The old conference logic still relies on this event being emitted.
+                                typeof APP === 'undefined' || APP.UI.emitEvent(UIEvents.AUDIO_MUTED, false);
+                            }
+                        }
+
+                        if (video) {
+                            const { muted, unmuteBlocked } = state['features/base/media'].video;
+
+                            // do not unmute the user if he was muted before (on the prejoin, the config, URL param or
+                            // audo only, etc)
+                            if (!unmuteBlocked && !muted && hasAvailableDevices(state, 'videoInput')) {
+                                dispatch(setVideoMuted(false, VIDEO_MUTISM_AUTHORITY.USER, true));
+
+                                // // FIXME: The old conference logic still relies on this event being emitted.
+                                typeof APP === 'undefined' || APP.UI.emitEvent(UIEvents.VIDEO_MUTED, false);
+                            }
+                        }
+                    }
+
+                    APP.conference.startConference([]);
+                }
+            });
     };
 }

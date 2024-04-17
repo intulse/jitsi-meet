@@ -9,8 +9,10 @@ import JitsiMeetJS, {
     JitsiRecordingConstants
 } from '../base/lib-jitsi-meet';
 import { MEDIA_TYPE } from '../base/media/constants';
+import { PARTICIPANT_UPDATED } from '../base/participants/actionTypes';
 import { updateLocalRecordingStatus } from '../base/participants/actions';
-import { getParticipantDisplayName } from '../base/participants/functions';
+import { PARTICIPANT_ROLE } from '../base/participants/constants';
+import { getLocalParticipant, getParticipantDisplayName } from '../base/participants/functions';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 import {
@@ -22,6 +24,7 @@ import {
 import { TRACK_ADDED } from '../base/tracks/actionTypes';
 import { showErrorNotification, showNotification } from '../notifications/actions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
+import { isRecorderTranscriptionsRunning } from '../transcribing/functions';
 
 import { RECORDING_SESSION_UPDATED, START_LOCAL_RECORDING, STOP_LOCAL_RECORDING } from './actionTypes';
 import {
@@ -31,6 +34,7 @@ import {
     showRecordingError,
     showRecordingLimitNotification,
     showRecordingWarning,
+    showStartRecordingNotification,
     showStartedRecordingNotification,
     showStoppedRecordingNotification,
     updateRecordingSessionData
@@ -197,6 +201,8 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => async action => 
     }
 
     case RECORDING_SESSION_UPDATED: {
+        const state = getState();
+
         // When in recorder mode no notifications are shown
         // or extra sounds are also not desired
         // but we want to indicate those in case of sip gateway
@@ -204,21 +210,21 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => async action => 
             iAmRecorder,
             iAmSipGateway,
             recordingLimit
-        } = getState()['features/base/config'];
+        } = state['features/base/config'];
 
         if (iAmRecorder && !iAmSipGateway) {
             break;
         }
 
         const updatedSessionData
-            = getSessionById(getState(), action.sessionData.id);
+            = getSessionById(state, action.sessionData.id);
         const { initiator, mode = '', terminator } = updatedSessionData ?? {};
         const { PENDING, OFF, ON } = JitsiRecordingConstants.status;
 
-        if (updatedSessionData?.status === PENDING
-            && (!oldSessionData || oldSessionData.status !== PENDING)) {
+        if (updatedSessionData?.status === PENDING && oldSessionData?.status !== PENDING) {
             dispatch(showPendingRecordingNotification(mode));
-        } else if (updatedSessionData?.status !== PENDING) {
+            dispatch(hideNotification(START_RECORDING_NOTIFICATION_ID));
+        } else {
             dispatch(hidePendingRecordingNotification(mode));
 
             if (updatedSessionData?.status === ON) {
@@ -236,12 +242,13 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => async action => 
                         dispatch(showStartedRecordingNotification(mode, initiator, action.sessionData.id));
                     }
                 }
-                if (!oldSessionData || oldSessionData.status !== ON) {
+
+                if (oldSessionData?.status !== ON) {
                     sendAnalytics(createRecordingEvent('start', mode));
 
                     let soundID;
 
-                    if (mode === JitsiRecordingConstants.mode.FILE) {
+                    if (mode === JitsiRecordingConstants.mode.FILE && !isRecorderTranscriptionsRunning(state)) {
                         soundID = RECORDING_ON_SOUND_ID;
                     } else if (mode === JitsiRecordingConstants.mode.STREAM) {
                         soundID = LIVE_STREAMING_ON_SOUND_ID;
@@ -255,12 +262,11 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => async action => 
                         APP.API.notifyRecordingStatusChanged(true, mode);
                     }
                 }
-            } else if (updatedSessionData?.status === OFF
-                && (!oldSessionData || oldSessionData.status !== OFF)) {
+            } else if (updatedSessionData?.status === OFF && oldSessionData?.status !== OFF) {
                 if (terminator) {
                     dispatch(
                         showStoppedRecordingNotification(
-                            mode, getParticipantDisplayName(getState, getResourceId(terminator))));
+                            mode, getParticipantDisplayName(state, getResourceId(terminator))));
                 }
 
                 let duration = 0, soundOff, soundOn;
@@ -271,7 +277,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => async action => 
                 }
                 sendAnalytics(createRecordingEvent('stop', mode, duration));
 
-                if (mode === JitsiRecordingConstants.mode.FILE) {
+                if (mode === JitsiRecordingConstants.mode.FILE && !isRecorderTranscriptionsRunning(state)) {
                     soundOff = RECORDING_OFF_SOUND_ID;
                     soundOn = RECORDING_ON_SOUND_ID;
                 } else if (mode === JitsiRecordingConstants.mode.STREAM) {
@@ -301,6 +307,21 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => async action => 
             LocalRecordingManager.addAudioTrackToLocalRecording(audioTrack);
         }
         break;
+    }
+    case PARTICIPANT_UPDATED: {
+        const { id, role } = action.participant;
+        const state = getState();
+        const localParticipant = getLocalParticipant(state);
+
+        if (localParticipant?.id !== id) {
+            return next(action);
+        }
+
+        if (role === PARTICIPANT_ROLE.MODERATOR) {
+            dispatch(showStartRecordingNotification());
+        }
+
+        return next(action);
     }
     }
 

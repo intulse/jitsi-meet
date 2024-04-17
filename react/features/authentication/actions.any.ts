@@ -131,7 +131,7 @@ function _upgradeRoleStarted(thenableWithCancel: Object) {
  * Hides an authentication dialog where the local participant
  * should authenticate.
  *
- * @returns {Function}.
+ * @returns {Function}
  */
 export function hideLoginDialog() {
     return hideDialog(LoginDialog);

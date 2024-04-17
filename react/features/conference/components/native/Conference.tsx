@@ -17,7 +17,6 @@ import { IReduxState, IStore } from '../../../app/types';
 import { CONFERENCE_BLURRED, CONFERENCE_FOCUSED } from '../../../base/conference/actionTypes';
 import { FULLSCREEN_ENABLED, PIP_ENABLED } from '../../../base/flags/constants';
 import { getFeatureFlag } from '../../../base/flags/functions';
-import { getParticipantCount } from '../../../base/participants/functions';
 import Container from '../../../base/react/components/native/Container';
 import LoadingIndicator from '../../../base/react/components/native/LoadingIndicator';
 import TintedView from '../../../base/react/components/native/TintedView';
@@ -103,11 +102,6 @@ interface IProps extends AbstractProps {
      * The indicator which determines whether fullscreen (immersive) mode is enabled.
      */
     _fullscreenEnabled: boolean;
-
-    /**
-     * The indicator which determines if the conference type is one to one.
-     */
-    _isOneToOneConference: boolean;
 
     /**
      * The indicator which determines if the participants pane is open.
@@ -378,7 +372,6 @@ class Conference extends AbstractConference<IProps, State> {
             _aspectRatio,
             _connecting,
             _filmstripVisible,
-            _isOneToOneConference,
             _largeVideoParticipantId,
             _reducedUI,
             _shouldDisplayTileView,
@@ -434,13 +427,11 @@ class Conference extends AbstractConference<IProps, State> {
                     <Captions onPress = { this._onClick } />
 
                     {
-                        _shouldDisplayTileView || (
-                            !_isOneToOneConference
-                            && <Container style = { styles.displayNameContainer }>
-                                <DisplayNameLabel
-                                    participantId = { _largeVideoParticipantId } />
-                            </Container>
-                        )
+                        _shouldDisplayTileView
+                        || <Container style = { styles.displayNameContainer }>
+                            <DisplayNameLabel
+                                participantId = { _largeVideoParticipantId } />
+                        </Container>
                     }
 
                     { !_shouldDisplayTileView && <LonelyMeetingExperience /> }
@@ -581,7 +572,6 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
     const { backgroundColor } = state['features/dynamic-branding'];
     const { startCarMode } = state['features/base/settings'];
     const { enabled: audioOnlyEnabled } = state['features/base/audio-only'];
-    const participantCount = getParticipantCount(state);
     const brandingStyles = backgroundColor ? {
         backgroundColor
     } : undefined;
@@ -595,7 +585,6 @@ function _mapStateToProps(state: IReduxState, _ownProps: any) {
         _connecting: isConnecting(state),
         _filmstripVisible: isFilmstripVisible(state),
         _fullscreenEnabled: getFeatureFlag(state, FULLSCREEN_ENABLED, true),
-        _isOneToOneConference: Boolean(participantCount === 2),
         _isParticipantsPaneOpen: isOpen,
         _largeVideoParticipantId: state['features/large-video'].participantId,
         _pictureInPictureEnabled: getFeatureFlag(state, PIP_ENABLED),

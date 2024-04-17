@@ -46,6 +46,83 @@ class StartRecordingDialogContent extends AbstractStartRecordingDialogContent<IP
     }
 
     /**
+     * Renders the save transcription switch.
+     *
+     * @returns {React$Component}
+     */
+    _renderAdvancedOptions() {
+        const { selectedRecordingService } = this.props;
+
+        if (selectedRecordingService !== RECORDING_TYPES.JITSI_REC_SERVICE || !this._canStartTranscribing()) {
+            return null;
+        }
+
+        const { showAdvancedOptions } = this.state;
+        const {
+            _dialogStyles,
+            _styles: styles,
+            shouldRecordAudioAndVideo,
+            shouldRecordTranscription,
+            t
+        } = this.props;
+
+        return (
+            <>
+                <View
+                    style = { styles.header }>
+                    <Text
+                        style = {{
+                            ..._dialogStyles.text,
+                            ...styles.title
+                        }}>
+                        { t('recording.showAdvancedOptions') }
+                    </Text>
+                    <Icon
+                        ariaPressed = { showAdvancedOptions }
+                        onClick = { this._onToggleShowOptions }
+                        role = 'button'
+                        size = { 24 }
+                        src = { showAdvancedOptions ? IconArrowDown : IconArrowRight } />
+                </View>
+                {showAdvancedOptions && (
+                    <>
+                        <View
+                            key = 'transcriptionSetting'
+                            style = { styles.header }>
+                            <Text
+                                style = {{
+                                    ..._dialogStyles.text,
+                                    ...styles.title
+                                }}>
+                                { t('recording.recordTranscription') }
+                            </Text>
+                            <Switch
+                                checked = { shouldRecordTranscription }
+                                onChange = { this._onTranscriptionSwitchChange }
+                                style = { styles.switch } />
+                        </View>
+                        <View
+                            key = 'audioVideoSetting'
+                            style = { styles.header }>
+                            <Text
+                                style = {{
+                                    ..._dialogStyles.text,
+                                    ...styles.title
+                                }}>
+                                { t('recording.recordAudioAndVideo') }
+                            </Text>
+                            <Switch
+                                checked = { shouldRecordAudioAndVideo }
+                                onChange = { this._onRecordAudioAndVideoSwitchChange }
+                                style = { styles.switch } />
+                        </View>
+                    </>
+                )}
+            </>
+        );
+    }
+
+    /**
      * Renders the content in case no integrations were enabled.
      *
      * @returns {React$Component}

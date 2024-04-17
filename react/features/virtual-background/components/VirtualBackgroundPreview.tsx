@@ -1,8 +1,8 @@
 import { Theme } from '@mui/material';
-import { withStyles } from '@mui/styles';
 import React, { PureComponent } from 'react';
 import { WithTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
+import { withStyles } from 'tss-react/mui';
 
 import { IStore } from '../../app/types';
 import { hideDialog } from '../../base/dialog/actions';
@@ -24,7 +24,7 @@ export interface IProps extends WithTranslation {
     /**
      * An object containing the CSS classes.
      */
-    classes: any;
+    classes?: Partial<Record<keyof ReturnType<typeof styles>, string>>;
 
     /**
      * The redux {@code dispatch} function.
@@ -212,8 +212,10 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
      * @returns {Promise}
      */
     _loadVideoPreview() {
+        const classes = withStyles.getClasses(this.props);
+
         return (
-            <div className = { this.props.classes.previewLoader }>
+            <div className = { classes.previewLoader }>
                 <Spinner size = 'large' />
             </div>
         );
@@ -226,7 +228,8 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
      * @returns {React$Node}
      */
     _renderPreviewEntry(data: Object) {
-        const { classes, t } = this.props;
+        const { t } = this.props;
+        const classes = withStyles.getClasses(this.props);
 
         if (this.state.loading) {
             return this._loadVideoPreview();
@@ -285,7 +288,7 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
      */
     render() {
         const { jitsiTrack } = this.state;
-        const { classes } = this.props;
+        const classes = withStyles.getClasses(this.props);
 
         return (
             <div className = { classes.virtualBackgroundPreview }>
@@ -297,4 +300,4 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
     }
 }
 
-export default translate(connect()(withStyles(styles)(VirtualBackgroundPreview)));
+export default translate(connect()(withStyles(VirtualBackgroundPreview, styles)));

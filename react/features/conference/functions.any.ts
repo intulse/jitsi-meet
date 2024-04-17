@@ -15,3 +15,19 @@ export function shouldDisplayNotifications(stateful: IStateful) {
 
     return !calleeInfoVisible;
 }
+
+
+/**
+ *
+ * Returns true if polls feature is disabled.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state
+ * features/base/config.
+ * @returns {boolean}
+ */
+export function arePollsDisabled(stateful: IStateful) {
+    const state = toState(stateful);
+
+    return state['features/base/config']?.disablePolls || iAmVisitor(state);
+}

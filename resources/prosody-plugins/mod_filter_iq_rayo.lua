@@ -2,8 +2,24 @@ local new_throttle = require "util.throttle".create;
 local st = require "util.stanza";
 
 local token_util = module:require "token/util".new(module);
-local room_jid_match_rewrite = module:require "util".room_jid_match_rewrite;
-local is_feature_allowed = module:require "util".is_feature_allowed;
+local util = module:require 'util';
+local room_jid_match_rewrite = util.room_jid_match_rewrite;
+local is_feature_allowed = util.is_feature_allowed;
+local get_room_from_jid = util.get_room_from_jid;
+local is_healthcheck_room = util.is_healthcheck_room;
+local process_host_module = util.process_host_module;
+local jid_bare = require "util.jid".bare;
+
+local sessions = prosody.full_sessions;
+
+local measure_drop = module:measure('drop', 'counter');
+
+local main_muc_component_host = module:get_option_string('main_muc');
+if main_muc_component_host == nil then
+    module:log('error', 'main_muc not configured. Cannot proceed.');
+    return;
+end
+local main_muc_service;
 
 -- no token configuration but required
 if token_util == nil then
@@ -73,6 +89,7 @@ module:hook("pre-iq/full", function(event)
                 then
                     module:log("warn",
                         "Filtering stanza dial, stanza:%s, outgoing calls limit reached", tostring(stanza));
+                    measure_drop(1);
                     session.send(st.error_reply(stanza, "cancel", "resource-constraint"));
                     return true;
                 end
@@ -178,3 +195,63 @@ function get_concurrent_outgoing_count(context_user, context_group)
 end
 
 module:hook_global('config-reloaded', load_config);
+
+function process_set_affiliation(event)
+    local actor, affiliation, jid, previous_affiliation, room
+        = event.actor, event.affiliation, event.jid, event.previous_affiliation, event.room;
+    local actor_session = sessions[actor];
+
+    if is_admin(jid) or is_healthcheck_room(room.jid) or not actor or not previous_affiliation
+        or not actor_session or not actor_session.jitsi_meet_context_features then
+        return;
+    end
+
+    local occupant;
+    for _, o in room:each_occupant() do
+        if o.bare_jid == jid then
+            occupant = o;
+        end
+    end
+
+    if not occupant then
+        return;
+    end
+
+    local occupant_session = sessions[occupant.jid];
+    if not occupant_session then
+        return;
+    end
+
+    if previous_affiliation == 'none' and affiliation == 'owner' then
+        occupant_session.granted_jitsi_meet_context_features = actor_session.jitsi_meet_context_features;
+        occupant_session.granted_jitsi_meet_context_user_id = actor_session.jitsi_meet_context_user["id"];
+        occupant_session.granted_jitsi_meet_context_group_id = actor_session.jitsi_meet_context_group;
+    elseif previous_affiliation == 'owner' and ( affiliation == 'member' or affiliation == 'none' ) then
+        occupant_session.granted_jitsi_meet_context_features = nil;
+        occupant_session.granted_jitsi_meet_context_user_id = nil;
+        occupant_session.granted_jitsi_meet_context_group_id = nil;
+    end
+end
+
+function process_main_muc_loaded(main_muc, host_module)
+    module:log('debug', 'Main muc loaded');
+
+    main_muc_service = main_muc;
+    module:log("info", "Hook to muc events on %s", main_muc_component_host);
+    host_module:hook("muc-pre-set-affiliation", process_set_affiliation);
+end
+
+process_host_module(main_muc_component_host, function(host_module, host)
+    local muc_module = prosody.hosts[host].modules.muc;
+
+    if muc_module then
+        process_main_muc_loaded(muc_module, host_module);
+    else
+        module:log('debug', 'Will wait for muc to be available');
+        prosody.hosts[host].events.add_handler('module-loaded', function(event)
+            if (event.module == 'muc') then
+                process_main_muc_loaded(prosody.hosts[host].modules.muc, host_module);
+            end
+        end);
+    end
+end);

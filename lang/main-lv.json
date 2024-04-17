@@ -185,6 +185,8 @@
         "connecting": "Pieslēdzamies",
         "contactSupport": "Saziņa ar tehnisko atbalstu",
         "copy": "Kopēt",
+        "demoteParticipantDialog": "Vai tiešām vēlaties pārveidot šo dalībnieku par apmeklētāju?",
+        "demoteParticipantTitle": "Pārveidot par apmeklētāju",
         "dismiss": "Noraidīt",
         "displayNameRequired": "Sveiki! Kā Jūs sauc?",
         "done": "Darīts",
@@ -272,11 +274,29 @@
         "stopRecordingWarning": "Tiešām vēlaties beigt ierakstu?",
         "stopStreamingWarning": "Tiešām vēlaties beigt tiešraidi?",
         "streamKey": "Tiešraides atslēga",
-        "thankYou": "Super, ka izmantojat {{appName}}!",
-        "token": "tokens/marķieris",
-        "tokenAuthFailed": "Atvainojiet, jums nav atļauts pievienoties šai sesijai (sapulces telpai).",
-        "tokenAuthFailedTitle": "Autentifikācijas kļūme",
-        "transcribing": "Notiek transkripcija/pārrakstīšana",
+        "thankYou": "Paldies, ka izmantojāt {{appName}}!",
+        "token": "tokens",
+        "tokenAuthFailed": "Atvainojiet, jums nav atļauts pievienoties šim zvanam.",
+        "tokenAuthFailedReason": {
+            "audInvalid": "Nederīga `aud` vērtība. Tai vajadzētu būt `jitsi`.",
+            "contextNotFound": "Saturā trūkst `context` objekts.",
+            "expInvalid": "Nederīga `exp` vērtība.",
+            "featureInvalid": "Nederīga funkcionalitāte: {{feature}}, visticamāk, vēl nav ieviesta.",
+            "featureValueInvalid": "Nederīga funkcionalitātes vērtība: {{feature}}.",
+            "featuresNotFound": "Saturā trūkst `features` objekts.",
+            "headerNotFound": "Trūkst galvenes.",
+            "issInvalid": "Nederīga `iss` vērtība. Tai vajadzētu būt `chat`.",
+            "kidMismatch": "Neatbilst Atslēgas ID (kid).",
+            "kidNotFound": "Trūkst Atslēgas ID (kid).",
+            "nbfFuture": "`nbf` vērtība ir nākotnē.",
+            "nbfInvalid": "Nederīga `nbf` vērtība.",
+            "payloadNotFound": "Trūkst satura.",
+            "tokenExpired": "Token ir beidzies."
+        },
+        "tokenAuthFailedTitle": "Autentifikācijas kļūda",
+        "tokenAuthFailedWithReasons": "Atvainojiet, jums nav atļauts pievienoties šim zvanam. Iespējamie iemesli: {{reason}}",
+        "tokenAuthUnsupported": "Token URL netiek atbalstīts.",
+        "transcribing": "Notiek transkripcija",
         "unlockRoom": "Noņemt $t(lockRoomPassword)",
         "userPassword": "lietotāja parole",
         "yourEntireScreen": "Visu Jūsu ekrānu"
@@ -325,10 +345,13 @@
         "noNumbers": "Nav iezvana #.",
         "noPassword": "bez paroles",
         "noRoom": "Iezvana numuram nav piesaistīta neviena sapulces telpa.",
+        "noWhiteboard": "Nevarēja ielādēt tāfeli.",
         "numbers": "Iezvana numuri",
         "password": "$t(lockRoomPasswordUppercase):",
         "title": "Kopīgot",
-        "tooltip": "Kopīgot šīs sapulces saiti un iezvana # informāciju"
+        "tooltip": "Kopīgot šīs sapulces saiti un iezvana # informāciju",
+        "upgradeOptions": "Lūdzu, ieslēdziet jaunināšanas iespējas",
+        "whiteboardError": "Kļūda ielādējot tāfeli. Lūdzu, mēģiniet vēlreiz."
     },
     "inlineDialogFailure": {
         "msg": "Neliels misēklis.",
@@ -453,11 +476,120 @@
         "startSilentTitle": "Jūs esiet nedzirdams!",
         "suboptimalBrowserWarning": "Diemžēl jūsu pārlūks pilnībā neatbalsta šo virtuālo sapulču sistēmu. Pie tā tiek strādāts, bet šobrīd tiek ieteikts izmantot <a href='{{recommendedBrowserPageLink}}' target='_blank'> šos pārlūkus</a>.",
         "suboptimalExperienceTitle": "Diemžēl jūsu pārlūks, iespējams, var pienācīgi nestrādāt ar {{appName}}. Pie tā tiek strādāts, bet šobrīd tiek ieteikts izmantot kādu no <a href='{{recommendedBrowserPageLink}} 'target='_blank'>pilnībā atbalstītajiem pārlūkiem</a>.",
-        "unmute": "Ieslēgt skaņu/mikrofonu"
+        "suggestRecordingAction": "Sākt",
+        "suggestRecordingDescription": "Vai vēlaties sākt ierakstīšanu?",
+        "suggestRecordingTitle": "Ierakstīt sanāksmi",
+        "unmute": "Ieslēgt mikrofonu",
+        "videoMutedRemotelyDescription": "Jūs vienmēr varat to atkal ieslēgt.",
+        "videoMutedRemotelyTitle": "{{participantDisplayName}} izslēdza jūsu video",
+        "videoUnmuteBlockedDescription": "Kameras ieslēgšanas un darbvirsmas koplietošanas darbība ir īslaicīgi bloķēta sistēmas ierobežojumu dēļ.",
+        "videoUnmuteBlockedTitle": "Kameras ieslēgšana un darbvirsmas koplietošana ir bloķēta!",
+        "viewLobby": "Skatīt vestibilu",
+        "viewVisitors": "Skatīt apmeklētājus",
+        "waitingParticipants": "{{waitingParticipants}} personas",
+        "whiteboardLimitDescription": "Lūdzu, saglabājiet savu progresu, jo drīz tiks sasniegts lietotāju limits un tāfele tiks aizvērta.",
+        "whiteboardLimitTitle": "Tāfeles lietošana"
     },
     "passwordDigitsOnly": "Līdz {{number}} cipariem",
-    "passwordSetRemotely": "iestatījis kāds cits dalībnieks",
-    "poweredby": "griežas uz",
+    "passwordSetRemotely": "Iestatījis kāds cits dalībnieks",
+    "pinParticipant": "{{participantName}} - Piespraust",
+    "pinnedParticipant": "Dalībnieks ir piesprausts",
+    "polls": {
+        "answer": {
+            "skip": "Izlaist",
+            "submit": "Iesniegt"
+        },
+        "by": "Pēc {{ name }} iniciatīvas",
+        "create": {
+            "addOption": "Pievienot opciju",
+            "answerPlaceholder": "Opcija {{index}}",
+            "cancel": "Atcelt",
+            "create": "Izveidot aptauju",
+            "pollOption": "Aptaujas opcija {{index}}",
+            "pollQuestion": "Aptaujas Jautājums",
+            "questionPlaceholder": "Uzdod jautājumu",
+            "removeOption": "Noņemt opciju",
+            "send": "Nosūtīt"
+        },
+        "errors": {
+            "notUniqueOption": "Iespējām jābūt unikālām"
+        },
+        "notification": {
+            "description": "Lai balsotu, atveriet aptauju cilni",
+            "title": "Šai sapulcei tika pievienota jauna aptauja"
+        },
+        "results": {
+            "changeVote": "Mainīt balsojumu",
+            "empty": "Sapulcē vēl nav nevienas aptaujas. Sāciet aptauju šeit!",
+            "hideDetailedResults": "Slēpt detaļas",
+            "showDetailedResults": "Parādīt detaļas",
+            "vote": "Balsot"
+        }
+    },
+    "poweredby": "darbojas uz",
+    "prejoin": {
+        "audioAndVideoError": "Audio un video kļūda:",
+        "audioDeviceProblem": "Radās problēma ar jūsu audio ierīci",
+        "audioOnlyError": "Audio kļūda:",
+        "audioTrackError": "Nevarēja izveidot audio celiņu.",
+        "callMe": "Piezvani man",
+        "callMeAtNumber": "Piezvani man uz šo numuru:",
+        "calling": "Zvana",
+        "configuringDevices": "Notiek ierīču konfigurēšana...",
+        "connectedWithAudioQ": "Vai esat pievienojies audio?",
+        "connection": {
+            "good": "Jūsu interneta savienojums izskatās labs!",
+            "nonOptimal": "Jūsu interneta savienojums nav optimāls",
+            "poor": "Jums ir slikts interneta savienojums"
+        },
+        "connectionDetails": {
+            "audioClipping": "Mēs sagaidām, ka jūsu audio raustīsies.",
+            "audioHighQuality": "Mēs sagaidām, ka jūsu audio kvalitāte būs izcila.",
+            "audioLowNoVideo": "Mēs sagaidām, ka jūsu audio kvalitāte būs zema un video nebūs.",
+            "goodQuality": "Satriecoši! Jūsu multivides kvalitāte būs lieliska.",
+            "noMediaConnectivity": "Mēs nevarējām atrast veidu, kā šim testam izveidot multivides savienojumu. To parasti izraisa ugunsmūris vai NAT.",
+            "noVideo": "Mēs sagaidām, ka jūsu video kvalitāte būs briesmīga.",
+            "undetectable": "Ja pārlūkprogrammā joprojām nevarat veikt zvanus, iesakām pārliecināties, vai skaļruņi, mikrofons un kamera ir pareizi iestatīti, vai esat piešķīris pārlūkprogrammai tiesības izmantot mikrofonu un kameru un vai pārlūkprogrammas versija ir atjaunināta. Ja joprojām neizdodas zvanīt, sazinieties ar tīmekļa lietojumprogrammas izstrādātāju.",
+            "veryPoorConnection": "Mēs sagaidām, ka jūsu zvanu kvalitāte būs patiešām briesmīga.",
+            "videoFreezing": "Mēs sagaidām, ka jūsu video sastings, kļūs melns un pikseļosies.",
+            "videoHighQuality": "Mēs sagaidām, ka jūsu videoklipam būs laba kvalitāte.",
+            "videoLowQuality": "Mēs sagaidām, ka jūsu videoklipam būs zema kvalitāte kadru ātruma un izšķirtspējas ziņā.",
+            "videoTearing": "Mēs sagaidām, ka jūsu videoklipam būs pikseļi vai vizuāli artefakti."
+        },
+        "copyAndShare": "Kopējiet un kopīgojiet sapulces saiti",
+        "dialInMeeting": "Iezvanietie sapulcē",
+        "dialInPin": "Iezvanieties sapulcē un ievadiet PIN kodu:",
+        "dialing": "Iezvans",
+        "doNotShow": "Vairs nerādīt šo ekrānu",
+        "errorDialOut": "Nevarēja izsaukt numuru",
+        "errorDialOutDisconnected": "Nevarēja izsaukt numuru. Atvienots",
+        "errorDialOutFailed": "Nevarēja izsaukt numuru. Zvans neizdevās",
+        "errorDialOutStatus": "Kļūda iegūstot izsaukšanas statusu",
+        "errorMissingName": "Lūdzu, ievadiet savu vārdu, lai pievienotos sapulcei",
+        "errorNoPermissions": "Jums ir jāiespējo piekļuve mikrofonam un kamerai",
+        "errorStatusCode": "Izsaucot numuru, radās kļūda, statusa kods: {{status}}",
+        "errorValidation": "Numura validācija neizdevās",
+        "iWantToDialIn": "Es gribu iezvanīties",
+        "initiated": "Zvans uzsākts",
+        "joinAudioByPhone": "Pievienoties, izmantojot tālruņa audio",
+        "joinMeeting": "Pievienoties sapulcei",
+        "joinMeetingInLowBandwidthMode": "Pievienoties zemas joslas platuma režīmā",
+        "joinWithoutAudio": "Pievienoties bez audio",
+        "keyboardShortcuts": "Iespējot Īsinājumtaustiņus",
+        "linkCopied": "Saite ir kopēta starpliktuvē",
+        "lookGood": "Jūsu mikrofons darbojas pareizi",
+        "or": "vai",
+        "premeeting": "Pirms sapulces",
+        "proceedAnyway": "Tik un tā turpināt",
+        "recordingWarning": "Citi dalībnieki var ierakstīt šo zvanu",
+        "screenSharingError": "Ekrāna koplietošanas kļūda:",
+        "showScreen": "Iespējot ekrānu pirms sapulces",
+        "startWithPhone": "Sākt ar tālruņa audio",
+        "unsafeRoomConsent": "Es saprotu riskus, vēlos pievienoties sapulcei",
+        "videoOnlyError": "Video kļūda:",
+        "videoTrackError": "Nevarēja izveidot video celiņu.",
+        "viewAllNumbers": "skatīt visus numurus"
+    },
     "presenceStatus": {
         "busy": "Aizņemts",
         "calling": "Izsaucu...",
@@ -704,7 +836,8 @@
         "pending": "{{displayName}} ir uzaicināts"
     },
     "videoStatus": {
-        "audioOnly": "Tikai skaņu",
+        "adjustFor": "Pielāgot:",
+        "audioOnly": "Tikai skaņa",
         "audioOnlyExpanded": "Kanāla/trafika taupīšanas režīms. Šajā režīmā pieejami tikai audio un ekrāna kopīgošana",
         "callQuality": "Video kvalitāte",
         "hd": "HD",
@@ -722,6 +855,8 @@
         "standardDefinition": "Standarta kvalitāte (SD)"
     },
     "videothumbnail": {
+        "connectionInfo": "Informācija par savienojumu",
+        "demote": "Pārveidot par apmeklētāju",
         "domute": "Izlsēgt skaņu",
         "flip": "Atspoguļot/nomainīt",
         "kick": "Izdzīt",
@@ -732,6 +867,44 @@
         "show": "Parādīt tuvplānu",
         "videomute": "Dalībnieks atslēdzis kameru"
     },
+    "virtualBackground": {
+        "accessibilityLabel": {
+            "currentBackground": "Pašreizējais fons: {{background}}",
+            "selectBackground": "Izvēlēties fonu"
+        },
+        "addBackground": "Pievienot fonu",
+        "apply": "Apstiprināt",
+        "backgroundEffectError": "Neizdevās pielietot fona efektu.",
+        "blur": "Izplūdis",
+        "deleteImage": "Dzēst attēlu",
+        "desktopShare": "Darbvirsmas kopīgošana",
+        "desktopShareError": "Nevarēja izveidot darbvirsmas kopīgošanu",
+        "image1": "Pludmale",
+        "image2": "Balta neitrāla siena",
+        "image3": "Balta tukša istaba",
+        "image4": "Melna stāvlampa",
+        "image5": "Kalns",
+        "image6": "Mežs",
+        "image7": "Saullēkts",
+        "none": "Nav",
+        "pleaseWait": "Lūdzu uzgaidiet...",
+        "removeBackground": "Noņemt fonu",
+        "slightBlur": "Viegli izplūdis",
+        "title": "Virtuālie foni",
+        "uploadedImage": "Augšupielādēts attēls {{index}}",
+        "webAssemblyWarning": "WebAssembly netiek atbalstīts",
+        "webAssemblyWarningDescription": "WebAssemb ir atspējots vai šī pārlūkprogramma to neatbalsta"
+    },
+    "visitors": {
+        "chatIndicator": "(apmeklētājs)",
+        "labelTooltip": "Apmeklētāju skaits: {{count}}",
+        "notification": {
+            "demoteDescription": "{{actor}} pārveidoja par apmeklētāju, paceliet roku, lai piedalītos",
+            "description": "Paceliet roku, lai piedalītos",
+            "title": "Jūs esat sapulces apmeklētājs"
+        }
+    },
+    "volumeSlider": "Skaļuma slīdnis",
     "welcomepage": {
         "accessibilityLabel": {
             "join": "Nospiediet, lai pievienotos",
@@ -760,6 +933,13 @@
         "roomnameHint": "Norādiet sapulces telpas nosaukumu vai adresi. Jūs varat izveidot sapulces telpu ar Jūsu izvēlētu nosaukumu un nodot to potenciālajiem sapulces dalībniekiem, lai viņi izmantotu tieši šo.",
         "sendFeedback": "Atsauksmēm",
         "terms": "Lietošanas noteikumi",
-        "title": "Aizsargāta, pilnfunkcionāla, juridiski labvēlīgi licencēta un pilnīgi bez maksas izmantojama video sapulču sistēma"
+        "title": "Drošas, pilnībā aprīkotas un pilnīgi bezmaksas videosapulces",
+        "upcomingMeetings": "Jūsu gaidāmās sapulces"
+    },
+    "whiteboard": {
+        "accessibilityLabel": {
+            "heading": "Tāfele"
+        },
+        "screenTitle": "Tāfele"
     }
 }

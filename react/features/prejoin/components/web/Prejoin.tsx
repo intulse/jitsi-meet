@@ -110,6 +110,11 @@ interface IProps {
     showErrorOnJoin: boolean;
 
     /**
+     * If the recording warning is visible or not.
+     */
+    showRecordingWarning: boolean;
+
+    /**
      * If should show unsafe room warning when joining.
      */
     showUnsafeRoomWarning: boolean;
@@ -207,6 +212,7 @@ const Prejoin = ({
     showCameraPreview,
     showDialog,
     showErrorOnJoin,
+    showRecordingWarning,
     showUnsafeRoomWarning,
     unsafeRoomConsent,
     updateSettings: dispatchUpdateSettings,
@@ -367,6 +373,7 @@ const Prejoin = ({
     return (
         <PreMeetingScreen
             showDeviceStatus = { deviceStatusVisible }
+            showRecordingWarning = { showRecordingWarning }
             showUnsafeRoomWarning = { showUnsafeRoomWarning }
             title = { t('prejoin.joinMeeting') }
             videoMuted = { !showCameraPreview }
@@ -458,6 +465,7 @@ function mapStateToProps(state: IReduxState) {
     const { joiningInProgress } = state['features/prejoin'];
     const { room } = state['features/base/conference'];
     const { unsafeRoomConsent } = state['features/base/premeeting'];
+    const { showPrejoinWarning: showRecordingWarning } = state['features/base/config'].recordings ?? {};
 
     return {
         canEditDisplayName: isPrejoinDisplayNameVisible(state),
@@ -471,6 +479,7 @@ function mapStateToProps(state: IReduxState) {
         showCameraPreview: !isVideoMutedByUser(state),
         showDialog: isJoinByPhoneDialogVisible(state),
         showErrorOnJoin,
+        showRecordingWarning: Boolean(showRecordingWarning),
         showUnsafeRoomWarning: isInsecureRoomName(room) && isUnsafeRoomWarningEnabled(state),
         unsafeRoomConsent,
         videoTrack: getLocalJitsiVideoTrack(state)

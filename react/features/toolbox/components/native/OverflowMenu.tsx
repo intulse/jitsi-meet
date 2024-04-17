@@ -9,6 +9,7 @@ import BottomSheet from '../../../base/dialog/components/native/BottomSheet';
 import { bottomSheetStyles } from '../../../base/dialog/components/native/styles';
 import SettingsButton from '../../../base/settings/components/native/SettingsButton';
 import SharedDocumentButton from '../../../etherpad/components/SharedDocumentButton.native';
+import { customOverflowMenuButtonPressed } from '../../../mobile/external-api/actions';
 import ReactionMenu from '../../../reactions/components/native/ReactionMenu';
 import { isReactionsEnabled } from '../../../reactions/functions.any';
 import LiveStreamButton from '../../../recording/components/LiveStream/native/LiveStreamButton';
@@ -21,9 +22,11 @@ import { isSpeakerStatsDisabled } from '../../../speaker-stats/functions';
 import ClosedCaptionButton from '../../../subtitles/components/native/ClosedCaptionButton';
 import TileViewButton from '../../../video-layout/components/TileViewButton';
 import styles from '../../../video-menu/components/native/styles';
+import WhiteboardButton from '../../../whiteboard/components/native/WhiteboardButton';
 import { getMovableButtons } from '../../functions.native';
 
 import AudioOnlyButton from './AudioOnlyButton';
+import CustomOptionButton from './CustomOptionButton';
 import LinkToSalesforceButton from './LinkToSalesforceButton';
 import OpenCarmodeButton from './OpenCarmodeButton';
 import RaiseHandButton from './RaiseHandButton';
@@ -33,6 +36,16 @@ import ScreenSharingButton from './ScreenSharingButton';
  * The type of the React {@code Component} props of {@link OverflowMenu}.
  */
 interface IProps {
+
+    /**
+     * Custom Toolbar buttons.
+     */
+    _customToolbarButtons?: Array<{ backgroundColor?: string; icon: string; id: string; text: string; }>;
+
+    /**
+     * True if breakout rooms feature is available, false otherwise.
+     */
+    _isBreakoutRoomsSupported?: boolean;
 
     /**
      * True if the overflow menu is currently visible, false otherwise.
@@ -135,6 +148,7 @@ class OverflowMenu extends PureComponent<IProps, IState> {
                 renderFooter = { _reactionsEnabled && !toolbarButtons.has('raisehand')
                     ? this._renderReactionMenu
                     : undefined }>
+                { this._renderCustomOverflowMenuButtons(topButtonProps) }
                 <OpenCarmodeButton { ...topButtonProps } />
                 <AudioOnlyButton { ...buttonProps } />
                 {!_reactionsEnabled && !toolbarButtons.has('raisehand') && <RaiseHandButton { ...buttonProps } />}
@@ -144,6 +158,7 @@ class OverflowMenu extends PureComponent<IProps, IState> {
                 <RecordButton { ...buttonProps } />
                 <LiveStreamButton { ...buttonProps } />
                 <LinkToSalesforceButton { ...buttonProps } />
+                <WhiteboardButton { ...buttonProps } />
                 {/* @ts-ignore */}
                 <Divider style = { styles.divider as ViewStyle } />
                 <SharedVideoButton { ...buttonProps } />
@@ -172,13 +187,48 @@ class OverflowMenu extends PureComponent<IProps, IState> {
     /**
      * Function to render the reaction menu as the footer of the bottom sheet.
      *
-     * @returns {React$Element}
+     * @returns {React.ReactElement}
      */
     _renderReactionMenu() {
         return (
             <ReactionMenu
                 onCancel = { this._onCancel }
                 overflowMenu = { true } />
+        );
+    }
+
+    /**
+     * Function to render the custom buttons for the overflow menu.
+     *
+     * @param {Object} topButtonProps - Button properties.
+     * @returns {React.ReactElement}
+     */
+    _renderCustomOverflowMenuButtons(topButtonProps: Object) {
+        const { _customToolbarButtons, dispatch } = this.props;
+
+        if (!_customToolbarButtons?.length) {
+            return;
+        }
+
+        return (
+            <>
+                {
+                    _customToolbarButtons.map(({ id, text, icon, ...rest }) => (
+                        <CustomOptionButton
+                            { ...rest }
+                            { ...topButtonProps }
+
+                            /* eslint-disable react/jsx-no-bind */
+                            handleClick = { () =>
+                                dispatch(customOverflowMenuButtonPressed(id, text))
+                            }
+                            icon = { icon }
+                            key = { id }
+                            text = { text } />
+                    ))
+                }
+                <Divider style = { styles.divider as ViewStyle } />
+            </>
         );
     }
 }
@@ -191,7 +241,12 @@ class OverflowMenu extends PureComponent<IProps, IState> {
  * @returns {IProps}
  */
 function _mapStateToProps(state: IReduxState) {
+    const { conference } = state['features/base/conference'];
+    const { customToolbarButtons } = state['features/base/config'];
+
     return {
+        _customToolbarButtons: customToolbarButtons,
+        _isBreakoutRoomsSupported: conference?.getBreakoutRooms()?.isSupported(),
         _isSpeakerStatsDisabled: isSpeakerStatsDisabled(state),
         _reactionsEnabled: isReactionsEnabled(state),
         _width: state['features/base/responsive-ui'].clientWidth

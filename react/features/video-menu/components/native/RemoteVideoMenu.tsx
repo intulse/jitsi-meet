@@ -24,6 +24,7 @@ import PrivateMessageButton from '../../../chat/components/native/PrivateMessage
 
 import AskUnmuteButton from './AskUnmuteButton';
 import ConnectionStatusButton from './ConnectionStatusButton';
+import DemoteToVisitorButton from './DemoteToVisitorButton';
 import GrantModeratorButton from './GrantModeratorButton';
 import KickButton from './KickButton';
 import MuteButton from './MuteButton';
@@ -88,6 +89,11 @@ interface IProps {
     _rooms: Array<IRoom>;
 
     /**
+     * Whether to display the demote button.
+     */
+    _showDemote: boolean;
+
+    /**
      * The Redux dispatch function.
      */
     dispatch: IStore['dispatch'];
@@ -133,6 +139,7 @@ class RemoteVideoMenu extends PureComponent<IProps> {
             _isParticipantAvailable,
             _moderator,
             _rooms,
+            _showDemote,
             _currentRoomId,
             participantId,
             t
@@ -162,6 +169,7 @@ class RemoteVideoMenu extends PureComponent<IProps> {
                 { !_disableKick && <KickButton { ...buttonProps } /> }
                 { !_disableGrantModerator && <GrantModeratorButton { ...buttonProps } /> }
                 <PinButton { ...buttonProps } />
+                { _showDemote && <DemoteToVisitorButton { ...buttonProps } /> }
                 { !_disablePrivateChat && <PrivateMessageButton { ...buttonProps } /> }
                 <ConnectionStatusButton { ...connectionStatusButtonProps } />
                 {_moderator && _rooms.length > 1 && <>
@@ -244,7 +252,8 @@ function _mapStateToProps(state: IReduxState, ownProps: any) {
         _isParticipantAvailable: Boolean(isParticipantAvailable),
         _moderator: moderator,
         _participantDisplayName: getParticipantDisplayName(state, participantId),
-        _rooms
+        _rooms,
+        _showDemote: moderator
     };
 }
 

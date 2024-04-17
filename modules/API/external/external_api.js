@@ -1191,6 +1191,35 @@ export default class JitsiMeetExternalAPI extends EventEmitter {
     }
 
     /**
+     * Return the conference`s sessionId.
+     *
+     * @returns {Promise} - Resolves with the conference`s sessionId.
+     */
+    getSessionId() {
+        return this._transport.sendRequest({
+            name: 'session-id'
+        });
+    }
+
+    /**
+     * Returns array of commands supported by executeCommand().
+     *
+     * @returns {Array<string>} Array of commands.
+     */
+    getSupportedCommands() {
+        return Object.keys(commands);
+    }
+
+    /**
+     * Returns array of events supported by addEventListener().
+     *
+     * @returns {Array<string>} Array of events.
+     */
+    getSupportedEvents() {
+        return Object.values(events);
+    }
+
+    /**
      * Check if the video is available.
      *
      * @returns {Promise} - Resolves with true if the video available, with

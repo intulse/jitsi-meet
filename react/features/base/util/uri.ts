@@ -1,3 +1,5 @@
+import { sanitizeUrl as _sanitizeUrl } from '@braintree/sanitize-url';
+
 import { parseURLParams } from './parseURLParams';
 import { normalizeNFKC } from './strings';
 
@@ -630,4 +632,52 @@ export function appendURLParam(url: string, name: string, value: string) {
     newUrl.searchParams.append(name, value);
 
     return newUrl.toString();
+}
+
+/**
+ * Adds new hash param to a url string.
+ * Checks whether to use '?' or '&' as a separator (checks for already existing params).
+ *
+ * @param {string} url - The url to modify.
+ * @param {string} name - The param name to add.
+ * @param {string} value - The value for the param.
+ *
+ * @returns {string} - The modified url.
+ */
+export function appendURLHashParam(url: string, name: string, value: string) {
+    const newUrl = new URL(url);
+    const dummyUrl = new URL('https://example.com');
+
+    // Copy current hash-parameters without the '#' as search-parameters.
+    dummyUrl.search = newUrl.hash.substring(1);
+
+    // Set or update value with the searchParams-API.
+    dummyUrl.searchParams.append(name, value);
+
+    // Write back as hash parameters.
+    newUrl.hash = dummyUrl.searchParams.toString();
+
+    return newUrl.toString();
+}
+
+/**
+ * Sanitizes the given URL so that it's safe to use. If it's unsafe, null is returned.
+ *
+ * @param {string|URL} url - The URL that needs to be sanitized.
+ *
+ * @returns {URL?} - The sanitized URL, or null otherwise.
+ */
+export function sanitizeUrl(url?: string | URL): URL | null {
+    if (!url) {
+        return null;
+    }
+
+    const urlStr = url.toString();
+    const result = _sanitizeUrl(urlStr);
+
+    if (result === 'about:blank') {
+        return null;
+    }
+
+    return new URL(result);
 }

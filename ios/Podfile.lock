@@ -390,8 +390,8 @@ PODS:
   - react-native-video/Video (6.0.0-alpha.1):
     - PromisesSwift
     - React-Core
-  - react-native-webrtc (111.0.3):
-    - JitsiWebRTC (~> 111.0.0)
+  - react-native-webrtc (118.0.6):
+    - JitsiWebRTC (~> 118.0.0)
     - React-Core
   - react-native-webview (11.15.1):
     - React-Core
@@ -754,21 +754,26 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 68b07eabfb0d14547d36f6929c0e98d818064f02
   react-native-slider: 6e9b86e76cce4b9e35b3403193a6432ed07e0c81
   react-native-splash-screen: 4312f786b13a81b5169ef346d76d33bc0c6dc457
-  react-native-video: bb6f12a7198db53b261fefb5d609dc77417acc8b
-  react-native-webrtc: 4d1669c2ed29767fe70b0169428b4466589ecf8b
-  react-native-webview: ea4899a1056c782afa96dd082179a66cbebf5504
-  React-perflogger: fdee2a0c512167ae4c19c4e230ccf6aa66a6aff0
-  React-RCTActionSheet: 1cf5fef4e372f1c877969710a51bea4bb25e78fe
-  React-RCTAnimation: 73816e3acd1f5e3f00166fc7eedb34f6b112f734
-  React-RCTBlob: 6976c838fb14a1daf75d7c8bb23bae9cbbf726bb
-  React-RCTImage: ab8a7498f215117f32271698591e4bd932dcf812
-  React-RCTLinking: e8e78aed2744ab9946cc8ba5716b4938c2efb1e0
-  React-RCTNetwork: 796f5aed4d932655d292bdc6b40f9502dcdb9542
-  React-RCTSettings: 7e1cd2a384b45c90caf67464572abe3833b9da3b
-  React-RCTText: fd6162890828f0761e03c59058fa23c3a21b2e10
-  React-RCTVibration: 302cfd5cc33669d7abdb7ec6790123baba66e62e
-  React-runtimeexecutor: 59407514818b2afbb1d7507e4e1ac834d24b0fbd
-  ReactCommon: b8487da74723562d7368dab27135fd182f00a91c
+  react-native-video: 472b7c366eaaaa0207e546d9a50410df89790bcf
+  react-native-webrtc: 4a9428c3ced472d3b08e1fbc4bfdc082692f2d5d
+  react-native-webview: 8baa0f5c6d336d6ba488e942bcadea5bf51f050a
+  React-NativeModulesApple: 4225ac31a26696c02c54b471052b3e85e74a9a0c
+  React-perflogger: cb433f318c6667060fc1f62e26eb58d6eb30a627
+  React-RCTActionSheet: 0af3f8ac067e8a1dde902810b7ad169d0a0ec31e
+  React-RCTAnimation: 453a88e76ba6cb49819686acd8b21ce4d9ee4232
+  React-RCTAppDelegate: 009ede96d00f79460a75ab5071eadb4aaa1e5012
+  React-RCTBlob: a64134435f331c7cc716dcea6944a1443af49d32
+  React-RCTImage: 8e059fbdfab18b86127424dc3742532aab960760
+  React-RCTLinking: 05ae2aa525b21a7f1c5069c14330700f470efd97
+  React-RCTNetwork: 7ed9d99d028c53e9a23e318f65937f499ba8a6fd
+  React-RCTSettings: 8b12ebf04d4baa0e259017fcef6cf7abd7d8ac51
+  React-RCTText: a062ade9ff1591c46bcb6c5055fd4f96c154b8aa
+  React-RCTVibration: 87c490b6f01746ab8f9b4e555f514cc030c06731
+  React-rncore: 140bc11b316da7003bf039844aef39e1c242d7ad
+  React-runtimeexecutor: 226ebef5f625878d3028b196cbecbbdeb6f208e4
+  React-runtimescheduler: 75f2210cd7a50c4565dfd218e320479013b82f70
+  React-utils: a3ffbc321572ee91911d7bc30965abe9aa4e16af
+  ReactCommon: d3522e54560e4d940554aa074a0206bf4d39ae5e
   RNCalendarEvents: 7e65eb4a94f53c1744d1e275f7fafcfaa619f7a3
   RNCAsyncStorage: 005c0e2f09575360f142d0d1f1f15e4ec575b1af
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495

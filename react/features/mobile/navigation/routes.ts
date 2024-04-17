@@ -31,7 +31,9 @@ export const screen = {
         gifsMenu: 'GIPHY',
         invite: 'Invite',
         sharedDocument: 'Shared document',
-        subtitles: 'Subtitles'
+        speakerStats: 'Speaker Stats',
+        subtitles: 'Subtitles',
+        whiteboard: 'Whiteboard'
     },
     lobby: {
         root: 'Lobby root',
