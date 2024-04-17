@@ -38,6 +38,7 @@ import {
     dataChannelClosed,
     dataChannelOpened,
     e2eRttChanged,
+    endpointMessageReceived,
     kickedOut,
     lockStateChanged,
     nonParticipantMessageReceived,
@@ -90,7 +91,7 @@ import {
     setVideoMuted,
     setVideoUnmutePermissions
 } from './react/features/base/media/actions';
-import { MEDIA_TYPE } from './react/features/base/media/constants';
+import { MEDIA_TYPE, VIDEO_TYPE } from './react/features/base/media/constants';
 import {
     getStartWithAudioMuted,
     getStartWithVideoMuted,
@@ -162,10 +163,8 @@ import { isScreenAudioShared } from './react/features/screen-share/functions';
 import { toggleScreenshotCaptureSummary } from './react/features/screenshot-capture/actions';
 import { AudioMixerEffect } from './react/features/stream-effects/audio-mixer/AudioMixerEffect';
 import { createRnnoiseProcessor } from './react/features/stream-effects/rnnoise';
-import { endpointMessageReceived } from './react/features/subtitles/actions.any';
 import { handleToggleVideoMuted } from './react/features/toolbox/actions.any';
 import { muteLocal } from './react/features/video-menu/actions.any';
-import { iAmVisitor } from './react/features/visitors/functions';
 import UIEvents from './service/UI/UIEvents';
 
 const logger = Logger.getLogger(__filename);
@@ -405,7 +404,13 @@ function disconnect() {
  * @returns {void}
  */
 function setGUMPendingStateOnFailedTracks(tracks) {
-    const tracksTypes = tracks.map(track => track.getType());
+    const tracksTypes = tracks.map(track => {
+        if (track.getVideoType() === VIDEO_TYPE.DESKTOP) {
+            return MEDIA_TYPE.SCREENSHARE;
+        }
+
+        return track.getType();
+    });
     const nonPendingTracks = [ MEDIA_TYPE.AUDIO, MEDIA_TYPE.VIDEO ].filter(type => !tracksTypes.includes(type));
 
     APP.store.dispatch(gumPending(nonPendingTracks, IGUMPendingState.NONE));
@@ -679,6 +684,8 @@ export default {
             startWithVideoMuted: getStartWithVideoMuted(state) || isUserInteractionRequiredForUnmute(state)
         };
 
+        logger.debug(`Executed conference.init with roomName: ${roomName}`);
+
         this.roomName = roomName;
 
         try {
@@ -697,10 +704,6 @@ export default {
         const handleInitialTracks = (options, tracks) => {
             let localTracks = tracks;
 
-            // No local tracks are added when user joins as a visitor.
-            if (iAmVisitor(state)) {
-                return [];
-            }
             if (options.startWithAudioMuted || room?.isStartAudioMuted()) {
                 // Always add the track on Safari because of a known issue where audio playout doesn't happen
                 // if the user joins audio and video muted, i.e., if there is no local media capture.
@@ -1253,7 +1256,24 @@ export default {
         room = APP.connection.initJitsiConference(APP.conference.roomName, this._getConferenceOptions());
 
         // Filter out the tracks that are muted (except on Safari).
-        const tracks = browser.isWebKitBased() ? localTracks : localTracks.filter(track => !track.isMuted());
+        let tracks = localTracks;
+
+        if (!browser.isWebKitBased()) {
+            const mutedTrackTypes = [];
+
+            tracks = localTracks.filter(track => {
+                if (!track.isMuted()) {
+                    return true;
+                }
+
+                if (track.getVideoType() !== VIDEO_TYPE.DESKTOP) {
+                    mutedTrackTypes.push(track.getType());
+                }
+
+                return false;
+            });
+            APP.store.dispatch(gumPending(mutedTrackTypes, IGUMPendingState.NONE));
+        }
 
         this._setLocalAudioVideoStreams(tracks);
         this._room = room; // FIXME do not use this
@@ -1317,12 +1337,11 @@ export default {
      * @returns {Promise}
      */
     useVideoStream(newTrack) {
-        const state = APP.store.getState();
-
         logger.debug(`useVideoStream: ${newTrack}`);
 
         return new Promise((resolve, reject) => {
             _replaceLocalVideoTrackQueue.enqueue(onFinish => {
+                const state = APP.store.getState();
                 const oldTrack = getLocalJitsiVideoTrack(state);
 
                 logger.debug(`useVideoStream: Replacing ${oldTrack} with ${newTrack}`);
@@ -1824,28 +1843,24 @@ export default {
 
         room.on(
             JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED,
-            (...args) => {
-                APP.store.dispatch(endpointMessageReceived(...args));
-                if (args && args.length >= 2) {
-                    const [ sender, eventData ] = args;
-
-                    if (eventData.name === ENDPOINT_TEXT_MESSAGE_NAME) {
-                        APP.API.notifyEndpointTextMessageReceived({
-                            senderInfo: {
-                                jid: sender._jid,
-                                id: sender._id
-                            },
-                            eventData
-                        });
-                    }
+            (participant, data) => {
+                APP.store.dispatch(endpointMessageReceived(participant, data));
+                if (data?.name === ENDPOINT_TEXT_MESSAGE_NAME) {
+                    APP.API.notifyEndpointTextMessageReceived({
+                        senderInfo: {
+                            jid: participant.getJid(),
+                            id: participant.getId()
+                        },
+                        eventData: data
+                    });
                 }
             });
 
         room.on(
             JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED,
-            (...args) => {
-                APP.store.dispatch(nonParticipantMessageReceived(...args));
-                APP.API.notifyNonParticipantMessageReceived(...args);
+            (id, data) => {
+                APP.store.dispatch(nonParticipantMessageReceived(id, data));
+                APP.API.notifyNonParticipantMessageReceived(id, data);
             });
 
         room.on(

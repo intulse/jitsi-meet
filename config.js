@@ -59,6 +59,10 @@ var config = {
     // https://github.com/jitsi/jitsi-meet/issues/7376
     // focusUserJid: 'focus@auth.jitsi-meet.example.com',
 
+    // Option to send conference requests to jicofo over http (requires nginx rule for it)
+    // conferenceRequestUrl:
+    //   'https://<!--# echo var="http_host" default="jitsi-meet.example.com" -->/' + subdir + 'conference-request/v1',
+
     // Options related to the bridge (colibri) data channel
     bridgeChannel: {
         // If the backend advertises multiple colibri websockets, this options allows
@@ -84,6 +88,9 @@ var config = {
         // issues related to insertable streams.
         // disableE2EE: false,
 
+        // Enables supports for AV1 codec.
+        // enableAv1Support: false,
+
         // Enables XMPP WebSocket (as opposed to BOSH) for the given amount of users.
         // mobileXmppWsThreshold: 10, // enable XMPP WebSockets on mobile for 10% of the users
 
@@ -97,6 +104,12 @@ var config = {
         // Disables the auto-play behavior of *all* newly created video element.
         // This is useful when the client runs on a host with limited resources.
         // noAutoPlayVideo: false,
+
+        // Experiment: Whether to skip interim transcriptions.
+        // skipInterimTranscriptions: false,
+
+        // Dump transcripts to a <transcript> element for debugging.
+        // dumpTranscript: false,
     },
 
     // Disables moderator indicators.
@@ -318,6 +331,18 @@ var config = {
     //          'https://jitsi-meet.example.com/subfolder/static/oauth.html',
     // },
 
+    // configuration for all things recording related. Existing settings will be migrated here in the future.
+    // recordings: {
+    //    // IF true (default) recording audio and video is selected by default in the recording dialog.
+    //    // recordAudioAndVideo: true,
+    //    // If true, shows a notification at the start of the meeting with a call to action button
+    //    // to start recording (for users who can do so).
+    //    // suggestRecording: true,
+    //    // If true, shows a warning label in the prejoin screen to point out the possibility that
+    //    // the call you're joining might be recorded.
+    //    // showPrejoinWarning: true,
+    // },
+
     // recordingService: {
     //     // When integrations like dropbox are enabled only that will be shown,
     //     // by enabling fileRecordingsServiceEnabled, we show both the integrations
@@ -378,7 +403,7 @@ var config = {
     // DEPRECATED. Use transcription.preferredLanguage instead.
     // preferredTranscribeLanguage: 'en-US',
 
-    // DEPRECATED. Use transcription.autoCaptionOnRecord instead.
+    // DEPRECATED. Use transcription.autoTranscribeOnRecord instead.
     // autoCaptionOnRecord: false,
 
     // Transcription options.
@@ -407,11 +432,8 @@ var config = {
     //     // ./src/react/features/transcribing/transcriber-langs.json.
     //     preferredLanguage: 'en-US',
 
-    //     // Disable start transcription for all participants.
-    //     disableStartForAll: false,
-
-    //     // Enables automatic turning on captions when recording is started
-    //     autoCaptionOnRecord: false,
+    //     // Enables automatic turning on transcribing when recording is started
+    //     autoTranscribeOnRecord: false,
     // },
 
     // Misc
@@ -634,7 +656,7 @@ var config = {
     //     // Whether to disable welcome page. In case it's disabled a random room
     //     // will be joined when no room is specified.
     //     disabled: false,
-    //     // If set,landing page will redirect to this URL.
+    //     // If set, landing page will redirect to this URL.
     //     customUrl: ''
     // },
 
@@ -707,7 +729,7 @@ var config = {
     // Configs for prejoin page.
     // prejoinConfig: {
     //     // When 'true', it shows an intermediate page before joining, where the user can configure their devices.
-    //     // This replaces `prejoinPageEnabled`.
+    //     // This replaces `prejoinPageEnabled`. Defaults to true.
     //     enabled: true,
     //     // Hides the participant name editing field in the prejoin screen.
     //     // If requireDisplayName is also set as true, a name should still be provided through
@@ -1191,9 +1213,17 @@ var config = {
     // https://firebase.google.com/docs/dynamic-links/create-manually
     // deeplinking: {
     //
-    //     // The desktop deeplinking config.
+    //     // The desktop deeplinking config, disabled by default.
     //     desktop: {
-    //         appName: 'Jitsi Meet'
+    //         appName: 'Jitsi Meet',
+    //         appScheme: 'jitsi-meet,
+    //         download: {
+    //             linux:
+    //               'https://github.com/jitsi/jitsi-meet-electron/releases/latest/download/jitsi-meet-x86_64.AppImage',
+    //             macos: 'https://github.com/jitsi/jitsi-meet-electron/releases/latest/download/jitsi-meet.dmg',
+    //             windows: 'https://github.com/jitsi/jitsi-meet-electron/releases/latest/download/jitsi-meet.exe'
+    //         },
+    //         enabled: false
     //     },
     //     // If true, any checks to handoff to another application will be prevented
     //     // and instead the app will continue to display in the current browser.
@@ -1276,6 +1306,8 @@ var config = {
     // remoteVideoMenu: {
     //     // Whether the remote video context menu to be rendered or not.
     //     disabled: true,
+    //     // If set to true the 'Switch to visitor' button will be disabled.
+    //     disableDemote: true,
     //     // If set to true the 'Kick out' button will be disabled.
     //     disableKick: true,
     //     // If set to true the 'Grant moderator' button will be disabled.
@@ -1295,9 +1327,6 @@ var config = {
 
     // If set to true all muting operations of remote participants will be disabled.
     // disableRemoteMute: true,
-
-    // Enables support for lip-sync for this client (if the browser supports it).
-    // enableLipSync: false,
 
     /**
      External API url used to receive branding specific information.
@@ -1367,6 +1396,8 @@ var config = {
 
     // Options related to the participants pane.
     // participantsPane: {
+    //     // Enables feature
+    //     enabled: true,
     //     // Hides the moderator settings tab.
     //     hideModeratorSettingsTab: false,
     //     // Hides the more actions button.
@@ -1391,9 +1422,6 @@ var config = {
     // When true the user cannot add more images to be used as virtual background.
     // Only the default ones from will be available.
     // disableAddingBackgroundImages: false,
-
-    // Disables using screensharing as virtual background.
-    // disableScreensharingVirtualBackground: false,
 
     // Sets the background transparency level. '0' is fully transparent, '1' is opaque.
     // backgroundAlpha: 1,
@@ -1421,7 +1449,6 @@ var config = {
     //         'conference-timer',
     //         'participants-count',
     //         'e2ee',
-    //         'transcribing',
     //         'video-quality',
     //         'insecure-room',
     //         'highlight-moment',
