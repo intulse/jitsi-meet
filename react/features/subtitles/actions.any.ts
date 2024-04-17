@@ -1,31 +1,11 @@
 import { DEFAULT_LANGUAGE } from '../base/i18n/i18next';
 
 import {
-    ENDPOINT_MESSAGE_RECEIVED,
     REMOVE_TRANSCRIPT_MESSAGE,
     SET_REQUESTING_SUBTITLES,
     TOGGLE_REQUESTING_SUBTITLES,
     UPDATE_TRANSCRIPT_MESSAGE
 } from './actionTypes';
-
-/**
- * Signals that a participant sent an endpoint message on the data channel.
- *
- * @param {Object} participant - The participant details sending the message.
- * @param {Object} json - The json carried by the endpoint message.
- * @returns {{
- *      type: ENDPOINT_MESSAGE_RECEIVED,
- *      participant: Object,
- *      json: Object
- * }}
- */
-export function endpointMessageReceived(participant: Object, json: Object) {
-    return {
-        type: ENDPOINT_MESSAGE_RECEIVED,
-        participant,
-        json
-    };
-}
 
 /**
  * Signals that a transcript has to be removed from the state.
@@ -93,11 +73,11 @@ export function toggleRequestingSubtitles() {
 export function setRequestingSubtitles(
         enabled: boolean,
         displaySubtitles = true,
-        language: string | null = DEFAULT_LANGUAGE) {
+        language: string | null = `translation-languages:${DEFAULT_LANGUAGE}`) {
     return {
         type: SET_REQUESTING_SUBTITLES,
         displaySubtitles,
         enabled,
-        language: `translation-languages:${language}`
+        language
     };
 }

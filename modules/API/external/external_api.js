@@ -160,6 +160,7 @@ const events = {
     'suspend-detected': 'suspendDetected',
     'tile-view-changed': 'tileViewChanged',
     'toolbar-button-clicked': 'toolbarButtonClicked',
+    'transcribing-status-changed': 'transcribingStatusChanged',
     'transcription-chunk-received': 'transcriptionChunkReceived',
     'whiteboard-status-changed': 'whiteboardStatusChanged'
 };
@@ -1226,6 +1227,17 @@ export default class JitsiMeetExternalAPI extends EventEmitter {
      */
     getNumberOfParticipants() {
         return this._numberOfParticipants;
+    }
+
+    /**
+     * Return the conference`s sessionId.
+     *
+     * @returns {Promise} - Resolves with the conference`s sessionId.
+     */
+    getSessionId() {
+        return this._transport.sendRequest({
+            name: 'session-id'
+        });
     }
 
     /**

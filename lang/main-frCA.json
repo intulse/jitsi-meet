@@ -449,6 +449,11 @@
     },
     "passwordDigitsOnly": "Jusqu'à {{number}} chiffres",
     "passwordSetRemotely": "réglé par un autre membre",
+    "polls": {
+        "errors": {
+            "notUniqueOption": "Les options doivent être uniques"
+        }
+    },
     "poweredby": "optimisé par",
     "presenceStatus": {
         "busy": "Occupé",
@@ -553,6 +558,8 @@
         "hours": "{{count}} h",
         "minutes": "{{count}} min",
         "name": "Nom",
+        "search": "Recherche",
+        "searchHint": "Recherche des participants",
         "seconds": "{{count}} s",
         "speakerStats": "Statistiques d'intervenant",
         "speakerTime": "Temps d'intervention"
