@@ -495,6 +495,19 @@ process_host_module(main_muc_component_config, function(host_module, host)
             whitelistJoin = true;
         end
 
+		-- begin gkleinereva addition
+		local context_user = event.origin.jitsi_meet_context_user;
+		if context_user then
+			if context_user["affiliation"] == "owner" then
+				whitelistJoin = true;
+			elseif context_user["affiliation"] == "moderator" then
+				whitelistJoin = true;
+			elseif context_user["affiliation"] == "teacher" then
+				whitelistJoin = true;
+			end
+		end
+		-- end gkleinereva addition
+
         if whitelistJoin then
             local affiliation = room:get_affiliation(invitee);
             -- if it was already set to be whitelisted member
