@@ -335,11 +335,12 @@ class Video extends Component<IProps> {
             return Promise.resolve();
         }
 
-        return videoTrack.jitsiTrack.attach(this._videoElement)?.catch((error: Error) => {
-                logger.error(
-                    `Attaching the remote track ${videoTrack.jitsiTrack} to video with id ${id} has failed with `,
-                    error);
-            });
+        return videoTrack.jitsiTrack.attach(this._videoElement);
+		// .catch((error: Error) => {
+        //         logger.error(
+        //             `Attaching the remote track ${videoTrack.jitsiTrack} to video with id ${id} has failed with `,
+        //             error);
+        //     });
     }
 
     /**
