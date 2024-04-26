@@ -141,6 +141,7 @@ const events = {
     'participant-role-changed': 'participantRoleChanged',
     'participants-pane-toggled': 'participantsPaneToggled',
     'password-required': 'passwordRequired',
+    'password-changed': 'passwordChanged',
     'peer-connection-failure': 'peerConnectionFailure',
     'prejoin-screen-loaded': 'prejoinScreenLoaded',
     'proxy-connection-event': 'proxyConnectionEvent',

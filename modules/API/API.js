@@ -2154,6 +2154,16 @@ class API {
         });
     }
 
+	/** >>>>> INTULSE
+	 *  Notify the external application the password has changed
+	 * 
+	 * @param {string} password - The new password word.
+	 * @returns {void}
+	 */
+    notifyOnPasswordChanged(password) {
+        this._sendEvent({ name: 'password-changed', password });
+    }
+
     /**
      * Disposes the allocated resources.
      *

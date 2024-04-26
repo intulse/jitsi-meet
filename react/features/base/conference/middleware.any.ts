@@ -69,6 +69,7 @@ import {
 } from './functions';
 import logger from './logger';
 import { IConferenceMetadata } from './reducer';
+import './subscriber.intulse';
 
 /**
  * Handler for before unload event.
