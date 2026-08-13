@@ -1,14 +1,18 @@
 import { sha512_256 as sha512 } from 'js-sha512';
-import _ from 'lodash';
+import { upperFirst, words } from 'lodash-es';
 
 import { getName } from '../../app/functions';
 import { IReduxState, IStore } from '../../app/types';
+import { showNotification } from '../../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
 import { determineTranscriptionLanguage } from '../../transcribing/functions';
 import { IStateful } from '../app/types';
+import { connect } from '../connection/actions';
+import { disconnect } from '../connection/actions.any';
 import { JitsiTrackErrors } from '../lib-jitsi-meet';
+import { setAudioMuted, setVideoMuted } from '../media/actions';
+import { VIDEO_MUTISM_AUTHORITY } from '../media/constants';
 import {
-    hiddenParticipantJoined,
-    hiddenParticipantLeft,
     participantJoined,
     participantLeft
 } from '../participants/actions';
@@ -20,14 +24,21 @@ import {
     safeDecodeURIComponent
 } from '../util/uri';
 
-import { setObfuscatedRoom } from './actions';
+import { conferenceWillInit, setObfuscatedRoom } from './actions';
 import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
-    JITSI_CONFERENCE_URL_KEY
+    JITSI_CONFERENCE_URL_KEY,
+    START_MUTED_NOTIFICATION_ID
 } from './constants';
 import logger from './logger';
 import { IJitsiConference } from './reducer';
+
+/**
+ * The local participant property used to advertise to jicofo that this
+ * participant's audio should be diarized by the transcriber.
+ */
+const P_NAME_DIARIZE = 'diarize';
 
 /**
  * Returns root conference state.
@@ -36,14 +47,6 @@ import { IJitsiConference } from './reducer';
  * @returns {Object} Conference state.
  */
 export const getConferenceState = (state: IReduxState) => state['features/base/conference'];
-
-/**
- * Is the conference joined or not.
- *
- * @param {IReduxState} state - Global state.
- * @returns {boolean}
- */
-export const getIsConferenceJoined = (state: IReduxState) => Boolean(getConferenceState(state).conference);
 
 /**
  * Attach a set of local tracks to a conference.
@@ -93,20 +96,24 @@ export function commonUserJoinedHandling(
     const id = user.getId();
     const displayName = user.getDisplayName();
 
-    if (user.isHidden()) {
-        dispatch(hiddenParticipantJoined(id, displayName));
-    } else {
+    if (!user.isHidden()) {
         const isReplacing = user?.isReplacing();
+        const isPromoted = conference?.getMetadataHandler().getMetadata()?.visitors?.promoted?.[id];
+        const userIdentity = user.getIdentity()?.user;
 
+        // the identity and avatar come from jwt and never change in the presence
         dispatch(participantJoined({
+            avatarURL: userIdentity?.avatar,
             botType: user.getBotType(),
             conference,
             id,
             name: displayName,
             presence: user.getStatus(),
             role: user.getRole(),
+            isPromoted,
             isReplacing,
-            sources: user.getSources()
+            sources: user.getSources(),
+            userContext: userIdentity
         }));
     }
 }
@@ -128,9 +135,7 @@ export function commonUserLeftHandling(
         user: any) {
     const id = user.getId();
 
-    if (user.isHidden()) {
-        dispatch(hiddenParticipantLeft(id));
-    } else {
+    if (!user.isHidden()) {
         const isReplaced = user.isReplaced?.();
 
         dispatch(participantLeft(id, conference, { isReplaced }));
@@ -185,18 +190,12 @@ export function forEachConference(
 export function getConferenceName(stateful: IStateful): string {
     const state = toState(stateful);
     const { callee } = state['features/base/jwt'];
-    const {
-        callDisplayName,
-        localSubject: configLocalSubject,
-        subject: configSubject
-    } = state['features/base/config'];
+    const { callDisplayName } = state['features/base/config'];
     const { localSubject, pendingSubjectChange, room, subject } = getConferenceState(state);
 
-    return (pendingSubjectChange
-        || configSubject
+    return (localSubject
+        || pendingSubjectChange
         || subject
-        || configLocalSubject
-        || localSubject
         || callDisplayName
         || callee?.name
         || (room && safeStartCase(safeDecodeURIComponent(room)))) ?? '';
@@ -224,6 +223,7 @@ export function getConferenceOptions(stateful: IStateful) {
 
     const config = state['features/base/config'];
     const { locationURL } = state['features/base/connection'];
+    const { defaultTranscriptionLanguage } = state['features/dynamic-branding'];
     const { tenant } = state['features/base/jwt'];
     const { email, name: nick } = getLocalParticipant(state) ?? {};
     const options: any = { ...config };
@@ -245,13 +245,13 @@ export function getConferenceOptions(stateful: IStateful) {
     }
 
     options.applicationName = getName();
-    options.transcriptionLanguage = determineTranscriptionLanguage(options);
+    options.transcriptionLanguage
+        = defaultTranscriptionLanguage ?? determineTranscriptionLanguage(options);
 
     // Disable analytics, if requested.
     if (options.disableThirdPartyRequests) {
         delete config.analytics?.scriptURLs;
         delete config.analytics?.amplitudeAPPKey;
-        delete config.analytics?.googleAnalyticsTrackingId;
     }
 
     return options;
@@ -310,7 +310,7 @@ export function getVisitorOptions(stateful: IStateful, vnode: string, focusJid: 
             return {
                 hosts: config.oldConfig.hosts,
                 focusUserJid: focusJid,
-                disableLocalStats: false,
+                disableLocalStatsBroadcast: false,
                 bosh: config.oldConfig.bosh && appendURLParam(config.oldConfig.bosh, 'customusername', username),
                 p2p: config.oldConfig.p2p,
                 websocket: config.oldConfig.websocket
@@ -345,7 +345,7 @@ export function getVisitorOptions(stateful: IStateful, vnode: string, focusJid: 
         },
         focusUserJid: focusJid,
         disableFocus: true, // This flag disables sending the initial conference request
-        disableLocalStats: true,
+        disableLocalStatsBroadcast: true,
         bosh: config.bosh && appendURLParam(config.bosh, 'vnode', vnode),
         p2p: {
             ...config.p2p,
@@ -571,6 +571,16 @@ export function sendLocalParticipant(
         conference?.setLocalParticipantProperty('features_screen-sharing', true);
     }
 
+    // Advertise to jicofo that this participant's audio should be diarized by the transcriber.
+    // Only published when explicitly enabled, to keep presence clean.
+    // NOTE: this must be published here, before conference.join(), so it is part of the initial
+    // presence. jicofo allocates the colibri2 endpoint from the join presence and reads this flag
+    // only at allocation time (the endpoint create path, in both jicofo and the bridge). A value
+    // set after join would be ignored, so do not move this to a lazy/runtime toggle.
+    if (toState(stateful)['features/base/config'].transcription?.diarize === true) {
+        conference?.setLocalParticipantProperty(P_NAME_DIARIZE, true);
+    }
+
     conference?.setDisplayName(name);
 }
 
@@ -585,7 +595,77 @@ export function sendLocalParticipant(
  * @returns {string}
  */
 function safeStartCase(s = '') {
-    return _.words(`${s}`.replace(/['\u2019]/g, '')).reduce(
-        (result, word, index) => result + (index ? ' ' : '') + _.upperFirst(word)
+    return words(`${s}`.replace(/['\u2019]/g, '')).reduce(
+        (result, word, index) => result + (index ? ' ' : '') + upperFirst(word)
         , '');
+}
+
+/**
+ * Updates the mute state of the track based on the start muted policy.
+ *
+ * @param {Object|Function} stateful - Either the whole Redux state object or the Redux store's {@code getState} method.
+ * @param {Function} dispatch - Redux dispatch function.
+ * @param {boolean} isAudio - Whether the track is audio or video.
+ * @returns {void}
+ */
+export function updateTrackMuteState(stateful: IStateful, dispatch: IStore['dispatch'], isAudio: boolean) {
+    const state = toState(stateful);
+    const mutedPolicyKey = isAudio ? 'startAudioMutedPolicy' : 'startVideoMutedPolicy';
+    const mutedPolicyValue = state['features/base/conference'][mutedPolicyKey];
+
+    // Currently, the policy only supports force muting others, not unmuting them.
+    if (!mutedPolicyValue) {
+        return;
+    }
+
+    let muteStateUpdated = false;
+    const { muted } = isAudio ? state['features/base/media'].audio : state['features/base/media'].video;
+
+    if (isAudio && !Boolean(muted)) {
+        dispatch(setAudioMuted(mutedPolicyValue, true));
+        muteStateUpdated = true;
+    } else if (!isAudio && !Boolean(muted)) {
+        // TODO: Add a new authority for video mutism for the moderator case.
+        dispatch(setVideoMuted(mutedPolicyValue, VIDEO_MUTISM_AUTHORITY.USER, true));
+        muteStateUpdated = true;
+    }
+
+    if (muteStateUpdated) {
+        dispatch(showNotification({
+            titleKey: 'notify.mutedTitle',
+            descriptionKey: 'notify.muted',
+            uid: START_MUTED_NOTIFICATION_ID // use the same id, to make sure we show one notification
+        }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
+    }
+}
+
+/**
+ * Processes the "destroyed" event of a conference and if the destroyed conference is the current one,
+ * it silently reconnects to the same room.
+ *
+ * @param {Object|Function} stateful - Either the whole Redux state object or the Redux store's {@code getState} method.
+ * @param {Function} dispatch - Redux dispatch function.
+ * @param {Array} params - The parameters for the destroy event.
+ *
+ * @returns {boolean} - True if the destroyed conference was the current one, and we are reconnecting, false otherwise.
+ */
+export function processDestroyConferenceEvent(stateful: IStateful, dispatch: IStore['dispatch'], params: Array<any>) {
+    const [ jid ] = params;
+    const conference = getCurrentConference(stateful);
+
+    // if the jid of the room is the same as the current conference, we are being
+    // notified that the current conference has been destroyed, and we need to reconnect
+    if (conference?.room?.roomjid === jid) {
+        dispatch(disconnect(true, false))
+            .then(() => {
+                dispatch(conferenceWillInit());
+                logger.info('Dispatching silent re-connect.');
+
+                return dispatch(connect());
+            });
+
+        return true;
+    }
+
+    return false;
 }

@@ -22,7 +22,7 @@
                 : pathname.substring(0, contextRootEndIndex + 1)
             );
         }
-        window.EXCALIDRAW_ASSET_PATH = 'libs/';
+        window.EXCALIDRAW_ASSET_PATH = 'libs/excalidraw/';
         // Dynamically generate the manifest location URL. It must be served from the document origin, and we may have
         // the base pointing to the CDN. This way we can generate a full URL which will bypass the base.
         document.querySelector('#manifest-placeholder').setAttribute('href', window.location.origin + contextRoot(window.location.pathname) + 'manifest.json');
@@ -36,7 +36,7 @@
                 Component: JitsiMeetJS.app.entryPoints.APP
             })
 
-            const inIframe = () => {
+            const isEmbedded = () => {
                 try {
                     return window.self !== window.top;
                 } catch (e) {
@@ -45,7 +45,7 @@
             };
 
             const isElectron = navigator.userAgent.includes('Electron');
-            const shouldRegisterWorker = !isElectron && !inIframe() && 'serviceWorker' in navigator;
+            const shouldRegisterWorker = !isElectron && !isEmbedded() && 'serviceWorker' in navigator;
 
             if (shouldRegisterWorker) {
                 navigator.serviceWorker
@@ -69,6 +69,11 @@
 
         window.indexLoadedTime = window.performance.now();
         console.log("(TIME) index.html loaded:\t", indexLoadedTime);
+        window.addEventListener('load', function() {
+            window.loadedEventTime = window.performance.now();
+            console.log("(TIME) window loaded event:\t", loadedEventTime);
+        });
+
         // XXX the code below listeners for errors and displays an error message
         // in the document body when any of the required files fails to load.
         // The intention is to prevent from displaying broken page.

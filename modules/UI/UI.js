@@ -3,17 +3,11 @@
 
 const UI = {};
 
-import Logger from '@jitsi/logger';
-import EventEmitter from 'events';
-
 import {
     conferenceWillInit
 } from '../../react/features/base/conference/actions';
 import { isMobileBrowser } from '../../react/features/base/environment/utils';
 import { setColorAlpha } from '../../react/features/base/util/helpers';
-import { sanitizeUrl } from '../../react/features/base/util/uri';
-import { setDocumentUrl } from '../../react/features/etherpad/actions';
-import { setFilmstripVisible } from '../../react/features/filmstrip/actions.any';
 import {
     setNotificationsEnabled,
     showNotification
@@ -25,29 +19,12 @@ import {
     setToolboxEnabled,
     showToolbox
 } from '../../react/features/toolbox/actions.web';
-import UIEvents from '../../service/UI/UIEvents';
 
 import EtherpadManager from './etherpad/Etherpad';
 import UIUtil from './util/UIUtil';
 import VideoLayout from './videolayout/VideoLayout';
 
-const logger = Logger.getLogger(__filename);
-
-const eventEmitter = new EventEmitter();
-
-UI.eventEmitter = eventEmitter;
-
 let etherpadManager;
-
-const UIListeners = new Map([
-    [
-        UIEvents.ETHERPAD_CLICKED,
-        () => etherpadManager && etherpadManager.toggleEtherpad()
-    ], [
-        UIEvents.TOGGLE_FILMSTRIP,
-        () => UI.toggleFilmstrip()
-    ]
-]);
 
 /**
  * Indicates if we're currently in full screen mode.
@@ -96,10 +73,11 @@ UI.start = function() {
 };
 
 /**
- * Setup some UI event listeners.
+ * Handles etherpad click.
  */
-UI.registerListeners
-    = () => UIListeners.forEach((value, key) => UI.addListener(key, value));
+UI.onEtherpadClicked = function() {
+    etherpadManager && etherpadManager.toggleEtherpad();
+};
 
 /**
  *
@@ -133,23 +111,18 @@ UI.unbindEvents = () => {
 
 /**
  * Setup and show Etherpad.
- * @param {string} name etherpad id
  */
-UI.initEtherpad = name => {
-    const etherpadBaseUrl = sanitizeUrl(config.etherpad_base);
+UI.initEtherpad = () => {
+    const { getState } = APP.store;
+    const configState = getState()['features/base/config'];
 
-    if (etherpadManager || !etherpadBaseUrl || !name) {
+    if (etherpadManager) {
         return;
     }
-    logger.log('Etherpad is enabled');
 
-    etherpadManager = new EtherpadManager(eventEmitter);
+    etherpadManager = new EtherpadManager();
 
-    const url = new URL(name, etherpadBaseUrl);
-
-    APP.store.dispatch(setDocumentUrl(url.toString()));
-
-    if (config.openSharedDocumentOnJoin) {
+    if (configState.openSharedDocumentOnJoin) {
         etherpadManager.toggleEtherpad();
     }
 };
@@ -198,15 +171,6 @@ UI.updateUserStatus = (user, status) => {
 };
 
 /**
- * Toggles filmstrip.
- */
-UI.toggleFilmstrip = function() {
-    const { visible } = APP.store.getState()['features/filmstrip'];
-
-    APP.store.dispatch(setFilmstripVisible(!visible));
-};
-
-/**
  * Sets muted video state for participant
  */
 UI.setVideoMuted = function(id) {
@@ -218,33 +182,6 @@ UI.setVideoMuted = function(id) {
 };
 
 UI.updateLargeVideo = (id, forceUpdate) => VideoLayout.updateLargeVideo(id, forceUpdate);
-
-/**
- * Adds a listener that would be notified on the given type of event.
- *
- * @param type the type of the event we're listening for
- * @param listener a function that would be called when notified
- */
-UI.addListener = function(type, listener) {
-    eventEmitter.on(type, listener);
-};
-
-/**
- * Removes the all listeners for all events.
- *
- * @returns {void}
- */
-UI.removeAllListeners = function() {
-    eventEmitter.removeAllListeners();
-};
-
-/**
- * Emits the event of given type by specifying the parameters in options.
- *
- * @param type the type of the event we're emitting
- * @param options the parameters for the event
- */
-UI.emitEvent = (type, ...options) => eventEmitter.emit(type, ...options);
 
 // Used by torture.
 UI.showToolbar = timeout => APP.store.dispatch(showToolbox(timeout));
@@ -262,14 +199,6 @@ UI.handleLastNEndpoints = function(leavingIds, enteringIds) {
  * @param {number} lvl audio level
  */
 UI.setAudioLevel = (id, lvl) => VideoLayout.setAudioLevel(id, lvl);
-
-/**
- * Update list of available physical devices.
- */
-UI.onAvailableDevicesChanged = function() {
-    APP.conference.updateAudioIconEnabled();
-    APP.conference.updateVideoIconEnabled();
-};
 
 /**
  * Returns the id of the current video shown on large.

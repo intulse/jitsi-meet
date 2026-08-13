@@ -1,4 +1,3 @@
-// @ts-expect-error
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 
 import { IStore } from '../../app/types';
@@ -57,7 +56,8 @@ export function initLib() {
                 isOnline: isOnline(state)
             });
 
-            logger.info(`lib-jitsi-meet version:${JitsiMeetJS.version}`);
+            logger.info(`lib-jitsi-meet version: ${JitsiMeetJS.version}`);
+            logger.info(`User Agent: ${navigator.userAgent}`);
 
             dispatch({ type: LIB_DID_INIT });
         } catch (error: any) {

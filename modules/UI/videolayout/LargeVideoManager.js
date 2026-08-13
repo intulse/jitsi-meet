@@ -3,7 +3,7 @@
 import Logger from '@jitsi/logger';
 import $ from 'jquery';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
 
@@ -11,6 +11,7 @@ import { createScreenSharingIssueEvent } from '../../../react/features/analytics
 import { sendAnalytics } from '../../../react/features/analytics/functions';
 import Avatar from '../../../react/features/base/avatar/components/Avatar';
 import theme from '../../../react/features/base/components/themes/participantsPaneTheme.json';
+import { getSsrcRewritingFeatureFlag } from '../../../react/features/base/config/functions.any';
 import i18next from '../../../react/features/base/i18n/i18next';
 import { JitsiTrackEvents } from '../../../react/features/base/lib-jitsi-meet';
 import { VIDEO_TYPE } from '../../../react/features/base/media/constants';
@@ -44,7 +45,7 @@ import AudioLevels from '../audio_levels/AudioLevels';
 
 import { VIDEO_CONTAINER_TYPE, VideoContainer } from './VideoContainer';
 
-const logger = Logger.getLogger(__filename);
+const logger = Logger.getLogger('ui:videolayout');
 
 const DESKTOP_CONTAINER_TYPE = 'desktop';
 
@@ -112,6 +113,18 @@ export default class LargeVideoManager {
         this.height = 0;
 
         /**
+         * The React root for the dominant speaker avatar.
+         * @type {import('react-dom/client').Root|null}
+         */
+        this._avatarRoot = null;
+
+        /**
+         * The React root for the presence label.
+         * @type {import('react-dom/client').Root|null}
+         */
+        this._presenceLabelRoot = null;
+
+        /**
          * Cache the aspect ratio of the video displayed to detect changes to
          * the aspect ratio on video resize events.
          *
@@ -139,9 +152,6 @@ export default class LargeVideoManager {
             = this._onVideoResolutionUpdate.bind(this);
 
         this.videoContainer.addResizeListener(this._onVideoResolutionUpdate);
-
-        this._dominantSpeakerAvatarContainer
-            = document.getElementById('dominantSpeakerAvatarContainer');
     }
 
     /**
@@ -165,7 +175,10 @@ export default class LargeVideoManager {
 
         this.removePresenceLabel();
 
-        ReactDOM.unmountComponentAtNode(this._dominantSpeakerAvatarContainer);
+        if (this._avatarRoot) {
+            this._avatarRoot.unmount();
+            this._avatarRoot = null;
+        }
 
         this.container.style.display = 'none';
     }
@@ -221,10 +234,10 @@ export default class LargeVideoManager {
 
         this.updateInProcess = true;
 
-        // Include hide()/fadeOut only if we're switching between users
-        // eslint-disable-next-line eqeqeq
+        // Include hide()/fadeOut if we're switching between users or between different sources of the same user.
         const container = this.getCurrentContainer();
-        const isUserSwitch = this.newStreamData.id !== container.id;
+        const isUserSwitch = container.id !== this.newStreamData.id
+            || container.stream?.getSourceName() !== this.newStreamData.stream?.getSourceName();
         const preUpdate = isUserSwitch ? container.hide() : Promise.resolve();
 
         preUpdate.then(() => {
@@ -296,7 +309,7 @@ export default class LargeVideoManager {
                     || streamingStatusActive
                 );
 
-            const isAudioOnly = APP.conference.isAudioOnly();
+            const isLowBandwidthMode = APP.conference.isLowBandwidthMode();
 
             // Multi-stream is not supported on plan-b endpoints even if its is enabled via config.js. A virtual
             // screenshare tile is still created when a remote endpoint starts screenshare to keep the behavior
@@ -306,7 +319,8 @@ export default class LargeVideoManager {
 
             const showAvatar
                 = isVideoContainer
-                    && ((isAudioOnly && videoType !== VIDEO_TYPE.DESKTOP) || !isVideoRenderable || legacyScreenshare);
+                    && ((isLowBandwidthMode && videoType !== VIDEO_TYPE.DESKTOP)
+                        || !isVideoRenderable || legacyScreenshare);
 
             logger.debug(`scheduleLargeVideoUpdate: Remote track ${videoTrack?.jitsiTrack}, isVideoMuted=${
                 isVideoMuted}, streamingStatusActive=${streamingStatusActive}, isVideoRenderable=${
@@ -338,7 +352,7 @@ export default class LargeVideoManager {
                         sendAnalytics(createScreenSharingIssueEvent({
                             source: 'large-video',
                             isVideoMuted,
-                            isAudioOnly,
+                            isLowBandwidthMode,
                             isVideoContainer,
                             videoType
                         }));
@@ -361,7 +375,7 @@ export default class LargeVideoManager {
 
             // Do not show connection status message in the audio only mode,
             // because it's based on the video playback status.
-            const overrideAndHide = APP.conference.isAudioOnly();
+            const overrideAndHide = APP.conference.isLowBandwidthMode();
 
             this.updateParticipantConnStatusIndication(
                     id,
@@ -477,9 +491,11 @@ export default class LargeVideoManager {
         if (isOpen && window.innerWidth > 580) {
             /**
              * If chat state is open, we re-compute the container width
-             * by subtracting the default width of the chat.
+             * by subtracting the chat width, which may be resized by the user.
              */
-            widthToUse -= CHAT_SIZE;
+            const chatWidth = state['features/chat'].width?.current ?? CHAT_SIZE;
+
+            widthToUse -= chatWidth;
         }
 
         if (resizableFilmstrip && visible && filmstripWidth.current >= FILMSTRIP_BREAKPOINT) {
@@ -515,14 +531,34 @@ export default class LargeVideoManager {
      * Updates the src of the dominant speaker avatar
      */
     updateAvatar() {
-        ReactDOM.render(
+        // Re-fetch the container each call rather than caching it in the constructor:
+        // LargeVideo's React subtree can unmount/remount and a cached reference becomes
+        // a detached node. Bail out if the container is not currently in the DOM.
+        const container = document.getElementById('dominantSpeakerAvatarContainer');
+
+        if (!container) {
+            return;
+        }
+
+        // If the LargeVideo subtree remounted, the cached root is bound to a now-detached
+        // node — subsequent renders would be invisible and leak. Drop the stale root so
+        // we re-create one against the live container.
+        if (this._avatarRoot && this._avatarContainer !== container) {
+            this._avatarRoot.unmount();
+            this._avatarRoot = null;
+        }
+
+        if (!this._avatarRoot) {
+            this._avatarRoot = createRoot(container);
+            this._avatarContainer = container;
+        }
+        this._avatarRoot.render(
             <Provider store = { APP.store }>
                 <Avatar
                     id = "dominantSpeakerAvatar"
                     participantId = { this.id }
                     size = { 200 } />
-            </Provider>,
-            this._dominantSpeakerAvatarContainer
+            </Provider>
         );
     }
 
@@ -556,15 +592,18 @@ export default class LargeVideoManager {
         const presenceLabelContainer = document.getElementById('remotePresenceMessage');
 
         if (presenceLabelContainer) {
-            ReactDOM.render(
+            if (!this._presenceLabelRoot) {
+                this._presenceLabelRoot = createRoot(presenceLabelContainer);
+            }
+            this._presenceLabelRoot.render(
                 <Provider store = { APP.store }>
                     <I18nextProvider i18n = { i18next }>
                         <PresenceLabel
                             participantID = { id }
                             className = 'presence-label' />
                     </I18nextProvider>
-                </Provider>,
-                presenceLabelContainer);
+                </Provider>
+            );
         }
     }
 
@@ -574,10 +613,9 @@ export default class LargeVideoManager {
      * @returns {void}
      */
     removePresenceLabel() {
-        const presenceLabelContainer = document.getElementById('remotePresenceMessage');
-
-        if (presenceLabelContainer) {
-            ReactDOM.unmountComponentAtNode(presenceLabelContainer);
+        if (this._presenceLabelRoot) {
+            this._presenceLabelRoot.unmount();
+            this._presenceLabelRoot = null;
         }
     }
 

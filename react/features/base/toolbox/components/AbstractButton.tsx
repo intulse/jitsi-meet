@@ -266,6 +266,19 @@ export default class AbstractButton<P extends IProps, S = any> extends Component
     }
 
     /**
+     * Gets the props used to interpolate the label's translation. Subclasses can
+     * override this to compute them from the current props so the label stays in
+     * sync with state changes (a static {@code labelProps} field is only evaluated
+     * once on construction).
+     *
+     * @protected
+     * @returns {Object}
+     */
+    _getLabelProps() {
+        return this.labelProps;
+    }
+
+    /**
      * Gets the current accessibility label, taking the toggled state into
      * account. If no toggled label is provided, the regular accessibility label
      * will also be used in the toggled state.
@@ -375,7 +388,7 @@ export default class AbstractButton<P extends IProps, S = any> extends Component
 
         // blur after click to release focus from button to allow PTT.
         // @ts-ignore
-        e?.currentTarget?.blur && e.currentTarget.blur();
+        e?.currentTarget?.blur?.();
     }
 
     /**
@@ -384,14 +397,14 @@ export default class AbstractButton<P extends IProps, S = any> extends Component
      * @inheritdoc
      * @returns {React$Node}
      */
-    render(): ReactNode {
+    override render(): ReactNode {
         const props: any = {
             ...this.props,
             accessibilityLabel: this._getAccessibilityLabel(),
             elementAfter: this._getElementAfter(),
             icon: this._getIcon(),
             label: this._getLabel(),
-            labelProps: this.labelProps,
+            labelProps: this._getLabelProps(),
             styles: this._getStyles(),
             toggled: this._isToggled(),
             tooltip: this._getTooltip()

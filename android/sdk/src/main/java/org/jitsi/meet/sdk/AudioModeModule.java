@@ -20,7 +20,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
-import android.os.Build;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -47,18 +46,13 @@ import java.util.concurrent.Executors;
  * Module implementing a simple API to select the appropriate audio device for a
  * conference call.
  *
- * Audio calls should use {@code AudioModeModule.AUDIO_CALL}, which uses the
- * builtin earpiece, wired headset or bluetooth headset. The builtin earpiece is
+ * Calls should use {@code AudioModeModule.IN_CALL}, which uses the builtin
+ * speaker, earpiece, wired headset or bluetooth headset. The builtin speaker is
  * the default audio device.
- *
- * Video calls should should use {@code AudioModeModule.VIDEO_CALL}, which uses
- * the builtin speaker, earpiece, wired headset or bluetooth headset. The
- * builtin speaker is the default audio device.
  *
  * Before a call has started and after it has ended the
  * {@code AudioModeModule.DEFAULT} mode should be used.
  */
-@SuppressLint("AnnotateVersionCheck")
 @ReactModule(name = AudioModeModule.NAME)
 class AudioModeModule extends ReactContextBaseJavaModule {
     public static final String NAME = "AudioMode";
@@ -67,14 +61,11 @@ class AudioModeModule extends ReactContextBaseJavaModule {
      * Constants representing the audio mode.
      * - DEFAULT: Used before and after every call. It represents the default
      *   audio routing scheme.
-     * - AUDIO_CALL: Used for audio only calls. It will use the earpiece by
-     *   default, unless a wired or Bluetooth headset is connected.
-     * - VIDEO_CALL: Used for video calls. It will use the speaker by default,
+     * - IN_CALL: Used while in a call. It will use the speaker by default,
      *   unless a wired or Bluetooth headset is connected.
      */
-    static final int DEFAULT    = 0;
-    static final int AUDIO_CALL = 1;
-    static final int VIDEO_CALL = 2;
+    static final int DEFAULT = 0;
+    static final int IN_CALL = 1;
 
     /**
      * The {@code Log} tag {@code AudioModeModule} is to log messages with.
@@ -84,11 +75,10 @@ class AudioModeModule extends ReactContextBaseJavaModule {
     /**
      * Whether or not the ConnectionService is used for selecting audio devices.
      */
-    private static final boolean supportsConnectionService = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-    private static boolean useConnectionService_ = supportsConnectionService;
+    private static boolean useConnectionService_ = true;
 
     static boolean useConnectionService() {
-        return supportsConnectionService && useConnectionService_;
+        return useConnectionService_;
     }
 
     /**
@@ -140,6 +130,11 @@ class AudioModeModule extends ReactContextBaseJavaModule {
     private String userSelectedDevice;
 
     /**
+     * Whether or not audio is disabled.
+     */
+    private boolean audioDisabled;
+
+    /**
      * Initializes a new module instance. There shall be a single instance of
      * this module throughout the lifetime of the application.
      *
@@ -173,9 +168,8 @@ class AudioModeModule extends ReactContextBaseJavaModule {
         Map<String, Object> constants = new HashMap<>();
 
         constants.put("DEVICE_CHANGE_EVENT", DEVICE_CHANGE_EVENT);
-        constants.put("AUDIO_CALL", AUDIO_CALL);
         constants.put("DEFAULT", DEFAULT);
-        constants.put("VIDEO_CALL", VIDEO_CALL);
+        constants.put("IN_CALL", IN_CALL);
 
         return constants;
     }
@@ -239,6 +233,12 @@ class AudioModeModule extends ReactContextBaseJavaModule {
             audioDeviceHandler.stop();
         }
 
+        audioDeviceHandler = null;
+
+        if (audioDisabled) {
+            return;
+        }
+
         if (useConnectionService()) {
             audioDeviceHandler = new AudioDeviceHandlerConnectionService(audioManager);
         } else {
@@ -281,6 +281,27 @@ class AudioModeModule extends ReactContextBaseJavaModule {
         });
     }
 
+    @ReactMethod
+    public void setDisabled(final boolean disabled, final Promise promise) {
+        if (audioDisabled == disabled) {
+            promise.resolve(null);
+            return;
+        }
+
+        JitsiMeetLogger.i(TAG + "  audio disabled: " + disabled);
+
+        audioDisabled = disabled;
+        setAudioDeviceHandler();
+
+        if (disabled) {
+            mode = -1;
+            availableDevices.clear();
+            resetSelectedDevice();
+        }
+
+        promise.resolve(null);
+    }
+
     /**
      * Public method to set the current audio mode.
      *
@@ -290,7 +311,12 @@ class AudioModeModule extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void setMode(final int mode, final Promise promise) {
-        if (mode != DEFAULT && mode != AUDIO_CALL && mode != VIDEO_CALL) {
+        if (audioDisabled) {
+            promise.resolve(null);
+            return;
+        }
+
+        if (mode < DEFAULT || mode > IN_CALL) {
             promise.reject("setMode", "Invalid audio mode " + mode);
             return;
         }

@@ -17,7 +17,7 @@ interface IProps extends AbstractButtonProps {
     /**
      * Whether the current conference is in audio only mode or not.
      */
-    _audioOnly: boolean;
+    _lowBandwidthMode: boolean;
 
     /**
      * Whether video is currently muted or not.
@@ -29,16 +29,16 @@ interface IProps extends AbstractButtonProps {
  * An implementation of a button for toggling the camera facing mode.
  */
 class ToggleCameraButton extends AbstractButton<IProps> {
-    accessibilityLabel = 'toolbar.accessibilityLabel.toggleCamera';
-    icon = IconCameraRefresh;
-    label = 'toolbar.toggleCamera';
+    override accessibilityLabel = 'toolbar.accessibilityLabel.toggleCamera';
+    override icon = IconCameraRefresh;
+    override label = 'toolbar.toggleCamera';
 
     /**
      * Handles clicking/pressing the button.
      *
      * @returns {void}
      */
-    _handleClick() {
+    override _handleClick() {
         const { dispatch } = this.props;
 
         dispatch(toggleCamera());
@@ -50,8 +50,8 @@ class ToggleCameraButton extends AbstractButton<IProps> {
      *
      * @returns {boolean}
      */
-    _isDisabled() {
-        return this.props._audioOnly || this.props._videoMuted;
+    override _isDisabled() {
+        return this.props._lowBandwidthMode || this.props._videoMuted;
     }
 }
 
@@ -63,11 +63,11 @@ class ToggleCameraButton extends AbstractButton<IProps> {
  * @returns {IProps}
  */
 function mapStateToProps(state: IReduxState) {
-    const { enabled: audioOnly } = state['features/base/audio-only'];
+    const { enabled: audioOnly } = state['features/base/low-bandwidth-mode'];
     const tracks = state['features/base/tracks'];
 
     return {
-        _audioOnly: Boolean(audioOnly),
+        _lowBandwidthMode: Boolean(audioOnly),
         _videoMuted: isLocalTrackMuted(tracks, MEDIA_TYPE.VIDEO),
         visible: isToggleCameraEnabled(state)
     };

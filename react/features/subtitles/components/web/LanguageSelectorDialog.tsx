@@ -2,8 +2,10 @@ import i18next from 'i18next';
 import React, { useCallback } from 'react';
 import { makeStyles } from 'tss-react/mui';
 
+import { openDialog } from '../../../base/dialog/actions';
 import { translate, translateToHTML } from '../../../base/i18n/functions';
 import Dialog from '../../../base/ui/components/web/Dialog';
+import { RecordingTranscriptionDialog } from '../../../recording/components/Recording';
 import { openSettingsDialog } from '../../../settings/actions.web';
 import { SETTINGS_TABS } from '../../../settings/constants';
 import { toggleLanguageSelectorDialog } from '../../actions.web';
@@ -17,16 +19,16 @@ import LanguageList from './LanguageList';
 const useStyles = makeStyles()(theme => {
     return {
         paragraphWrapper: {
-            fontSize: 14,
+            fontSize: '0.875rem',
             margin: '10px 0px',
-            color: theme.palette.text01
+            color: theme.palette.dialogText
         },
         spanWrapper: {
             fontWeight: 700,
             cursor: 'pointer',
             color: theme.palette.link01,
             '&:hover': {
-                backgroundColor: theme.palette.ui04,
+                backgroundColor: theme.palette.languageSelectorHover,
                 color: theme.palette.link01Hover
             }
         }
@@ -35,14 +37,20 @@ const useStyles = makeStyles()(theme => {
 
 
 const LanguageSelectorDialog = (props: IAbstractLanguageSelectorDialogProps) => {
-    const { dispatch, language, listItems, onLanguageSelected, subtitles, t } = props;
+    const { asyncTranscription, dispatch, language, listItems, onLanguageSelected, subtitles, t } = props;
 
     const { classes: styles } = useStyles();
 
     const onSelected = useCallback((e: string) => {
-        onLanguageSelected(e);
+        if (asyncTranscription) {
+            dispatch(openDialog('RecordingTranscriptionDialog', RecordingTranscriptionDialog, {
+                recordAudioAndVideo: false
+            }));
+        } else {
+            onLanguageSelected(e);
+        }
         dispatch(toggleLanguageSelectorDialog());
-    }, [ language ]);
+    }, [ asyncTranscription, language ]);
 
     const onSourceLanguageClick = useCallback(() => {
         dispatch(openSettingsDialog(SETTINGS_TABS.MORE, false));

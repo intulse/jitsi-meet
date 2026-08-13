@@ -1,4 +1,5 @@
 import { Theme } from '@mui/material';
+import cx from 'classnames';
 import React, { PureComponent } from 'react';
 import { WithTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
@@ -16,7 +17,6 @@ import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
 import { toggleBackgroundEffect } from '../actions';
 import logger from '../logger';
 import { IVirtualBackground } from '../reducer';
-
 /**
  * The type of the React {@code PureComponent} props of {@link VirtualBackgroundPreview}.
  */
@@ -85,7 +85,7 @@ const styles = (theme: Theme) => {
             marginBottom: theme.spacing(3),
             zIndex: 2,
             borderRadius: '3px',
-            backgroundColor: theme.palette.uiBackground,
+            backgroundColor: theme.palette.virtualBackgroundPreview,
             position: 'relative' as const
         },
 
@@ -185,7 +185,7 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
             this.props.dispatch(
                 showWarningNotification({
                     titleKey: 'virtualBackground.backgroundEffectError',
-                    description: 'Failed to access camera device.'
+                    descriptionKey: 'deviceError.cameraError'
                 }, NOTIFICATION_TIMEOUT_TYPE.LONG)
             );
             logger.error('Failed to access camera device. Error on apply background effect.');
@@ -243,7 +243,8 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
 
         return (
             <Video
-                className = { classes.previewVideo }
+                className = { cx(classes.previewVideo, 'flipVideoX') }
+                id = 'virtual_background_preview'
                 playsinline = { true }
                 videoTrack = {{ jitsiTrack: data }} />
         );
@@ -254,7 +255,7 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
      *
      * @inheritdoc
      */
-    componentDidMount() {
+    override componentDidMount() {
         this._setTracks();
     }
 
@@ -263,7 +264,7 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
      *
      * @inheritdoc
      */
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this._componentWasUnmounted = true;
         this._stopStream(this.state.jitsiTrack);
     }
@@ -273,7 +274,7 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
      *
      * @inheritdoc
      */
-    async componentDidUpdate(prevProps: IProps) {
+    override async componentDidUpdate(prevProps: IProps) {
         if (!equals(this.props.selectedVideoInputId, prevProps.selectedVideoInputId)) {
             this._setTracks();
         }
@@ -287,7 +288,7 @@ class VirtualBackgroundPreview extends PureComponent<IProps, IState> {
      *
      * @inheritdoc
      */
-    render() {
+    override render() {
         const { jitsiTrack } = this.state;
         const classes = withStyles.getClasses(this.props);
 

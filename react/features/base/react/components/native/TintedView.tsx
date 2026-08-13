@@ -7,7 +7,7 @@ import { TINTED_VIEW_DEFAULT } from './styles';
  * Base style for the {@code TintedView} component.
  */
 const BASE_STYLE = {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center'
 };
@@ -39,7 +39,7 @@ export default class TintedView extends Component<IProps> {
      * @inheritdoc
      * @returns {ReactElement}
      */
-    render() {
+    override render() {
         const { children, style } = this.props;
 
         // XXX Don't tint the children, tint the background only.

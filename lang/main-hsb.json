@@ -20,7 +20,7 @@
         "noResults": "žane přitrjechjace wuslědki",
         "outlookEmail": "Outlook-e-mejl",
         "phoneNumbers": "telefoniske čisła",
-        "searching": "pyta...",
+        "searching": "pyta…",
         "shareInvite": "přeprošenje na zhromadźiznu dźělić",
         "shareLink": "za přeprošenje druhich dźělće link za konferencu ",
         "shareStream": "link za live-streaming dźělić",
@@ -36,9 +36,6 @@
         "none": "žane awdijowe nastroje wužiwajomne",
         "phone": "telefon",
         "speaker": " wótřerěčak"
-    },
-    "audioOnly": {
-        "audioOnly": "snadna pasmowa šěrokosć"
     },
     "breakoutRooms": {
         "actions": {
@@ -531,8 +528,6 @@
         "googlePrivacyPolicy": "regule za datowy škit pola Google",
         "inProgress": "live-stream startowany",
         "invalidStreamKey": "Kluč za live-stream njeje najskerje prawy.",
-        "limitNotificationDescriptionNative": "Waš stream je na {{limit}} mjeń. wobmjezowany. Za njewobmjezowany streaming wužiwajće prošu {{app}}.",
-        "limitNotificationDescriptionWeb": "Wysokeje potrjeby dla je Waš stream na {{limit}} mjeń. wobmjezowany. Za njewobmjezowany streaming dźiće prošu na <a href={{url}} rel='noopener noreferrer' target='_blank'>{{app}}</a>.",
         "off": "live-stream stopowany",
         "offBy": "{{name}} zadźerža live-stream",
         "on": "live-stream",
@@ -623,6 +618,9 @@
         "button": "druhich přeprosyć",
         "youAreAlone": "Wy sće sam/a na tutej konferency"
     },
+    "lowBandwidthMode": {
+        "lowBandwidthMode": "snadna pasmowa šěrokosć"
+    },
     "me": "ja",
     "notify": {
         "OldElectronAPPTitle": "Problem z wěstotu!",
@@ -652,7 +650,7 @@
         "linkToSalesforceDescription": "Móžeće zjeće konferency z objektom w Salesforce zwjazać.",
         "linkToSalesforceError": "Konferenca njemóžeše so ze Salesforce zwjazać.",
         "linkToSalesforceKey": "konferencu zalinkować",
-        "linkToSalesforceProgress": "konferenca so ze Salesforce zwjaza...",
+        "linkToSalesforceProgress": "konferenca so ze Salesforce zwjaza…",
         "linkToSalesforceSuccess": "Konferenca bu ze Salesforce zwjazana.",
         "localRecordingStarted": "{{name}} je z lokalnym nahrawanjom započinał.",
         "localRecordingStopped": "{{name}} je lokalne nahrawanje skónčił.",
@@ -824,7 +822,6 @@
         "or": "abo",
         "premeeting": "předstwa",
         "screenSharingError": "zmylk při dopušćenju wužiwanja monitora:",
-        "showScreen": "konferencnu předstwu aktiwěrować",
         "startWithPhone": "z telefoniskim awdijom startować",
         "videoOnlyError": "widejowy zmylk:",
         "videoTrackError": "widejowy trak njebě móžny",
@@ -888,11 +885,9 @@
         "highlightMomentSuccess": "markěrowane",
         "highlightMomentSucessDescription": "Waš markěrowany wokomik so k zjeću konferency přida.",
         "inProgress": "nahrawanje startowane",
-        "limitNotificationDescriptionNative": " Wulkeje potrjeby dla je Waše nahraće na {{limit}} mjeń. wobmjezowane. Za njewobmjezowane nahraće wužiwajće prošu <3>{{app}}</3>.",
-        "limitNotificationDescriptionWeb": "Wulkeje potrjeby dla je Waše nahrawanje na {{limit}} mjeń. wobmjezowane. Za njewobmjezowane nahrawanje wužiwajće prošu <a href={{url}} rel='noopener noreferrer' target='_blank'>{{app}}</a>.",
         "linkGenerated": "link na nahrawanje bu kreěrowany",
         "live": "LIVE",
-        "localRecordingWarning": "Kedźbujće na to, aktualny tab za prawe widejo a awdijo wužiwać. Nahrawanje je wokomiknje hač do 1GB - někak 100 mjeńšinow - móžne.",
+        "localRecordingWarning": "Kedźbujće na to, aktualny tab za prawe widejo a awdijo wužiwać.",
         "loggedIn": "přizjewjeny/a jako {{userName}} ",
         "off": "nahrawanje stopowane",
         "offBy": "{{name}} stopuje nahrawanje",
@@ -1026,7 +1021,6 @@
         "Settings": "nastajenja",
         "accessibilityLabel": {
             "Settings": "nastajenja zapnyć/hasnyć ",
-            "audioOnly": "„jenož awdijo“ zapnyć/hasnyć",
             "audioRoute": "awdijowy nastroj wuzwolić",
             "boo": "buh wołać",
             "breakoutRoom": "do breakout-rumnosće zastupić/wopušćić",
@@ -1055,6 +1049,7 @@
             "lobbyButton": "lobby-modus zapnyć/hasnyć",
             "localRecording": "lokalne nastajenske elementy za nahrawanje zapnyć/hasnyć",
             "lockRoom": "konferencne hesło zapnyć/hasnyć",
+            "lowBandwidthMode": "„jenož awdijo“ zapnyć/hasnyć",
             "moreActions": "meni „dalše akcije“ zapnyć/hasnyć ",
             "moreActionsMenu": "meni „dalše akcije“",
             "moreOptions": "meni „dalše opcije“",
@@ -1091,8 +1086,6 @@
             "videomute": "„něme šaltowanje wideja zapnyć/hasnyć "
         },
         "addPeople": "wobdźělnika ke konferency přidać",
-        "audioOnlyOff": "modus „jenož awdijo“ deaktiwěrować",
-        "audioOnlyOn": " modus „jenož awdijo“ aktiwěrować ",
         "audioRoute": "awdijowy nastroj wuzwolić",
         "audioSettings": "nastajenja za awdijo",
         "authenticate": "so přizjewić",
@@ -1127,6 +1120,8 @@
         "lobbyButtonEnable": "lobby-modus aktiwěrować",
         "login": "so přizjewić",
         "logout": "so wotzjewić",
+        "lowBandwidthModeOff": "modus „jenož awdijo“ deaktiwěrować",
+        "lowBandwidthModeOn": " modus „jenož awdijo“ aktiwěrować ",
         "lowerYourHand": "ruku spušćić",
         "moreActions": "dalše nastajenja",
         "moreOptions": "dalše opcije",
@@ -1188,16 +1183,7 @@
         "tr": "TR"
     },
     "userMedia": {
-        "androidGrantPermissions": "Wuzwolće <b><i>dowolić</i></b>, hdyž so browser za prawom praša.",
-        "chromeGrantPermissions": "Wuzwolće<b><i>dowolić</i></b>, hdyž so browser za prawom praša.",
-        "edgeGrantPermissions": "Wuzwolće <b><i>haj</i></b>, hdyž so browser za prawom praša.",
-        "electronGrantPermissions": " wužiwanje kamery a mikrofona dowolić",
-        "firefoxGrantPermissions": " Wuzwolće<b><i>dowolić</i></b>, hdyž so browser za prawom praša.",
-        "iexplorerGrantPermissions": "Wuzwolće <b><i>OK</i></b>, hdyž so browser za prawom praša.",
-        "nwjsGrantPermissions": "prošu wužiwanje kamery a mikrofona dowolić ",
-        "operaGrantPermissions": " Wuzwolće<b><i>dowolić</i></b>, hdyž so browser za prawom praša.",
-        "react-nativeGrantPermissions": " Wuzwolće<b><i>dowolić</i></b>, hdyž so browser za prawom praša.",
-        "safariGrantPermissions": " Wuzwolće<b><i>OK</i></b>, hdyž so browser za prawom praša."
+        "grantPermissions": "prošu wužiwanje kamery a mikrofona dowolić."
     },
     "videoSIPGW": {
         "busy": "Njesteja žane resursy k dispoziciji. Prošu spytajće pozdźišo znowa.",
@@ -1211,8 +1197,6 @@
     },
     "videoStatus": {
         "adjustFor": "nastajić za:",
-        "audioOnly": "AUD",
-        "audioOnlyExpanded": "Sće w modusu „jenož awdijo“. Tutón modus trjeba mjenje pasmoweje šěrokosće, njewidźiće pak wideja druhich.",
         "bestPerformance": "najlěpši wukon",
         "callQuality": "kwalita wideja",
         "hd": "HD",
@@ -1220,9 +1204,11 @@
         "highDefinition": "wysoke rozpušćenje",
         "highestQuality": "najlěpša kwalita",
         "labelTooiltipNoVideo": "žadyn widejo",
-        "labelTooltipAudioOnly": "modus „jenož awdijo“ aktiwny",
+        "labelTooltipLowBandwidthMode": "modus „jenož awdijo“ aktiwny",
         "ld": "LD",
         "ldTooltip": "widejo so ze snadnym rozpušćenjom pokaza",
+        "lowBandwidthMode": "AUD",
+        "lowBandwidthModeExpanded": "Sće w modusu „jenož awdijo“. Tutón modus trjeba mjenje pasmoweje šěrokosće, njewidźiće pak wideja druhich.",
         "lowDefinition": "snadne rozpušćenje",
         "performanceSettings": "nastajenja kwality",
         "sd": "SD",
@@ -1267,7 +1253,7 @@
         "image6": "lěs",
         "image7": "schadźenje słónca",
         "none": "žadyn",
-        "pleaseWait": "wokomik...",
+        "pleaseWait": "wokomik…",
         "removeBackground": "pozadk wotstronić",
         "slightBlur": "pozadk snadnje njejasny",
         "title": "pozadk",

@@ -1,13 +1,15 @@
 export const screen = {
     conference: {
+        audioTranslation: 'Audio Translation',
         breakoutRooms: 'Breakout Rooms',
         carmode: 'Car Mode',
         chat: 'Chat',
-        chatandpolls: {
-            main: 'Chat and Polls',
+        chatTabs: {
+            main: 'Chat Main',
             tab: {
                 chat: 'Chat',
-                polls: 'Polls'
+                polls: 'Polls',
+                closedCaptions: 'CC'
             }
         },
         container: 'Conference container',
@@ -44,6 +46,7 @@ export const screen = {
         profile: 'Profile'
     },
     unsafeRoomWarning: 'Unsafe Room Warning',
+    visitorsQueue: 'Visitors Queue',
     welcome: {
         main: 'Welcome',
         tabs: {

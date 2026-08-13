@@ -1,18 +1,12 @@
 import { IReduxState, IStore } from '../../app/types';
-import { setPictureInPictureEnabled } from '../../mobile/picture-in-picture/functions';
 import { showNotification } from '../../notifications/actions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
-import { PIP_WHILE_SCREEN_SHARING_ENABLED } from '../flags/constants';
-import { getFeatureFlag } from '../flags/functions';
 import JitsiMeetJS from '../lib-jitsi-meet';
-import {
-    setScreenshareMuted,
-    setVideoMuted
-} from '../media/actions';
-import { VIDEO_MUTISM_AUTHORITY } from '../media/constants';
+import { setScreenshareMuted } from '../media/actions';
 
 import { addLocalTrack, replaceLocalTrack } from './actions.any';
-import { getLocalDesktopTrack, getTrackState, isLocalVideoTrackDesktop } from './functions.native';
+import { getLocalDesktopTrack, getTrackState } from './functions.native';
+import logger from './logger';
 
 
 export * from './actions.any';
@@ -30,15 +24,9 @@ export function toggleScreensharing(enabled: boolean, _ignore1?: boolean, _ignor
         const state = getState();
 
         if (enabled) {
-            const isSharing = isLocalVideoTrackDesktop(state);
-
-            if (!isSharing) {
-                _startScreenSharing(dispatch, state);
-            }
+            _startScreenSharing(dispatch, state);
         } else {
             dispatch(setScreenshareMuted(true));
-            dispatch(setVideoMuted(false, VIDEO_MUTISM_AUTHORITY.SCREEN_SHARE));
-            setPictureInPictureEnabled(true);
         }
     };
 }
@@ -52,12 +40,6 @@ export function toggleScreensharing(enabled: boolean, _ignore1?: boolean, _ignor
  * @returns {void}
  */
 async function _startScreenSharing(dispatch: IStore['dispatch'], state: IReduxState) {
-    const pipWhileScreenSharingEnabled = getFeatureFlag(state, PIP_WHILE_SCREEN_SHARING_ENABLED, false);
-
-    if (!pipWhileScreenSharingEnabled) {
-        setPictureInPictureEnabled(false);
-    }
-
     try {
         const tracks: any[] = await JitsiMeetJS.createLocalTracks({ devices: [ 'desktop' ] });
         const track = tracks[0];
@@ -72,9 +54,7 @@ async function _startScreenSharing(dispatch: IStore['dispatch'], state: IReduxSt
             dispatch(addLocalTrack(track));
         }
 
-        dispatch(setVideoMuted(true, VIDEO_MUTISM_AUTHORITY.SCREEN_SHARE));
-
-        const { enabled: audioOnly } = state['features/base/audio-only'];
+        const { enabled: audioOnly } = state['features/base/low-bandwidth-mode'];
 
         if (audioOnly) {
             dispatch(showNotification({
@@ -84,8 +64,6 @@ async function _startScreenSharing(dispatch: IStore['dispatch'], state: IReduxSt
             }, NOTIFICATION_TIMEOUT_TYPE.LONG));
         }
     } catch (error: any) {
-        console.log('ERROR creating screen-sharing stream ', error);
-
-        setPictureInPictureEnabled(true);
+        logger.error('Error creating screen-sharing stream', error);
     }
 }

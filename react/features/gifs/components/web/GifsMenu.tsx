@@ -1,4 +1,4 @@
-import { GiphyFetch, TrendingOptions, setServerUrl } from '@giphy/js-fetch-api';
+import { GiphyFetch, TrendingOptions } from '@giphy/js-fetch-api';
 import { Grid } from '@giphy/react-components';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,8 +20,7 @@ import {
     formatGifUrlMessage,
     getGifAPIKey,
     getGifRating,
-    getGifUrl,
-    getGiphyProxyUrl
+    getGifUrl
 } from '../../function.any';
 
 const OVERFLOW_DRAWER_PADDING = 16;
@@ -33,6 +32,7 @@ const useStyles = makeStyles()(theme => {
             marginBottom: theme.spacing(2),
             display: 'flex',
             flexDirection: 'column',
+            backgroundColor: theme.palette.gifsBackground,
 
             '& div:focus': {
                 border: '1px solid red !important',
@@ -55,7 +55,7 @@ const useStyles = makeStyles()(theme => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#fff',
+            color: theme.palette.gifsText,
             marginTop: theme.spacing(1)
         },
 
@@ -63,7 +63,8 @@ const useStyles = makeStyles()(theme => {
             padding: theme.spacing(3),
             width: '100%',
             boxSizing: 'border-box',
-            height: '100%'
+            height: '100%',
+            backgroundColor: theme.palette.gifsBackground
         },
 
         overflowMenu: {
@@ -102,9 +103,8 @@ function GifsMenu({ columns = 2, parent }: IProps) {
     const { t } = useTranslation();
     const isInOverflowMenu
         = parent === IReactionsMenuParent.OverflowDrawer || parent === IReactionsMenuParent.OverflowMenu;
-    const { clientWidth } = useSelector((state: IReduxState) => state['features/base/responsive-ui']);
+    const { videoSpaceWidth } = useSelector((state: IReduxState) => state['features/base/responsive-ui']);
     const rating = useSelector(getGifRating);
-    const proxyUrl = useSelector(getGiphyProxyUrl);
 
     const fetchGifs = useCallback(async (offset = 0) => {
         const options: TrendingOptions = {
@@ -126,7 +126,7 @@ function GifsMenu({ columns = 2, parent }: IProps) {
 
     const handleGifClick = useCallback((gif, e) => {
         e?.stopPropagation();
-        const url = getGifUrl(gif, proxyUrl);
+        const url = getGifUrl(gif);
 
         sendAnalytics(createGifSentEvent());
         batch(() => {
@@ -189,13 +189,14 @@ function GifsMenu({ columns = 2, parent }: IProps) {
     // This fixes that.
     useEffect(() => setSearchKey(''), []);
 
-    useEffect(() => {
-        if (proxyUrl) {
-            setServerUrl(proxyUrl);
-        }
+    const onInputKeyPress = useCallback((e: React.KeyboardEvent) => {
+        e.stopPropagation();
     }, []);
 
-    const onInputKeyPress = useCallback((e: React.KeyboardEvent) => {
+    // Prevent clicks inside the GIFs menu content (including the search input)
+    // from bubbling to the global window click handler used by Popover for
+    // outside-click dismissal.
+    const stopClickPropagation = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
     }, []);
 
@@ -204,7 +205,8 @@ function GifsMenu({ columns = 2, parent }: IProps) {
             className = { cx(styles.gifsMenu,
                 parent === IReactionsMenuParent.OverflowDrawer && styles.overflowDrawerMenu,
                 parent === IReactionsMenuParent.OverflowMenu && styles.overflowMenu
-            ) }>
+            ) }
+            onClick = { stopClickPropagation }>
             <Input
                 autoFocus = { true }
                 className = { cx(styles.searchField, 'gif-input') }
@@ -233,7 +235,7 @@ function GifsMenu({ columns = 2, parent }: IProps) {
                     onGifClick = { handleGifClick }
                     onGifKeyPress = { handleGifKeyPress }
                     width = { parent === IReactionsMenuParent.OverflowDrawer
-                        ? clientWidth - (2 * OVERFLOW_DRAWER_PADDING) - SCROLL_SIZE
+                        ? videoSpaceWidth - (2 * OVERFLOW_DRAWER_PADDING) - SCROLL_SIZE
                         : parent === IReactionsMenuParent.OverflowMenu ? 201 : 320
                     } />
             </div>

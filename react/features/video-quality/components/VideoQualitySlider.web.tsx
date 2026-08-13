@@ -8,11 +8,10 @@ import { withStyles } from 'tss-react/mui';
 import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
 import { sendAnalytics } from '../../analytics/functions';
 import { IReduxState, IStore } from '../../app/types';
-import { setAudioOnly } from '../../base/audio-only/actions';
 import { translate } from '../../base/i18n/functions';
 import { setLastN } from '../../base/lastn/actions';
 import { getLastNForQualityLevel } from '../../base/lastn/functions';
-import { withPixelLineHeight } from '../../base/styles/functions.web';
+import { setLowBandwidthMode } from '../../base/low-bandwidth-mode/actions';
 import { setPreferredVideoQuality } from '../actions';
 import { DEFAULT_LAST_N, VIDEO_QUALITY_LEVELS } from '../constants';
 import logger from '../logger';
@@ -48,14 +47,14 @@ const createEvent = function(quality: string) {
 interface IProps extends WithTranslation {
 
     /**
-     * Whether or not the conference is in audio only mode.
-     */
-    _audioOnly: Boolean;
-
-    /**
      * The channelLastN value configured for the conference.
      */
     _channelLastN?: number;
+
+    /**
+     * Whether or not the conference is in audio only mode.
+     */
+    _lowBandwidthMode: Boolean;
 
     /**
      * Whether or not the conference is in peer to peer mode.
@@ -89,18 +88,18 @@ interface IProps extends WithTranslation {
 const styles = (theme: Theme) => {
     return {
         dialog: {
-            color: theme.palette.text01
+            color: theme.palette.videoQualityText
         },
         dialogDetails: {
-            ...withPixelLineHeight(theme.typography.bodyShortRegularLarge),
+            ...theme.typography.bodyShortRegularLarge,
             marginBottom: 16
         },
         dialogContents: {
-            background: theme.palette.ui01,
+            background: theme.palette.videoQualityBackground,
             padding: '16px 16px 48px 16px'
         },
         sliderDescription: {
-            ...withPixelLineHeight(theme.typography.heading6),
+            ...theme.typography.heading6,
 
             display: 'flex',
             justifyContent: 'space-between',
@@ -155,7 +154,7 @@ class VideoQualitySlider extends Component<IProps> {
             {
                 audioOnly: true,
                 onSelect: this._enableAudioOnly,
-                textKey: 'audioOnly.audioOnly'
+                textKey: 'lowBandwidthMode.lowBandwidthMode'
             },
             {
                 onSelect: this._enableLowDefinition,
@@ -181,10 +180,11 @@ class VideoQualitySlider extends Component<IProps> {
      * @inheritdoc
      * @returns {ReactElement}
      */
-    render() {
+    override render() {
         const { t } = this.props;
         const classes = withStyles.getClasses(this.props);
-        const activeSliderOption = this._mapCurrentQualityToSliderValue();
+        const activeSliderOptionIndex = this._mapCurrentQualityToSliderValue();
+        const activeSliderOption = this._sliderOptions[activeSliderOptionIndex];
 
         return (
             <div className = { clsx('video-quality-dialog', classes.dialog) }>
@@ -202,11 +202,12 @@ class VideoQualitySlider extends Component<IProps> {
                     </div>
                     <Slider
                         ariaLabel = { t('videoStatus.callQuality') }
+                        ariaValuetext = { t(activeSliderOption.textKey) }
                         max = { this._sliderOptions.length - 1 }
                         min = { 0 }
                         onChange = { this._onSliderChange }
                         step = { 1 }
-                        value = { activeSliderOption } />
+                        value = { activeSliderOptionIndex } />
                 </div>
             </div>
         );
@@ -219,9 +220,9 @@ class VideoQualitySlider extends Component<IProps> {
      * @returns {void}
      */
     _enableAudioOnly() {
-        sendAnalytics(createEvent('audio.only'));
+        sendAnalytics(createEvent('low.bandwidth.mode'));
         logger.log('Video quality: audio only enabled');
-        this.props.dispatch(setAudioOnly(true));
+        this.props.dispatch(setLowBandwidthMode(true));
     }
 
     /**
@@ -285,10 +286,10 @@ class VideoQualitySlider extends Component<IProps> {
      * @returns {void}
      */
     _mapCurrentQualityToSliderValue() {
-        const { _audioOnly, _sendrecvVideoQuality } = this.props;
+        const { _lowBandwidthMode, _sendrecvVideoQuality } = this.props;
         const { _sliderOptions } = this;
 
-        if (_audioOnly) {
+        if (_lowBandwidthMode) {
             const audioOnlyOption = _sliderOptions.find(
                 ({ audioOnly }) => audioOnly);
 
@@ -313,7 +314,7 @@ class VideoQualitySlider extends Component<IProps> {
      * @returns {void}
      */
     _onSliderChange(event: React.ChangeEvent<HTMLInputElement>) {
-        const { _audioOnly, _sendrecvVideoQuality } = this.props;
+        const { _lowBandwidthMode, _sendrecvVideoQuality } = this.props;
         const {
             // @ts-ignore
             audioOnly,
@@ -327,8 +328,8 @@ class VideoQualitySlider extends Component<IProps> {
 
         // Take no action if the newly chosen option does not change audio only
         // or video quality state.
-        if ((_audioOnly && audioOnly)
-            || (!_audioOnly && videoQuality === _sendrecvVideoQuality)) {
+        if ((_lowBandwidthMode && audioOnly)
+            || (!_lowBandwidthMode && videoQuality === _sendrecvVideoQuality)) {
             return;
         }
 
@@ -346,8 +347,8 @@ class VideoQualitySlider extends Component<IProps> {
      */
     _setPreferredVideoQuality(qualityLevel: number) {
         this.props.dispatch(setPreferredVideoQuality(qualityLevel));
-        if (this.props._audioOnly) {
-            this.props.dispatch(setAudioOnly(false));
+        if (this.props._lowBandwidthMode) {
+            this.props.dispatch(setLowBandwidthMode(false));
         }
 
         // Determine the lastN value based on the quality setting.
@@ -370,13 +371,13 @@ class VideoQualitySlider extends Component<IProps> {
  * @returns {IProps}
  */
 function _mapStateToProps(state: IReduxState) {
-    const { enabled: audioOnly } = state['features/base/audio-only'];
+    const { enabled: audioOnly } = state['features/base/low-bandwidth-mode'];
     const { p2p } = state['features/base/conference'];
     const { preferredVideoQuality } = state['features/video-quality'];
     const { channelLastN } = state['features/base/config'];
 
     return {
-        _audioOnly: audioOnly,
+        _lowBandwidthMode: audioOnly,
         _channelLastN: channelLastN,
         _p2p: p2p,
         _sendrecvVideoQuality: preferredVideoQuality

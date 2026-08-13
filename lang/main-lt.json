@@ -24,9 +24,6 @@
         "phone": "Telefonas",
         "speaker": "Garsiakalbis"
     },
-    "audioOnly": {
-        "audioOnly": "Mažas pralaidumas (tik garsas)"
-    },
     "calendarSync": {
         "addMeetingURL": "Įdėti susitikimo nuorodą",
         "confirmAddLink": "Ar norite pridėti Jitsi nuorodą į šį įvykį?",
@@ -68,7 +65,7 @@
         "installExtensionText": "Įdiekite „Google“ ir „Office 365“ kalendoriaus plėtinį"
     },
     "connectingOverlay": {
-        "joiningRoom": "Jungiamasi prie jūsų susitikimo..."
+        "joiningRoom": "Jungiamasi prie jūsų susitikimo…"
     },
     "connection": {
         "ATTACHED": "Pridėta",
@@ -80,9 +77,9 @@
         "DISCONNECTED": "Atsijungta",
         "DISCONNECTING": "Atsijungiama",
         "ERROR": "Klaida",
-        "FETCH_SESSION_ID": "Gaunamas sesijos-id...",
+        "FETCH_SESSION_ID": "Gaunamas sesijos-id…",
         "GET_SESSION_ID_ERROR": "Sesijos-id gavimo klaida: {{kodas}}",
-        "GOT_SESSION_ID": "Gautas sesijos-id... Atlikta",
+        "GOT_SESSION_ID": "Gautas sesijos-id… Atlikta",
         "LOW_BANDWIDTH": "Vaizdo įrašas, skirtas {{displayName}}, buvo išjungtas, kad būtų išsaugotas pralaidumas"
     },
     "connectionindicator": {
@@ -127,7 +124,7 @@
         "downloadApp": "Atsisiųsti programą",
         "launchWebButton": "Paleisti svetainėje",
         "openApp": "Tęsti mobiliaja programėle",
-        "title": "Paleidžiamas susitikimas {{app}}...",
+        "title": "Paleidžiamas susitikimas {{app}}…",
         "tryAgainButton": "Bandyti dar kartą darbalaukyje"
     },
     "defaultLink": "e.g. {{url}}",
@@ -156,7 +153,7 @@
         "Share": "Dalintis",
         "Submit": "Pateikti",
         "WaitForHostMsg": "Konferencija dar neprasidėjo. Jei jūs organizatorius, prašome tai patvirtinti. Jei ne, prašome palaukti organizatoriaus.",
-        "WaitingForHost": "Laukiama organizatoriaus ...",
+        "WaitingForHost": "Laukiama organizatoriaus…",
         "Yes": "Taip",
         "accessibilityLabel": {
             "liveStreaming": "Tiesioginis srautas"
@@ -173,9 +170,9 @@
         "cameraUnknownError": "Įvyko klaida - negalite naudoti kameros.",
         "cameraUnsupportedResolutionError": "Jūsų kamera nepalaiko reikalaujamos vaizdo raiškos.",
         "close": "Uždaryti",
-        "conferenceDisconnectMsg": "Pasitikrinkite savo interneto ryšį. Perkrausime už {{seconds}} sek. ...",
+        "conferenceDisconnectMsg": "Pasitikrinkite savo interneto ryšį. Perkrausime už {{seconds}} sek.…",
         "conferenceDisconnectTitle": "Jūs buvote atjungta(-as).",
-        "conferenceReloadMsg": "Mes bandome tai pataisyti. Perkrausime už {{seconds}} sek. ...",
+        "conferenceReloadMsg": "Mes bandome tai pataisyti. Perkrausime už {{seconds}} sek.…",
         "conferenceReloadTitle": "Apgailėstaujame, įvyko klaida.",
         "confirm": "Patvirtinti",
         "confirmNo": "Ne",
@@ -379,7 +376,7 @@
         "errorLiveStreamNotEnabled": "Tiesioginė transliacija nėra galima paskyrai {{email}}. Įjunkite tiesioginį srautą arba prisijunkite prie paskyros, kurioje įjungta tiesioginė transliacija.",
         "expandedOff": "Tiesioginė transliacija sustojo",
         "expandedOn": "Šiuo metu susitikimas transliuojamas per YouTube.",
-        "expandedPending": "Tiesioginė transliacija prasideda...",
+        "expandedPending": "Tiesioginė transliacija prasideda…",
         "failedToStart": "Nepavyko pajungti tiesioginės transliacijos",
         "getStreamKeyManually": "Mums nepavyko atverti jokios tiesioginės transliacijos. Pabandykite suvesti tiesioginės transliacijos raktažodį iš Youtube.",
         "invalidStreamKey": "Tiesioginės transliacijos raktažodis neteisingas.",
@@ -387,7 +384,7 @@
         "offBy": "{{name}} sustabdė srautą",
         "on": "Tiesioginė transliacija",
         "onBy": "{{name}} pradėjo tiesioginę transliaciją",
-        "pending": "Pradedama tiesioginė transliacija...",
+        "pending": "Pradedama tiesioginė transliacija…",
         "serviceName": "Tiesioginė transliacijos tarnyba",
         "signIn": "Prisijunkite su Google",
         "signInCTA": "Prisijunkite arba įveskite raktažodį iš Youtube.",
@@ -433,6 +430,9 @@
         "button": "Pakvieskite kitus",
         "youAreAlone": "Jūs vienintelis(-ė) šiame susitikime"
     },
+    "lowBandwidthMode": {
+        "lowBandwidthMode": "Mažas pralaidumas (tik garsas)"
+    },
     "me": "Aš",
     "notify": {
         "connectedOneMember": "{{name}} prisijungė prie susitikimo",
@@ -475,17 +475,17 @@
     "poweredby": "pateikiamas",
     "presenceStatus": {
         "busy": "Užimtas",
-        "calling": "Skambinama...",
+        "calling": "Skambinama…",
         "connected": "Prisijungta",
-        "connecting": "Prisijungiama...",
-        "connecting2": "Prisijungiama*...",
+        "connecting": "Prisijungiama…",
+        "connecting2": "Prisijungiama*…",
         "disconnected": "Atsijungta",
         "expired": "Pasibaigęs",
         "ignored": "Ignoruojamas",
-        "initializingCall": "Inicijuojamas skambutis...",
+        "initializingCall": "Inicijuojamas skambutis…",
         "invited": "Pakviestas",
         "rejected": "Atmestas",
-        "ringing": "Skambina..."
+        "ringing": "Skambina…"
     },
     "profile": {
         "setDisplayNameLabel": "Įveskite savo vardą",
@@ -503,7 +503,7 @@
         "error": "Įrašymas nepavyko. Bandykite dar kartą.",
         "expandedOff": "Įrašymas buvo sustabdytas",
         "expandedOn": "Šis susitikimas šiuo metu yra įrašomas.",
-        "expandedPending": "Įrašymas prasidėjo...",
+        "expandedPending": "Įrašymas prasidėjo…",
         "failedToStart": "Nepavyko pradėti įrašymo",
         "fileSharingdescription": "Dalintis įrašu su kitais naudotojais",
         "live": "GYVAI",
@@ -512,7 +512,7 @@
         "offBy": "{{name}} sustabdė įrašą",
         "on": "Įrašinėjama",
         "onBy": "{{name}} pradėjo įrašą",
-        "pending": "Ruošiama įrašinėti susitikimą...",
+        "pending": "Ruošiama įrašinėti susitikimą…",
         "rec": "REC",
         "serviceDescription": "Jūsų įrašą išssaugos įrašymo tarnyba",
         "serviceName": "Įrašymo tarnyba",
@@ -595,7 +595,6 @@
         "Settings": "Nustatymai",
         "accessibilityLabel": {
             "Settings": "Perjungti nustatymus",
-            "audioOnly": "Tik audio perjungimas",
             "audioRoute": "Pasirinkite garso įrenginį",
             "callQuality": "Reguliuoti vaizdo kokybę",
             "cc": "Subtitru perjungimas",
@@ -610,6 +609,7 @@
             "kick": "Išspirti dalyvį",
             "localRecording": "Perjungti vietinę įrašų kontrolę",
             "lockRoom": "Uždėti slaptažodį šiam susitikimui",
+            "lowBandwidthMode": "Tik audio perjungimas",
             "moreActions": "Įjungti meniu „daugiau nustatymų“",
             "moreActionsMenu": "Daugiau nustatymų",
             "moreOptions": "Rodyti daugiau variantų",
@@ -634,8 +634,6 @@
             "videomute": "Perjungti vaizdo išjungimą"
         },
         "addPeople": "Pridėti žmonių prie pokalbio",
-        "audioOnlyOff": "Atjungti žemo pralaidumo rėžimą",
-        "audioOnlyOn": "Įjungti žemo pralaidumo rėžimą",
         "audioRoute": "Pasirinkti garso įrenginį",
         "authenticate": "Autentifikuoti",
         "callQuality": "Reguliuoti vaizdo kokybę",
@@ -654,6 +652,8 @@
         "invite": "Pakviesti žmones",
         "login": "Prisijungti",
         "logout": "Atsijungti",
+        "lowBandwidthModeOff": "Atjungti žemo pralaidumo rėžimą",
+        "lowBandwidthModeOn": "Įjungti žemo pralaidumo rėžimą",
         "lowerYourHand": "Nuleisti ranką",
         "moreActions": "Daugiau veiksmų",
         "moreOptions": "Daugiau parinkčių",
@@ -695,22 +695,13 @@
         "failedToStart": "Perrašymas neprasidėjo",
         "labelToolTip": "Susitikimas yra perrašomas",
         "off": "Perrašymas sustojo",
-        "pending": "Ruošiama perrašyti susitikimą...",
+        "pending": "Ruošiama perrašyti susitikimą…",
         "start": "Pradėti rodyti subtitrus",
         "stop": "Nustoti rodyti subtitrus",
         "tr": "TR"
     },
     "userMedia": {
-        "androidGrantPermissions": "Pasirinkite <b><i>Allow</i></b> kai jūsų naršyklė prašys leidimo.",
-        "chromeGrantPermissions": "Pasirinkite <b><i>Allow</i></b> kai jūsų naršyklė prašys leidimo.",
-        "edgeGrantPermissions": "Pasirinkite <b><i>Yes</i></b> kai jūsų naršyklė prašys leidimų.",
-        "electronGrantPermissions": "Prašome duoti leidimą, kad galėtumėte naudotis kamera ir mikrofonu",
-        "firefoxGrantPermissions": "Pasirinkite <b><i>Share Selected Device</i></b> kai jūsų naršyklė prašys leidimo.",
-        "iexplorerGrantPermissions": "Pasirinkite <b><i>OK</i></b> kai jūsų naršyklė prašys leidimo.",
-        "nwjsGrantPermissions": "Prašome duoti leidimo, kad galėtumėte naudotis kamera ir mikrofonu",
-        "operaGrantPermissions": "Pasirinkite <b><i>Allow</i></b> kai jūsų naršyklė prašys leidimo.",
-        "react-nativeGrantPermissions": "Pasirinkite <b><i>Allow</i></b> kai jūsų naršyklė prašys leidimo.",
-        "safariGrantPermissions": "Pasirinkite <b><i>OK</i></b> kai jūsų naršyklė prašys leidimo."
+        "grantPermissions": "Prašome duoti leidimo, kad galėtumėte naudotis kamera ir mikrofonu."
     },
     "videoSIPGW": {
         "busy": "Mes dirbame, kad atlaisvinti išteklius. Prašome pabandyti dar kartą po kelių minučių.",
@@ -723,16 +714,16 @@
         "pending": "{{displayName}} buvo pakviestas(-a)"
     },
     "videoStatus": {
-        "audioOnly": "AUD",
-        "audioOnlyExpanded": "Jūs mažo pralaidumo būsenoje. Šiame rėžime jūs galėsite tik girdėti ir dalintis ekranu.",
         "callQuality": "Vaizdo raiška",
         "hd": "HD",
         "hdTooltip": "Vaizdas aukštos kokybės",
         "highDefinition": "Aukšta kokybė",
         "labelTooiltipNoVideo": "Jokio vaizdo",
-        "labelTooltipAudioOnly": "Žemo pralaidumo būsena aktyvuota",
+        "labelTooltipLowBandwidthMode": "Žemo pralaidumo būsena aktyvuota",
         "ld": "LD",
         "ldTooltip": "Žemos kokybės video peržiūra",
+        "lowBandwidthMode": "AUD",
+        "lowBandwidthModeExpanded": "Jūs mažo pralaidumo būsenoje. Šiame rėžime jūs galėsite tik girdėti ir dalintis ekranu.",
         "lowDefinition": "Žema kokybė",
         "onlyAudioAvailable": "Galimas tik garso perdavimas",
         "onlyAudioSupported": "Mes palaikome tik garso perdavimą šioje naršyklėje.",

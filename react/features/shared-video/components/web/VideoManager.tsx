@@ -41,7 +41,7 @@ class VideoManager extends AbstractVideoManager {
      *
      * @returns {string}
      */
-    getPlaybackStatus() {
+    override getPlaybackStatus() {
         let status;
 
         if (!this.player) {
@@ -62,7 +62,7 @@ class VideoManager extends AbstractVideoManager {
      *
      * @returns {boolean}
      */
-    isMuted() {
+    override isMuted() {
         return this.player?.muted;
     }
 
@@ -71,7 +71,7 @@ class VideoManager extends AbstractVideoManager {
      *
      * @returns {number}
      */
-    getVolume() {
+    override getVolume() {
         return Number(this.player?.volume);
     }
 
@@ -80,7 +80,7 @@ class VideoManager extends AbstractVideoManager {
      *
      * @returns {number}
      */
-    getTime() {
+    override getTime() {
         return Number(this.player?.currentTime);
     }
 
@@ -91,7 +91,7 @@ class VideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    seek(time: number) {
+    override seek(time: number) {
         if (this.player) {
             this.player.currentTime = time;
         }
@@ -102,7 +102,7 @@ class VideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    play() {
+    override play() {
         return this.player?.play();
     }
 
@@ -111,7 +111,7 @@ class VideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    pause() {
+    override pause() {
         return this.player?.pause();
     }
 
@@ -120,7 +120,7 @@ class VideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    mute() {
+    override mute() {
         if (this.player) {
             this.player.muted = true;
         }
@@ -131,7 +131,7 @@ class VideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    unMute() {
+    override unMute() {
         if (this.player) {
             this.player.muted = false;
         }
@@ -143,13 +143,22 @@ class VideoManager extends AbstractVideoManager {
      * @returns {void}
      */
     getPlayerOptions() {
-        const { _isOwner, videoId } = this.props;
+        const { _isOwner, follower, videoId } = this.props;
 
         let options: any = {
-            autoPlay: true,
+            // A follower starts itself from the meeting's shared state
+            // (see syncFollower), so it must not autoplay a paused video.
+            autoPlay: !follower,
             src: videoId,
             controls: _isOwner,
-            onError: () => this.onError(),
+
+            // A follower plays no audio; starting it muted also keeps the
+            // browser from blocking the autoplay.
+            muted: follower,
+            // Forwarded rather than dropped: the event's target carries the
+            // MediaError and the resolved source, which is the only diagnostic
+            // behind the message a follower shows on a second screen.
+            onError: (e: any) => this.onError(e),
             onPlay: () => this.onPlay(),
             onVolumeChange: () => this.onVolumeChange()
         };
@@ -171,7 +180,7 @@ class VideoManager extends AbstractVideoManager {
      *
      * @inheritdoc
      */
-    render() {
+    override render() {
         return (
             <video
                 id = 'sharedVideoPlayer'

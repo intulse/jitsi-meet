@@ -12,15 +12,17 @@ import VisitorsList from './VisitorsList';
 import styles from './styles';
 
 
-/**
- * Participants pane.
- *
- * @returns {React$Element<any>}
- */
 const ParticipantsPane = () => {
     const isLocalModerator = useSelector(isLocalParticipantModerator);
     const keyExtractor
         = useCallback((e: undefined, i: number) => i.toString(), []);
+    const renderListHeaderComponent = () => (
+        <>
+            <VisitorsList />
+            <LobbyParticipantList />
+            <MeetingParticipantList />
+        </>
+    );
 
     return (
         <JitsiScreen
@@ -31,13 +33,7 @@ const ParticipantsPane = () => {
             <FlatList
 
                 // eslint-disable-next-line react/jsx-no-bind
-                ListHeaderComponent = { () => (
-                    <>
-                        <VisitorsList />
-                        <LobbyParticipantList />
-                        <MeetingParticipantList />
-                    </>
-                ) }
+                ListHeaderComponent = { renderListHeaderComponent }
                 data = { [] as ReadonlyArray<undefined> }
                 keyExtractor = { keyExtractor }
                 renderItem = { null }

@@ -38,6 +38,7 @@ DerivedData
 *.dSYM.zip
 *.xcuserstate
 project.xcworkspace
+**/.xcode.env.local
 
 # Android/IntelliJ
 #
@@ -46,6 +47,7 @@ build/
 .gradle
 local.properties
 *.iml
+.cxx/
 
 # node.js
 #
@@ -61,6 +63,7 @@ buck-out/
 
 # fastlane
 #
+.bundle/
 **/fastlane/report.xml
 **/fastlane/Preview.html
 **/fastlane/test_output
@@ -98,8 +101,12 @@ tsconfig.json
 # React Native SDK
 #
 react-native-sdk/*.tgz
-react-native-sdk/android/src
+react-native-sdk/android/src/**
+!react-native-sdk/android/src/**/
 !react-native-sdk/android/src/main/java/org/jitsi/meet/sdk/JitsiMeetReactNativePackage.java
+!react-native-sdk/android/src/main/java/org/jitsi/meet/sdk/JMOngoingConferenceService.java
+!react-native-sdk/android/src/main/java/org/jitsi/meet/sdk/JMOngoingConferenceModule.java
+!react-native-sdk/android/src/main/java/org/jitsi/meet/sdk/RNOngoingNotification.java
 react-native-sdk/images
 react-native-sdk/ios
 react-native-sdk/lang
@@ -108,3 +115,8 @@ react-native-sdk/node_modules
 react-native-sdk/react
 react-native-sdk/service
 react-native-sdk/sounds
+
+# tests
+tests/.env
+test-results
+

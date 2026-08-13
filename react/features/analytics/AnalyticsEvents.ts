@@ -64,6 +64,11 @@ export const ACTION_SHORTCUT_TRIGGERED = 'triggered';
 export const AUDIO_MUTE = 'audio.mute';
 
 /**
+ * The name of the keyboard shortcut or toolbar button for muting desktop sharing.
+ */
+export const DESKTOP_MUTE = 'desktop.mute';
+
+/**
  * The name of the keyboard shortcut or toolbar button for muting video.
  */
 export const VIDEO_MUTE = 'video.mute';
@@ -93,9 +98,9 @@ export function createApiEvent(action: string, attributes = {}) {
  * @returns {Object} The event in a format suitable for sending via
  * sendAnalytics.
  */
-export function createAudioOnlyChangedEvent(enabled: boolean) {
+export function createLowBandwidthModeChangedEvent(enabled: boolean) {
     return {
-        action: `audio.only.${enabled ? 'enabled' : 'disabled'}`
+        action: `low.bandwidth.mode.${enabled ? 'enabled' : 'disabled'}`
     };
 }
 
@@ -311,7 +316,7 @@ export function createInviteDialogEvent(
  * @returns {Object}
  */
 export function createNetworkInfoEvent({ isOnline, networkType, details }:
-    { details?: Object; isOnline: boolean; networkType?: string; }) {
+{ details?: Object; isOnline: boolean; networkType?: string; }) {
     const attributes: {
         details?: Object;
         isOnline: boolean;
@@ -331,15 +336,17 @@ export function createNetworkInfoEvent({ isOnline, networkType, details }:
 /**
  * Creates a "not allowed error" event.
  *
+ * @param {string} type - The type of the error.
  * @param {string} reason - The reason for the error.
  * @returns {Object} The event in a format suitable for sending via
  * sendAnalytics.
  */
-export function createNotAllowedErrorEvent(reason: string) {
+export function createNotAllowedErrorEvent(type: string, reason: string) {
     return {
         action: 'not.allowed.error',
         attributes: {
-            reason
+            reason,
+            type
         }
     };
 }
@@ -594,31 +601,6 @@ export function createRemoteVideoMenuButtonEvent(buttonName: string, attributes 
 }
 
 /**
- * The rtcstats websocket onclose event. We send this to amplitude in order
- * to detect trace ws prematurely closing.
- *
- * @param {Object} closeEvent - The event with which the websocket closed.
- * @returns {Object} The event in a format suitable for sending via
- * sendAnalytics.
- */
-export function createRTCStatsTraceCloseEvent(closeEvent: { code: string; reason: string; }) {
-    const event: {
-        action: string;
-        code?: string;
-        reason?: string;
-        source: string;
-    } = {
-        action: 'trace.onclose',
-        source: 'rtcstats'
-    };
-
-    event.code = closeEvent.code;
-    event.reason = closeEvent.reason;
-
-    return event;
-}
-
-/**
  * Creates an event indicating that an action related to screen sharing
  * occurred (e.g. It was started or stopped).
  *
@@ -703,9 +685,9 @@ export function createShortcutEvent(
  * @returns {Object} The event in a format suitable for sending via
  * sendAnalytics.
  */
-export function createStartAudioOnlyEvent(audioOnly: boolean) {
+export function createStartLowBandwidthModeEvent(audioOnly: boolean) {
     return {
-        action: 'start.audio.only',
+        action: 'start.low.bandwidth.mode',
         attributes: {
             enabled: audioOnly
         }

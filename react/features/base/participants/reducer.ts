@@ -1,11 +1,13 @@
 import { AnyAction } from 'redux';
 
+import { UPDATE_CONFERENCE_METADATA } from '../conference/actionTypes';
 import { MEDIA_TYPE } from '../media/constants';
 import ReducerRegistry from '../redux/ReducerRegistry';
 import { set } from '../redux/functions';
 
 import {
     DOMINANT_SPEAKER_CHANGED,
+    NOTIFIED_TO_SPEAK,
     OVERWRITE_PARTICIPANT_NAME,
     PARTICIPANT_ID_CHANGED,
     PARTICIPANT_JOINED,
@@ -25,6 +27,7 @@ import {
     isRemoteScreenshareParticipant,
     isScreenShareParticipant
 } from './functions';
+import logger from './logger';
 import { FakeParticipant, ILocalParticipant, IParticipant, ISourceInfo } from './types';
 
 /**
@@ -65,6 +68,7 @@ const PARTICIPANT_PROPS_TO_OMIT_WHEN_UPDATE = [
 ];
 
 const DEFAULT_STATE = {
+    activeSpeakers: new Set<string>(),
     dominantSpeaker: undefined,
     fakeParticipants: new Map(),
     local: undefined,
@@ -79,10 +83,10 @@ const DEFAULT_STATE = {
     remoteVideoSources: new Set<string>(),
     sortedRemoteVirtualScreenshareParticipants: new Map(),
     sortedRemoteParticipants: new Map(),
-    speakersList: new Map()
 };
 
 export interface IParticipantsState {
+    activeSpeakers: Set<string>;
     dominantSpeaker?: string;
     fakeParticipants: Map<string, IParticipant>;
     local?: ILocalParticipant;
@@ -92,12 +96,11 @@ export interface IParticipantsState {
     numberOfParticipantsNotSupportingE2EE: number;
     overwrittenNameList: { [id: string]: string; };
     pinnedParticipant?: string;
-    raisedHandsQueue: Array<{ id: string; raisedHandTimestamp: number; }>;
+    raisedHandsQueue: Array<{ hasBeenNotified?: boolean; id: string; raisedHandTimestamp: number; }>;
     remote: Map<string, IParticipant>;
     remoteVideoSources: Set<string>;
     sortedRemoteParticipants: Map<string, string>;
     sortedRemoteVirtualScreenshareParticipants: Map<string, string>;
-    speakersList: Map<string, string>;
 }
 
 /**
@@ -114,6 +117,23 @@ export interface IParticipantsState {
 ReducerRegistry.register<IParticipantsState>('features/base/participants',
 (state = DEFAULT_STATE, action): IParticipantsState => {
     switch (action.type) {
+    case NOTIFIED_TO_SPEAK: {
+        return {
+            ...state,
+            raisedHandsQueue: state.raisedHandsQueue.map((item, index) => {
+                if (index === 0) {
+
+                    return {
+                        ...item,
+                        hasBeenNotified: true
+                    };
+                }
+
+                return item;
+            })
+        };
+    }
+
     case PARTICIPANT_ID_CHANGED: {
         const { local } = state;
 
@@ -137,22 +157,8 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
         const { participant } = action;
         const { id, previousSpeakers = [] } = participant;
         const { dominantSpeaker, local } = state;
-        const newSpeakers = [ id, ...previousSpeakers ];
-        const sortedSpeakersList: Array<Array<string>> = [];
-
-        for (const speaker of newSpeakers) {
-            if (speaker !== local?.id) {
-                const remoteParticipant = state.remote.get(speaker);
-
-                remoteParticipant
-                && sortedSpeakersList.push(
-                    [ speaker, _getDisplayName(state, remoteParticipant?.name) ]
-                );
-            }
-        }
-
-        // Keep the remote speaker list sorted alphabetically.
-        sortedSpeakersList.sort((a, b) => a[1].localeCompare(b[1]));
+        const activeSpeakers = new Set(previousSpeakers
+            .filter((speakerId: string) => state.remote.has(speakerId) && (speakerId !== local?.id)));
 
         // Only one dominant speaker is allowed.
         if (dominantSpeaker) {
@@ -163,7 +169,7 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
             return {
                 ...state,
                 dominantSpeaker: id, // @ts-ignore
-                speakersList: new Map(sortedSpeakersList)
+                activeSpeakers
             };
         }
 
@@ -345,6 +351,8 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
             sortedRemoteVirtualScreenshareParticipants.sort((a, b) => a[1].localeCompare(b[1]));
 
             state.sortedRemoteVirtualScreenshareParticipants = new Map(sortedRemoteVirtualScreenshareParticipants);
+
+            logger.debug('Remote screenshare participant joined', id);
         }
 
         // Exclude the screenshare participant from the fake participant count to avoid duplicates.
@@ -416,7 +424,7 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
         }
 
         // Remove the participant from the list of speakers.
-        state.speakersList.has(id) && state.speakersList.delete(id);
+        state.activeSpeakers.delete(id);
 
         if (pinnedParticipant === id) {
             state.pinnedParticipant = undefined;
@@ -429,6 +437,8 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
         if (sortedRemoteVirtualScreenshareParticipants.has(id)) {
             sortedRemoteVirtualScreenshareParticipants.delete(id);
             state.sortedRemoteVirtualScreenshareParticipants = new Map(sortedRemoteVirtualScreenshareParticipants);
+
+            logger.debug('Remote screenshare participant left', id);
         }
 
         if (oldParticipant && !oldParticipant.fakeParticipant && !isLocalScreenShare) {
@@ -480,6 +490,34 @@ ReducerRegistry.register<IParticipantsState>('features/base/participants',
             ...state,
             raisedHandsQueue: action.queue
         };
+    }
+    case UPDATE_CONFERENCE_METADATA: {
+        const { metadata } = action;
+
+
+        if (metadata?.visitors?.promoted) {
+            let participantProcessed = false;
+
+            Object.entries(metadata?.visitors?.promoted).forEach(([ key, _ ]) => {
+
+                const p = state.remote.get(key);
+
+                if (p && !p.isPromoted) {
+
+                    state.remote.set(key, {
+                        ...p,
+                        isPromoted: true
+                    });
+                    participantProcessed = true;
+                }
+            });
+
+            if (participantProcessed) {
+                return { ...state };
+            }
+        }
+
+        break;
     }
     case OVERWRITE_PARTICIPANT_NAME: {
         const { id, name } = action;
@@ -567,6 +605,7 @@ function _participantJoined({ participant }: { participant: IParticipant; }) {
         dominantSpeaker,
         email,
         fakeParticipant,
+        isPromoted,
         isReplacing,
         loadableAvatarUrl,
         local,
@@ -574,7 +613,8 @@ function _participantJoined({ participant }: { participant: IParticipant; }) {
         pinned,
         presence,
         role,
-        sources
+        sources,
+        userContext
     } = participant;
     let { conference, id } = participant;
 
@@ -598,6 +638,7 @@ function _participantJoined({ participant }: { participant: IParticipant; }) {
         email,
         fakeParticipant,
         id,
+        isPromoted,
         isReplacing,
         loadableAvatarUrl,
         local: local || false,
@@ -605,7 +646,8 @@ function _participantJoined({ participant }: { participant: IParticipant; }) {
         pinned: pinned || false,
         presence,
         role: role || PARTICIPANT_ROLE.NONE,
-        sources
+        sources,
+        userContext
     };
 }
 

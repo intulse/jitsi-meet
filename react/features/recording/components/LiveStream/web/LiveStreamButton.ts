@@ -24,12 +24,12 @@ class LiveStreamButton extends AbstractLiveStreamButton<IProps> {
      * @protected
      * @returns {void}
      */
-    _onHandleClick() {
+    override _onHandleClick() {
         const { _isLiveStreamRunning, dispatch } = this.props;
+        const dialogComponent = _isLiveStreamRunning ? StopLiveStreamDialog : StartLiveStreamDialog;
+        const dialogName = _isLiveStreamRunning ? 'StopLiveStreamDialog' : 'StartLiveStreamDialog';
 
-        dispatch(openDialog(
-            _isLiveStreamRunning ? StopLiveStreamDialog : StartLiveStreamDialog
-        ));
+        dispatch(openDialog(dialogName, dialogComponent));
     }
 }
 

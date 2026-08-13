@@ -40,6 +40,14 @@ const _URI_AUTHORITY_PATTERN = '(//[^/?#]+)';
 const _URI_PATH_PATTERN = '([^?#]*)';
 
 /**
+ * The {@link RegExp} pattern of the image data scheme.
+ *
+ * @private
+ * @type {RegExp}
+ */
+const IMG_DATA_URL: RegExp = /^data:image\/[a-z0-9\-.+]+;base64,/i;
+
+/**
  * The {@link RegExp} pattern of the protocol of a URI.
  *
  * FIXME: The URL class exposed by JavaScript will not include the colon in
@@ -126,12 +134,13 @@ export function getBackendSafePath(path?: string): string | undefined {
 }
 
 /**
- * Converts a room name to a backend-safe format. Properly lowercased and url encoded.
+ * Decodes, NFKC-normalizes, and lowercases a room name without percent-encoding the result.
+ * Use this when the result will be passed to an API (e.g. URLSearchParams) that encodes automatically.
  *
- * @param {string?} room - The room name to convert.
+ * @param {string?} room - The room name to normalize.
  * @returns {string?}
  */
-export function getBackendSafeRoomName(room?: string): string | undefined {
+export function getNormalizedRoomName(room?: string): string | undefined {
     if (!room) {
         return room;
     }
@@ -154,16 +163,27 @@ export function getBackendSafeRoomName(room?: string): string | undefined {
 
     // Only decoded and normalized strings can be lowercased properly.
     room = room?.toLowerCase();
-
-    // But we still need to (re)encode it.
-    room = encodeURIComponent(room ?? '');
     /* eslint-enable no-param-reassign */
 
-    // Unfortunately we still need to lowercase it, because encoding a string will
-    // add some uppercase characters, but some backend services
-    // expect it to be full lowercase. However lowercasing an encoded string
-    // doesn't change the string value.
-    return room.toLowerCase();
+    return room;
+}
+
+/**
+ * Converts a room name to a backend-safe format. Properly lowercased and url encoded.
+ *
+ * @param {string?} room - The room name to convert.
+ * @returns {string?}
+ */
+export function getBackendSafeRoomName(room?: string): string | undefined {
+    const normalized = getNormalizedRoomName(room);
+
+    if (!normalized) {
+        return normalized;
+    }
+
+    // Lowercase again after encoding because encodeURIComponent produces uppercase hex digits,
+    // but some backend services expect fully lowercase encoded strings.
+    return encodeURIComponent(normalized).toLowerCase();
 }
 
 /**
@@ -537,6 +557,7 @@ export function urlObjectToString(o: { [key: string]: any; }): string | undefine
 
     const search = new URLSearchParams(url.search);
 
+    // TODO: once all available versions are updated to support the jwt in the hash, remove this
     if (jwt) {
         search.set('jwt', jwt);
     }
@@ -560,6 +581,14 @@ export function urlObjectToString(o: { [key: string]: any; }): string | undefine
     // fragment/hash
 
     let { hash } = url;
+
+    if (jwt) {
+        if (hash.length) {
+            hash = `${hash}&jwt=${JSON.stringify(jwt)}`;
+        } else {
+            hash = `#jwt=${JSON.stringify(jwt)}`;
+        }
+    }
 
     for (const urlPrefix of [ 'config', 'iceServers', 'interfaceConfig', 'devices', 'userInfo', 'appData' ]) {
         const urlParamsArray
@@ -601,7 +630,7 @@ export function addHashParamsToURL(url: URL, hashParamsToAdd: Object = {}) {
     });
 
     if (urlParamsArray.length) {
-        url.hash = `#${urlParamsArray.join('&')}`;
+        (url as Mutable<URL>).hash = `#${urlParamsArray.join('&')}`;
     }
 
     return url;
@@ -655,7 +684,7 @@ export function appendURLHashParam(url: string, name: string, value: string) {
     dummyUrl.searchParams.append(name, value);
 
     // Write back as hash parameters.
-    newUrl.hash = dummyUrl.searchParams.toString();
+    (newUrl as Mutable<URL>).hash = dummyUrl.searchParams.toString();
 
     return newUrl.toString();
 }
@@ -680,4 +709,14 @@ export function sanitizeUrl(url?: string | URL): URL | null {
     }
 
     return new URL(result);
+}
+
+/**
+ * Check whether the given url is a valid image data url.
+ *
+ * @param {string} url - The url to check.
+ * @returns {boolean} True if the url is a valid image data url, false otherwise.
+ */
+export function isImageDataURL(url: string): boolean {
+    return IMG_DATA_URL.test(url);
 }

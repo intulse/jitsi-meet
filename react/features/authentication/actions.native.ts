@@ -88,3 +88,22 @@ export function openTokenAuthUrl(tokenAuthServiceUrl: string) {
         Linking.openURL(tokenAuthServiceUrl);
     };
 }
+
+/**
+ * Not used.
+ *
+ * @param {string} tokenAuthServiceUrl - Authentication service URL.
+ * @returns {Promise<any>} Resolves.
+ */
+export function loginWithPopup(tokenAuthServiceUrl: string): Promise<any> {
+    return Promise.resolve(tokenAuthServiceUrl);
+}
+
+/**
+ * Not used. There is no inline login popup on native.
+ *
+ * @returns {void}
+ */
+export function closeLoginPopup() {
+    // No-op on native.
+}

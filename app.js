@@ -1,4 +1,4 @@
-/* application specific logic */
+/* Jitsi Meet app main entrypoint. */
 
 // Re-export jQuery
 // FIXME: Remove this requirement from torture tests.
@@ -9,6 +9,32 @@ window.$ = window.jQuery = $;
 import '@matrix-org/olm';
 
 import 'focus-visible';
+
+/*
+* Safari polyfill for createImageBitmap
+* https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap
+*
+* Support source image types: Canvas.
+*/
+if (!('createImageBitmap' in window)) {
+    window.createImageBitmap = function(data) {
+        return new Promise((resolve, reject) => {
+            let dataURL;
+
+            if (data instanceof HTMLCanvasElement) {
+                dataURL = data.toDataURL();
+            } else {
+                reject(new Error('createImageBitmap does not handle the provided image source type'));
+            }
+            const img = document.createElement('img');
+
+            img.addEventListener('load', () => {
+                resolve(img);
+            });
+            img.src = dataURL;
+        });
+    };
+}
 
 // We need to setup the jitsi-local-storage as early as possible so that we can start using it.
 // NOTE: If jitsi-local-storage is used before the initial setup is performed this will break the use case when we use
@@ -42,3 +68,8 @@ window.APP = {
 // the execution of the Web app to start from app.js in order to reduce the
 // complexity of the beginning step.
 import './react';
+
+// Let users / forks implement custom JS logic that gets bundled.
+// Uses webpackMode: 'eager' so it is evaluates as part of the next microtask.
+import(/* webpackMode: 'eager' */ './custom.js');
+

@@ -26,7 +26,7 @@ export function redirectWithStoredParams(pathname: string) {
         const { locationURL } = getState()['features/base/connection'];
         const newLocationURL = new URL(locationURL?.href ?? '');
 
-        newLocationURL.pathname = pathname;
+        (newLocationURL as Mutable<URL>).pathname = pathname;
         window.location.assign(newLocationURL.toString());
     };
 }
@@ -58,10 +58,10 @@ export function redirectToStaticPage(pathname: string, hashParam?: string) {
         }
 
         if (hashParam) {
-            windowLocation.hash = hashParam;
+            (windowLocation as Mutable<typeof windowLocation>).hash = hashParam;
         }
 
-        windowLocation.pathname = newPathname;
+        (windowLocation as Mutable<typeof windowLocation>).pathname = newPathname;
     };
 }
 
@@ -107,23 +107,23 @@ export function maybeRedirectToTokenAuthUrl(
         dispatch: IStore['dispatch'], getState: IStore['getState'], failureCallback: Function) {
     const state = getState();
     const config = state['features/base/config'];
-    const { enabled: audioOnlyEnabled } = state['features/base/audio-only'];
-    const { startAudioOnly } = config;
+    const { enabled: lowBandwidthModeEnabled } = state['features/base/low-bandwidth-mode'];
+    const { startLowBandwidthMode } = config;
     const { locationURL = { href: '' } as URL } = state['features/base/connection'];
     const audioMuted = isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.AUDIO);
     const videoMuted = isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.VIDEO);
 
-    if (!isTokenAuthEnabled(config)) {
+    if (!isTokenAuthEnabled(state)) {
         return false;
     }
 
     // if tokenAuthUrl check jwt if is about to expire go through the url to get new token
     const jwt = state['features/base/jwt'].jwt;
+    const refreshToken = state['features/base/jwt'].refreshToken;
     const expirationDate = getJwtExpirationDate(jwt);
 
-    // if there is jwt and its expiration time is less than 3 minutes away
-    // let's obtain new token
-    if (expirationDate && expirationDate.getTime() - Date.now() < 3 * 60 * 1000) {
+    // if there is jwt token, and it is expired let's obtain a new one
+    if (expirationDate && expirationDate.getTime() <= Date.now()) {
         const room = state['features/base/conference'].room;
         const { tenant } = parseURIString(locationURL.href) || {};
 
@@ -132,12 +132,13 @@ export function maybeRedirectToTokenAuthUrl(
             locationURL,
             {
                 audioMuted,
-                audioOnlyEnabled: audioOnlyEnabled || startAudioOnly,
+                lowBandwidthModeEnabled: lowBandwidthModeEnabled || startLowBandwidthMode,
                 skipPrejoin: true,
                 videoMuted
             },
             room,
-            tenant
+            tenant,
+            refreshToken
         )
             .then((tokenAuthServiceUrl: string | undefined) => {
                 if (!tokenAuthServiceUrl) {
@@ -148,8 +149,8 @@ export function maybeRedirectToTokenAuthUrl(
 
                 return dispatch(openTokenAuthUrl(tokenAuthServiceUrl));
             })
-            .catch(() => {
-                failureCallback();
+            .catch(e => {
+                failureCallback(e);
             });
 
         return true;
@@ -157,5 +158,4 @@ export function maybeRedirectToTokenAuthUrl(
 
     return false;
 }
-
 

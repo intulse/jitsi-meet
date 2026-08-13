@@ -1,8 +1,10 @@
 import { MediaType } from '../media/constants';
+import { IAudioSettings } from '../settings/reducer';
 
 export interface ITrackOptions {
     cameraDeviceId?: string | null;
     constraints?: {
+        audio?: IAudioSettings;
         video?: {
             height?: {
                 ideal?: number;
@@ -12,10 +14,9 @@ export interface ITrackOptions {
         };
     };
     desktopSharingSourceDevice?: string;
-    desktopSharingSources?: string[];
+    desktopSharingSources?: Array<DesktopSharingSourceType>;
     devices?: string[];
     facingMode?: string;
-    firePermissionPromptIsShownEvent?: boolean;
     micDeviceId?: string | null;
     timeout?: number;
 }
@@ -44,6 +45,7 @@ export interface ITrackOptions {
  * any.
  */
 export interface ITrack {
+    codec: string;
     getOriginalStream: Function;
     isReceivingData: boolean;
     jitsiTrack: any;
@@ -67,8 +69,27 @@ export interface IToggleScreenSharingOptions {
     shareOptions: IShareOptions;
 }
 
+export type DesktopSharingSourceType = 'screen' | 'window';
+
 export interface IShareOptions {
+    // Direct-cast screenshare: a screenshare arriving over a plain RTCPeerConnection can
+    // carry system audio too. When present alongside
+    // desktopStream, this audio track is published via the native screenshare-audio
+    // path (AudioMixer effect + setScreenshareAudioTrack).
+    desktopAudioTrack?: any;
     desktopSharingSourceDevice?: string;
-    desktopSharingSources?: string[];
+    desktopSharingSources?: Array<DesktopSharingSourceType>;
     desktopStream?: any;
+}
+
+export interface ICreateInitialTracksOptions {
+    devices: Array<MediaType>;
+    timeout?: number;
+}
+
+export interface IInitialTracksErrors {
+    audioAndVideoError?: Error;
+    audioOnlyError: Error;
+    screenSharingError: Error;
+    videoOnlyError: Error;
 }

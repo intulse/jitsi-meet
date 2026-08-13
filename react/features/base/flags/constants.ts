@@ -5,6 +5,12 @@
 export const ADD_PEOPLE_ENABLED = 'add-people.enabled';
 
 /**
+ * Flag indicating if the audio device button should be displayed.
+ * Default: enabled (true).
+ */
+export const AUDIO_DEVICE_BUTTON_ENABLED = 'audio-device-button.enabled';
+
+/**
  * Flag indicating if the SDK should not require the audio focus.
  * Used by apps that do not use Jitsi audio.
  * Default: disabled (false).
@@ -21,7 +27,13 @@ export const AUDIO_MUTE_BUTTON_ENABLED = 'audio-mute.enabled';
  * Flag indicating that the Audio only button in the overflow menu is enabled.
  * Default: enabled (true).
  */
-export const AUDIO_ONLY_BUTTON_ENABLED = 'audio-only.enabled';
+export const LOW_BANDWIDTH_MODE_BUTTON_ENABLED = 'low-bandwidth-mode.enabled';
+
+/**
+ * Flag indicating if the audio-translation feature should be enabled.
+ * Default: enabled (true).
+ */
+export const AUDIO_TRANSLATION_ENABLED = 'audio-translation.enabled';
 
 /**
  * Flag indicating that the Breakout Rooms button in the overflow menu is enabled.
@@ -71,12 +83,6 @@ export const CHAT_ENABLED = 'chat.enabled';
  * Default: enabled (true).
  */
 export const FILMSTRIP_ENABLED = 'filmstrip.enabled';
-
-/**
- * Flag indicating if fullscreen (immersive) mode should be enabled.
- * Default: enabled (true).
- */
-export const FULLSCREEN_ENABLED = 'fullscreen.enabled';
 
 /**
  * Flag indicating if the Help button should be enabled.
@@ -177,12 +183,6 @@ export const PARTICIPANTS_ENABLED = 'participants.enabled';
 export const PIP_ENABLED = 'pip.enabled';
 
 /**
- * Flag indicating if Picture-in-Picture button should be shown while screen sharing.
- * Default: disabled (false).
- */
-export const PIP_WHILE_SCREEN_SHARING_ENABLED = 'pip-while-screen-sharing.enabled';
-
-/**
  * Flag indicating if the prejoin page should be enabled.
  * Default: enabled (true).
  */
@@ -245,9 +245,15 @@ export const SETTINGS_ENABLED = 'settings.enabled';
 
 /**
  * Flag indicating if tile view feature should be enabled.
- * Default: enabled.
+ * Default: enabled(true).
  */
 export const TILE_VIEW_ENABLED = 'tile-view.enabled';
+
+/**
+ * Flag indicating if the toggle camera button should be enabled
+ * Default: enabled(true).
+ */
+export const TOGGLE_CAMERA_BUTTON_ENABLED = 'toggle-camera-button.enabled';
 
 /**
  * Flag indicating if the toolbox should be always be visible

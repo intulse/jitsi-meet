@@ -1,16 +1,18 @@
 import clsx from 'clsx';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState } from '../../../../app/types';
+import { getLobbyConfig } from '../../../../lobby/functions';
 import DeviceStatus from '../../../../prejoin/components/web/preview/DeviceStatus';
-import { isRoomNameEnabled } from '../../../../prejoin/functions';
+import { isRoomNameEnabled } from '../../../../prejoin/functions.web';
 import Toolbox from '../../../../toolbox/components/web/Toolbox';
 import { isButtonEnabled } from '../../../../toolbox/functions.web';
 import { getConferenceName } from '../../../conference/functions';
 import { PREMEETING_BUTTONS, THIRD_PARTY_PREJOIN_BUTTONS } from '../../../config/constants';
-import { withPixelLineHeight } from '../../../styles/functions.web';
+import Tooltip from '../../../tooltip/components/Tooltip';
+import { isPreCallTestEnabled } from '../../functions';
 
 import ConnectionStatus from './ConnectionStatus';
 import Preview from './Preview';
@@ -23,6 +25,11 @@ interface IProps {
      * The list of toolbar buttons to render.
      */
     _buttons: Array<string>;
+
+    /**
+     * Determine if pre call test is enabled.
+     */
+    _isPreCallTestEnabled?: boolean;
 
     /**
      * The branding background of the premeeting screen(lobby/prejoin).
@@ -102,7 +109,7 @@ const useStyles = makeStyles()(theme => {
             position: 'absolute',
             inset: '0 0 0 0',
             display: 'flex',
-            backgroundColor: theme.palette.ui01,
+            backgroundColor: theme.palette.preMeetingBackground,
             zIndex: 252,
 
             '@media (max-width: 720px)': {
@@ -115,10 +122,9 @@ const useStyles = makeStyles()(theme => {
             alignItems: 'center',
             flexShrink: 0,
             boxSizing: 'border-box',
-            margin: '0 48px',
             padding: '24px 0 16px',
             position: 'relative',
-            width: '300px',
+            width: '400px',
             height: '100%',
             zIndex: 252,
 
@@ -140,13 +146,24 @@ const useStyles = makeStyles()(theme => {
         contentControls: {
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
+            alignItems: 'stretch',
             margin: 'auto',
             width: '100%'
         },
+        paddedContent: {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '0 50px',
+
+            '& > *': {
+                width: '100%',
+                boxSizing: 'border-box'
+            }
+        },
         title: {
-            ...withPixelLineHeight(theme.typography.heading4),
-            color: `${theme.palette.text01}!important`,
+            ...theme.typography.heading4,
+            color: theme.palette.prejoinTitleText,
             marginBottom: theme.spacing(3),
             textAlign: 'center',
 
@@ -154,21 +171,27 @@ const useStyles = makeStyles()(theme => {
                 display: 'none'
             }
         },
-        roomName: {
-            ...withPixelLineHeight(theme.typography.heading5),
-            color: theme.palette.text01,
-            marginBottom: theme.spacing(4),
-            overflow: 'hidden',
+        roomNameContainer: {
+            width: '100%',
             textAlign: 'center',
+            marginBottom: theme.spacing(4)
+        },
+
+        roomName: {
+            ...theme.typography.heading5,
+            color: theme.palette.prejoinRoomNameText,
+            display: 'inline-block',
+            overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-            width: '100%'
+            maxWidth: '100%',
         }
     };
 });
 
 const PreMeetingScreen = ({
     _buttons,
+    _isPreCallTestEnabled,
     _premeetingBackground,
     _roomName,
     children,
@@ -188,27 +211,58 @@ const PreMeetingScreen = ({
         backgroundSize: 'cover'
     } : {};
 
+    const roomNameRef = useRef<HTMLSpanElement | null>(null);
+    const [ isOverflowing, setIsOverflowing ] = useState(false);
+
+    useEffect(() => {
+        if (roomNameRef.current) {
+            const element = roomNameRef.current;
+            const elementStyles = window.getComputedStyle(element);
+            const elementWidth = Math.floor(parseFloat(elementStyles.width));
+
+            setIsOverflowing(element.scrollWidth > elementWidth + 1);
+        }
+    }, [ _roomName ]);
+
     return (
         <div className = { clsx('premeeting-screen', classes.container, className) }>
             <div style = { style }>
                 <div className = { classes.content }>
-                    <ConnectionStatus />
+                    {_isPreCallTestEnabled && <ConnectionStatus />}
 
                     <div className = { classes.contentControls }>
-                        <h1 className = { classes.title }>
-                            {title}
-                        </h1>
-                        {_roomName && (
-                            <span className = { classes.roomName }>
-                                {_roomName}
-                            </span>
-                        )}
-                        {children}
+                        <div className = { classes.paddedContent }>
+                            <h1 className = { classes.title }>
+                                {title}
+                            </h1>
+                            {_roomName && (
+                                <span className = { classes.roomNameContainer }>
+                                    {isOverflowing ? (
+                                        <Tooltip content = { _roomName }>
+                                            <span
+                                                className = { classes.roomName }
+                                                ref = { roomNameRef }>
+                                                {_roomName}
+                                            </span>
+                                        </Tooltip>
+                                    ) : (
+                                        <span
+                                            className = { classes.roomName }
+                                            ref = { roomNameRef }>
+                                            {_roomName}
+                                        </span>
+                                    )}
+                                </span>
+                            )}
+                            {children}
+                        </div>
                         {_buttons.length && <Toolbox toolbarButtons = { _buttons } />}
-                        {skipPrejoinButton}
-                        {showUnsafeRoomWarning && <UnsafeRoomWarning />}
-                        {showDeviceStatus && <DeviceStatus />}
-                        {showRecordingWarning && <RecordingWarning />}
+                        <div className = { classes.paddedContent }>
+                            {skipPrejoinButton}
+                            {showUnsafeRoomWarning && <UnsafeRoomWarning />}
+                            {showDeviceStatus && <DeviceStatus />}
+                            {showRecordingWarning && <RecordingWarning />}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -228,11 +282,20 @@ const PreMeetingScreen = ({
  * @returns {Object}
  */
 function mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
-    const { hiddenPremeetingButtons } = state['features/base/config'];
+    const { hiddenPremeetingButtons, prejoinConfig } = state['features/base/config'];
     const { toolbarButtons } = state['features/toolbox'];
+    const { knocking } = state['features/lobby'];
+    const { showHangUp: showHangUpLobby = true } = getLobbyConfig(state);
+    const { showHangUp: showHangUpPrejoin = true } = prejoinConfig || {};
     const premeetingButtons = (ownProps.thirdParty
         ? THIRD_PARTY_PREJOIN_BUTTONS
         : PREMEETING_BUTTONS).filter((b: any) => !(hiddenPremeetingButtons || []).includes(b));
+
+    const shouldShowHangUp = knocking ? showHangUpLobby : showHangUpPrejoin;
+
+    if (shouldShowHangUp && !premeetingButtons.includes('hangup')) {
+        premeetingButtons.push('hangup');
+    }
 
     const { premeetingBackground } = state['features/dynamic-branding'];
 
@@ -245,9 +308,11 @@ function mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
         _buttons: hiddenPremeetingButtons
             ? premeetingButtons
             : premeetingButtons.filter(b => isButtonEnabled(b, toolbarButtons)),
+        _isPreCallTestEnabled: isPreCallTestEnabled(state),
         _premeetingBackground: premeetingBackground,
         _roomName: isRoomNameEnabled(state) ? getConferenceName(state) : ''
     };
 }
 
 export default connect(mapStateToProps)(PreMeetingScreen);
+

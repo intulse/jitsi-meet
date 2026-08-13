@@ -1,7 +1,4 @@
-// @ts-ignore
 import { jitsiLocalStorage } from '@jitsi/js-utils';
-// eslint-disable-next-line lines-around-comment
-// @ts-ignore
 import { safeJsonParse } from '@jitsi/js-utils/json';
 import md5 from 'js-md5';
 
@@ -12,7 +9,7 @@ declare let __DEV__: any;
 /**
  * Mixed type of the element (subtree) config. If it's a {@code boolean} (and is
  * {@code true}), we persist the entire subtree. If it's an {@code Object}, we
- * perist a filtered subtree based on the properties of the config object.
+ * persist a filtered subtree based on the properties of the config object.
  */
 declare type ElementConfig = boolean | Object;
 

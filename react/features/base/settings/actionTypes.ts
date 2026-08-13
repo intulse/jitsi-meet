@@ -12,11 +12,12 @@
  *         localFlipX: boolean,
  *         micDeviceId: string,
  *         serverURL: string,
- *         startAudioOnly: boolean,
+ *         showSubtitlesOnStage: boolean,
+ *         startLowBandwidthMode: boolean,
  *         startWithAudioMuted: boolean,
  *         startWithVideoMuted: boolean,
  *         startWithReactionsMuted: boolean
- *     }
- * }
+ *     }.
+ * }.
  */
 export const SETTINGS_UPDATED = 'SETTINGS_UPDATED';

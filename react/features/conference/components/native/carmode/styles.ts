@@ -21,10 +21,9 @@ const titleBarSafeView = {
 export default {
 
     bottomContainer: {
-        display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
-        bottom: BaseTheme.spacing[8]
+        display: 'flex',
+        flexDirection: 'column'
     },
 
     /**
@@ -38,7 +37,9 @@ export default {
 
     microphoneStyles: {
         container: {
+            borderColor: 'transparent',
             borderRadius: MICROPHONE_SIZE / 2,
+            borderWidth: BaseTheme.spacing[0],
             height: MICROPHONE_SIZE,
             maxHeight: MICROPHONE_SIZE,
             justifyContent: 'center',
@@ -65,7 +66,7 @@ export default {
         },
 
         unmuted: {
-            borderWidth: 4,
+            borderWidth: BaseTheme.spacing[1],
             borderColor: BaseTheme.palette.success01
         }
     },
@@ -101,7 +102,7 @@ export default {
     },
 
     soundDeviceButton: {
-        marginBottom: BaseTheme.spacing[3],
+        marginVertical: BaseTheme.spacing[3],
         width: 240
     },
 
@@ -162,7 +163,6 @@ export default {
     videoStoppedLabel: {
         ...BaseTheme.typography.bodyShortRegularLarge,
         color: BaseTheme.palette.text01,
-        marginBottom: BaseTheme.spacing[3],
         textAlign: 'center',
         width: '100%'
     },

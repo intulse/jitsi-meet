@@ -1,7 +1,7 @@
 import COUNTRIES_RESOURCES from 'i18n-iso-countries/langs/en.json';
 import i18next from 'i18next';
 import I18nextXHRBackend, { HttpBackendOptions } from 'i18next-http-backend';
-import _ from 'lodash';
+import { merge } from 'lodash-es';
 
 import LANGUAGES_RESOURCES from '../../../../lang/languages.json';
 import MAIN_RESOURCES from '../../../../lang/main.json';
@@ -22,7 +22,7 @@ const COUNTRIES_RESOURCES_OVERRIDES = {
 /**
  * Merged country names.
  */
-const COUNTRIES = _.merge({}, COUNTRIES_RESOURCES, COUNTRIES_RESOURCES_OVERRIDES);
+const COUNTRIES = merge({}, COUNTRIES_RESOURCES, COUNTRIES_RESOURCES_OVERRIDES);
 
 /**
  * The available/supported languages.
@@ -59,6 +59,14 @@ export const DEFAULT_LANGUAGE = 'en';
 export const TRANSLATION_LANGUAGES_HEAD: Array<string> = [ DEFAULT_LANGUAGE ];
 
 /**
+ * The available/supported i18n namespaces.
+ *
+ * @public
+ * @type {Array<string>}
+ */
+export const SUPPORTED_NS = [ 'main', 'languages', 'countries', 'translation-languages' ];
+
+/**
  * The options to initialize i18next with.
  *
  * @type {i18next.InitOptions}
@@ -80,8 +88,8 @@ const options: i18next.InitOptions = {
     interpolation: {
         escapeValue: false // not needed for react as it escapes by default
     },
-    load: 'languageOnly',
-    ns: [ 'main', 'languages', 'countries', 'translation-languages' ],
+    load: 'all',
+    ns: SUPPORTED_NS,
     react: {
         // re-render when a new resource bundle is added
         // @ts-expect-error. Fixed in i18next 19.6.1.

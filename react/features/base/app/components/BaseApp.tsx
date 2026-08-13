@@ -1,6 +1,5 @@
-// @ts-expect-error
 import { jitsiLocalStorage } from '@jitsi/js-utils';
-import _ from 'lodash';
+import { isEqual } from 'lodash-es';
 import React, { Component, ComponentType, Fragment } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
@@ -14,7 +13,6 @@ import PersistenceRegistry from '../../redux/PersistenceRegistry';
 import ReducerRegistry from '../../redux/ReducerRegistry';
 import StateListenerRegistry from '../../redux/StateListenerRegistry';
 import SoundCollection from '../../sounds/components/SoundCollection';
-import { createDeferred } from '../../util/helpers';
 import { appWillMount, appWillUnmount } from '../actions';
 import logger from '../logger';
 
@@ -22,6 +20,12 @@ import logger from '../logger';
  * The type of the React {@code Component} state of {@link BaseApp}.
  */
 interface IState {
+
+    /**
+     * Whether an error was caught while rendering the tree below this
+     * {@code BaseApp}.
+     */
+    hasError?: boolean;
 
     /**
      * The {@code Route} rendered by the {@code BaseApp}.
@@ -46,9 +50,7 @@ export default class BaseApp<P> extends Component<P, IState> {
     /**
      * The deferred for the initialisation {{promise, resolve, reject}}.
      */
-    _init: {
-        promise: Promise<any>;
-    };
+    _init: PromiseWithResolvers<any>;
 
     /**
      * Initializes a new {@code BaseApp} instance.
@@ -61,8 +63,19 @@ export default class BaseApp<P> extends Component<P, IState> {
 
         this.state = {
             route: {},
-            store: undefined
+            store: undefined,
+            hasError: false
         };
+    }
+
+    /**
+     * Updates the state so the next render shows the fallback instead of
+     * unmounting the whole tree when a descendant throws while rendering.
+     *
+     * @returns {Object}
+     */
+    static getDerivedStateFromError() {
+        return { hasError: true };
     }
 
     /**
@@ -70,7 +83,7 @@ export default class BaseApp<P> extends Component<P, IState> {
      *
      * @inheritdoc
     */
-    async componentDidMount() {
+    override async componentDidMount() {
         /**
          * Make the mobile {@code BaseApp} wait until the {@code AsyncStorage}
          * implementation of {@code Storage} initializes fully.
@@ -79,7 +92,7 @@ export default class BaseApp<P> extends Component<P, IState> {
          * @see {@link #_initStorage}
          * @type {Promise}
          */
-        this._init = createDeferred();
+        this._init = Promise.withResolvers();
 
         try {
             await this._initStorage();
@@ -110,7 +123,7 @@ export default class BaseApp<P> extends Component<P, IState> {
      *
      * @inheritdoc
      */
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.state.store?.dispatch(appWillUnmount(this));
     }
 
@@ -122,7 +135,7 @@ export default class BaseApp<P> extends Component<P, IState> {
      *
      * @returns {void}
      */
-    componentDidCatch(error: Error, info: Object) {
+    override componentDidCatch(error: Error, info: Object) {
         logger.error(error, info);
     }
 
@@ -136,7 +149,18 @@ export default class BaseApp<P> extends Component<P, IState> {
      * @returns {Promise}
      */
     _initStorage(): Promise<any> {
-        const _initializing = jitsiLocalStorage.getItem('_initializing');
+        // On react-native, global.localStorage is replaced at startup with the
+        // Storage polyfill in react/features/mobile/polyfills/Storage.js, which
+        // stores its AsyncStorage-loading Promise as an instance property named
+        // `_initializing`. Its getItem() returns own-property values, so
+        // getItem('_initializing') surfaces that Promise and lets us wait for
+        // AsyncStorage to finish loading persisted state. On web this is always
+        // null (no such key in window.localStorage) and the cast is a no-op.
+        // The new @jitsi/js-utils types declare getItem as `string | null`,
+        // which is accurate for the standard Web Storage shape but doesn't
+        // capture this RN-only side channel — hence the cast.
+        const _initializing = jitsiLocalStorage.getItem('_initializing') as
+            Promise<unknown> | null;
 
         return _initializing || Promise.resolve();
     }
@@ -156,8 +180,12 @@ export default class BaseApp<P> extends Component<P, IState> {
      * @inheritdoc
      * @returns {ReactElement}
      */
-    render() {
-        const { route: { component, props }, store } = this.state;
+    override render() {
+        const { hasError, route: { component, props }, store } = this.state;
+
+        if (hasError) {
+            return null;
+        }
 
         if (store) {
             return (
@@ -254,13 +282,13 @@ export default class BaseApp<P> extends Component<P, IState> {
         href?: string;
         props?: Object;
     }): Promise<any> {
-        if (_.isEqual(route, this.state.route)) {
+        if (isEqual(route, this.state.route)) {
             return Promise.resolve();
         }
 
         if (route.href) {
             // This navigation requires loading a new URL in the browser.
-            window.location.href = route.href;
+            (window.location as Mutable<typeof window.location>).href = route.href;
 
             return Promise.resolve();
         }

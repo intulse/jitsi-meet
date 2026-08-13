@@ -7,7 +7,6 @@ import { IReduxState } from '../../../app/types';
 import Icon from '../../../base/icons/components/Icon';
 import { IconMessage } from '../../../base/icons/svg';
 import { browser } from '../../../base/lib-jitsi-meet';
-import { withPixelLineHeight } from '../../../base/styles/functions.web';
 
 import PollItem from './PollItem';
 
@@ -31,19 +30,23 @@ const useStyles = makeStyles()(theme => {
             }
         },
         emptyMessage: {
-            ...withPixelLineHeight(theme.typography.bodyLongBold),
-            color: theme.palette.text02,
+            ...theme.typography.bodyLongBold,
+            color: theme.palette.pollsSubtitle,
             padding: '0 24px',
             textAlign: 'center'
         }
     };
 });
 
-const PollsList = () => {
+interface IPollListProps {
+    setCreateMode: (mode: boolean) => void;
+}
+
+const PollsList = ({ setCreateMode }: IPollListProps) => {
     const { t } = useTranslation();
     const { classes, theme } = useStyles();
+    const { polls } = useSelector((state: IReduxState) => state['features/polls']);
 
-    const polls = useSelector((state: IReduxState) => state['features/polls'].polls);
     const pollListEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = useCallback(() => {
@@ -80,7 +83,8 @@ const PollsList = () => {
                     <PollItem
                         key = { id }
                         pollId = { id }
-                        ref = { listPolls.length - 1 === index ? pollListEndRef : null } />
+                        ref = { listPolls.length - 1 === index ? pollListEndRef : null }
+                        setCreateMode = { setCreateMode } />
                 ))}
         </>
     );

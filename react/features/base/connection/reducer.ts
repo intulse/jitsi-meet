@@ -23,6 +23,7 @@ export interface IConnectionState {
         getJid: () => string;
         getLogs: () => Object;
         initJitsiConference: Function;
+        refreshToken: Function;
         removeFeature: Function;
     };
     error?: ConnectionFailedError;
@@ -147,6 +148,13 @@ function _connectionFailed(
         return state;
     }
 
+    let preferVisitor;
+
+    if (error.name === JitsiConnectionErrors.NOT_LIVE_ERROR) {
+        // we want to keep the state for the moment when the meeting is live
+        preferVisitor = state.preferVisitor;
+    }
+
     return assign(state, {
         connecting: undefined,
         connection: undefined,
@@ -154,7 +162,7 @@ function _connectionFailed(
         passwordRequired:
             error.name === JitsiConnectionErrors.PASSWORD_REQUIRED
                 ? connection : undefined,
-        preferVisitor: undefined
+        preferVisitor
     });
 }
 

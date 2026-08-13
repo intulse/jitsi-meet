@@ -1,4 +1,3 @@
-// @ts-expect-error
 import { randomInt } from '@jitsi/js-utils/random';
 import React, { Component } from 'react';
 import { WithTranslation } from 'react-i18next';
@@ -11,6 +10,7 @@ import {
     isFatalJitsiConferenceError,
     isFatalJitsiConnectionError
 } from '../../../base/lib-jitsi-meet/functions.web';
+import { sendPageReloadApplicationLog } from '../../actions.any';
 import logger from '../../logger';
 
 import ReloadButton from './ReloadButton';
@@ -151,14 +151,8 @@ export default class AbstractPageReloadOverlay<P extends IProps>
      * @inheritdoc
      * @returns {void}
      */
-    componentDidMount() {
-        // FIXME: We should dispatch action for this.
-        if (typeof APP !== 'undefined' && APP.conference?._room) {
-            APP.conference._room.sendApplicationLog(JSON.stringify({
-                name: 'page.reload',
-                label: this.props.reason
-            }));
-        }
+    override componentDidMount() {
+        this.props.dispatch(sendPageReloadApplicationLog(this.props.reason));
 
         sendAnalytics(createPageReloadScheduledEvent(
             this.props.reason ?? '',
@@ -196,7 +190,7 @@ export default class AbstractPageReloadOverlay<P extends IProps>
      * @inheritdoc
      * @returns {void}
      */
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._interval) {
             clearInterval(this._interval);
             this._interval = undefined;
@@ -258,29 +252,24 @@ export default class AbstractPageReloadOverlay<P extends IProps>
 export function abstractMapStateToProps(state: IReduxState) {
     const { error: configError } = state['features/base/config'];
     const { error: connectionError } = state['features/base/connection'];
-    const { fatalError } = state['features/overlay'];
+    const { error: conferenceError } = state['features/base/conference'];
+    const error = configError || connectionError || conferenceError;
+    let reason;
 
-    let reason = fatalError && (fatalError.message || fatalError.name);
-
-    if (!reason) {
-        const { error: conferenceError } = state['features/base/conference'];
-
-        if (conferenceError) {
-            reason = `error.conference.${conferenceError.name}`;
-        } else if (configError) {
-            reason = `error.config.${configError.name}`;
-        } else if (connectionError) {
-            reason = `error.connection.${connectionError.name}`;
-        } else {
-            logger.error('No reload reason defined!');
-        }
+    if (conferenceError) {
+        reason = `error.conference.${conferenceError.name}`;
+    } else if (configError) {
+        reason = `error.config.${configError.name}`;
+    } else if (connectionError) {
+        reason = `error.connection.${connectionError.name}`;
+    } else {
+        logger.error('No reload reason defined!');
     }
 
     return {
-        details: fatalError?.details,
-        error: fatalError,
-        isNetworkFailure:
-            fatalError === configError || fatalError === connectionError,
+        details: undefined, // TODO: revisit this.
+        error,
+        isNetworkFailure: Boolean(configError || connectionError),
         reason
     };
 }

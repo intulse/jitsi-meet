@@ -1,22 +1,24 @@
 import { AnyAction } from 'redux';
 
 import {
-    createStartAudioOnlyEvent,
+    createStartLowBandwidthModeEvent,
     createStartMutedConfigurationEvent,
     createSyncTrackStateEvent,
     createTrackMutedEvent
 } from '../../analytics/AnalyticsEvents';
 import { sendAnalytics } from '../../analytics/functions';
 import { IStore } from '../../app/types';
+import { MEDIA_TYPE as AVM_MEDIA_TYPE } from '../../av-moderation/constants';
+import { isForceMuted } from '../../av-moderation/functions';
 import { APP_STATE_CHANGED } from '../../mobile/background/actionTypes';
 import { showWarningNotification } from '../../notifications/actions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
-import { isForceMuted } from '../../participants-pane/functions';
 import { isScreenMediaShared } from '../../screen-share/functions';
-import { SET_AUDIO_ONLY } from '../audio-only/actionTypes';
-import { setAudioOnly } from '../audio-only/actions';
 import { SET_ROOM } from '../conference/actionTypes';
 import { isRoomValid } from '../conference/functions';
+import { SET_LOW_BANDWIDTH_MODE } from '../low-bandwidth-mode/actionTypes';
+import { setLowBandwidthMode } from '../low-bandwidth-mode/actions';
+import { PARTICIPANT_MUTED_US } from '../participants/actionTypes';
 import { getLocalParticipant } from '../participants/functions';
 import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 import { getPropertyValue } from '../settings/functions.any';
@@ -46,7 +48,8 @@ import {
 import {
     MEDIA_TYPE,
     SCREENSHARE_MUTISM_AUTHORITY,
-    VIDEO_MUTISM_AUTHORITY
+    VIDEO_MUTISM_AUTHORITY,
+    VIDEO_TYPE
 } from './constants';
 import { getStartWithAudioMuted, getStartWithVideoMuted } from './functions';
 import logger from './logger';
@@ -66,8 +69,26 @@ MiddlewareRegistry.register(store => next => action => {
     case APP_STATE_CHANGED:
         return _appStateChanged(store, next, action);
 
-    case SET_AUDIO_ONLY:
-        return _setAudioOnly(store, next, action);
+    case PARTICIPANT_MUTED_US: {
+        const { dispatch } = store;
+        const { track } = action;
+
+        // Sync the media muted state with the track muted state.
+        if (track.isAudioTrack()) {
+            dispatch(setAudioMuted(true, /* ensureTrack */ false));
+        } else if (track.isVideoTrack()) {
+            if (track.getVideoType() === VIDEO_TYPE.DESKTOP) {
+                dispatch(setScreenshareMuted(true, SCREENSHARE_MUTISM_AUTHORITY.USER, /* ensureTrack */ false));
+            } else {
+                dispatch(setVideoMuted(true, VIDEO_MUTISM_AUTHORITY.USER, /* ensureTrack */ false));
+            }
+        }
+
+        break;
+    }
+
+    case SET_LOW_BANDWIDTH_MODE:
+        return _setLowBandwidthMode(store, next, action);
 
     case SET_ROOM:
         return _setRoom(store, next, action);
@@ -88,7 +109,7 @@ MiddlewareRegistry.register(store => next => action => {
         const state = store.getState();
         const participant = getLocalParticipant(state);
 
-        if (!action.muted && isForceMuted(participant, MEDIA_TYPE.AUDIO, state)) {
+        if (!action.muted && isForceMuted(participant, AVM_MEDIA_TYPE.AUDIO, state)) {
             return;
         }
         break;
@@ -113,7 +134,7 @@ MiddlewareRegistry.register(store => next => action => {
         const state = store.getState();
         const participant = getLocalParticipant(state);
 
-        if (!action.muted && isForceMuted(participant, MEDIA_TYPE.SCREENSHARE, state)) {
+        if (!action.muted && isForceMuted(participant, AVM_MEDIA_TYPE.DESKTOP, state)) {
             return;
         }
         break;
@@ -122,7 +143,7 @@ MiddlewareRegistry.register(store => next => action => {
         const state = store.getState();
         const participant = getLocalParticipant(state);
 
-        if (!action.muted && isForceMuted(participant, MEDIA_TYPE.VIDEO, state)) {
+        if (!action.muted && isForceMuted(participant, AVM_MEDIA_TYPE.VIDEO, state)) {
             return;
         }
         break;
@@ -174,25 +195,25 @@ function _appStateChanged({ dispatch, getState }: IStore, next: Function, action
 }
 
 /**
- * Adjusts the video muted state based on the audio-only state.
+ * Adjusts the video muted state based on the low bandwidth mode state.
  *
  * @param {Store} store - The redux store in which the specified {@code action}
  * is being dispatched.
  * @param {Dispatch} next - The redux {@code dispatch} function to dispatch the
  * specified {@code action} to the specified {@code store}.
- * @param {Action} action - The redux action {@code SET_AUDIO_ONLY} which is
+ * @param {Action} action - The redux action {@code SET_LOW_BANDWIDTH_MODE} which is
  * being dispatched in the specified {@code store}.
  * @private
  * @returns {Object} The value returned by {@code next(action)}.
  */
-function _setAudioOnly({ dispatch }: IStore, next: Function, action: AnyAction) {
-    const { audioOnly } = action;
+function _setLowBandwidthMode({ dispatch }: IStore, next: Function, action: AnyAction) {
+    const { lowBandwidthMode } = action;
 
-    sendAnalytics(createTrackMutedEvent('video', 'audio-only mode', audioOnly));
+    sendAnalytics(createTrackMutedEvent('video', 'low-bandwidth mode', lowBandwidthMode));
 
     // Make sure we mute both the desktop and video tracks.
-    dispatch(setVideoMuted(audioOnly, VIDEO_MUTISM_AUTHORITY.AUDIO_ONLY));
-    dispatch(setScreenshareMuted(audioOnly, SCREENSHARE_MUTISM_AUTHORITY.AUDIO_ONLY));
+    dispatch(setVideoMuted(lowBandwidthMode, VIDEO_MUTISM_AUTHORITY.LOW_BANDWIDTH_MODE));
+    dispatch(setScreenshareMuted(lowBandwidthMode, SCREENSHARE_MUTISM_AUTHORITY.LOW_BANDWIDTH_MODE));
 
     return next(action);
 }
@@ -237,7 +258,7 @@ function _setRoom({ dispatch, getState }: IStore, next: Function, action: AnyAct
         dispatch(setVideoMuted(videoMuted));
     }
 
-    // startAudioOnly
+    // startLowBandwidthMode
     //
     // FIXME Technically, the audio-only feature is owned by base/conference,
     // not base/media so the following should be in base/conference.
@@ -245,13 +266,13 @@ function _setRoom({ dispatch, getState }: IStore, next: Function, action: AnyAct
     // because it looks like startWithAudioMuted and startWithVideoMuted.
     //
     // XXX After the introduction of the "Video <-> Voice" toggle on the
-    // WelcomePage, startAudioOnly is utilized even outside of
+    // WelcomePage, startLowBandwidthMode is utilized even outside of
     // conferences/meetings.
     const audioOnly
         = Boolean(
             getPropertyValue(
                 state,
-                'startAudioOnly',
+                'startLowBandwidthMode',
                 /* sources */ {
                     // FIXME Practically, base/config is (really) correct
                     // only if roomIsValid. At the time of this writing,
@@ -273,15 +294,15 @@ function _setRoom({ dispatch, getState }: IStore, next: Function, action: AnyAct
                     // they are defined or not:
                     jwt: false,
 
-                    // We need to look for 'startAudioOnly' in settings only for react native clients. Otherwise, the
+                    // We need to look for 'startLowBandwidthMode' in settings only for react native clients. Otherwise, the
                     // default value from ISettingsState (false) will override the value set in config for web clients.
                     settings: typeof APP === 'undefined'
                 }));
 
-    sendAnalytics(createStartAudioOnlyEvent(audioOnly));
+    sendAnalytics(createStartLowBandwidthModeEvent(audioOnly));
     logger.log(`Start audio only set to ${audioOnly.toString()}`);
 
-    dispatch(setAudioOnly(audioOnly));
+    dispatch(setLowBandwidthMode(audioOnly));
 
     if (!roomIsValid) {
         dispatch(destroyLocalTracks());

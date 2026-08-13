@@ -24,9 +24,6 @@
         "phone": "Telefon",
         "speaker": "Hangszóró"
     },
-    "audioOnly": {
-        "audioOnly": "Alacsony sávszélesség"
-    },
     "breakoutRooms": {
         "actions": {
             "add": "Pihenőszoba hozzáadása",
@@ -111,7 +108,7 @@
         "GET_SESSION_ID_ERROR": "Hiba a munkamenet-azonosítása beszerzése közben: {{code}}",
         "GOT_SESSION_ID": "Munkamenet-azonosító beszerzése… Kész",
         "LOW_BANDWIDTH": "{{displayName}} videója le lett kapcsolva a sávszélesség csökkentése érdekében",
-        "RECONNECTING": "Hálózati hiba történt. Újracsatlakozás..."
+        "RECONNECTING": "Hálózati hiba történt. Újracsatlakozás…"
     },
     "connectionindicator": {
         "address": "Cím:",
@@ -184,6 +181,7 @@
         "Share": "Megosztás",
         "Submit": "Elküldés",
         "WaitForHostMsg": "A konferencia még nem kezdődött meg. Ha Ön a házigazda, akkor hitelesítse magát. Ellenkező esetben, kérjük várjon a házigazda érkezésére.",
+        "WaitForHostNoAuthMsg": "A konferencia még nem kezdődött el, mert nincs elérhető moderátor. Kérlek várj.",
         "WaitingForHost": "Várakozás a házigazdára…",
         "Yes": "Igen",
         "accessibilityLabel": {
@@ -479,10 +477,10 @@
         "joinRejectedMessage": "Csatlakozási kérelmét egy moderátor elutasította.",
         "joinRejectedTitle": "Csatlakozási kérelem elutasítva.",
         "joinTitle": "Csatlakozás az értekezlethez",
-        "joinWithPasswordMessage": "Csatlakozás jelszóval, kérjük várjon...",
+        "joinWithPasswordMessage": "Csatlakozás jelszóval, kérjük várjon…",
         "joiningMessage": "Amint valaki elfogadja kérését, csatlakoztatjuk az értekezlethez",
-        "joiningTitle": "Értekezlethez csatlakozás kérése...",
-        "joiningWithPasswordTitle": "Csatlakozás jelszóval...",
+        "joiningTitle": "Értekezlethez csatlakozás kérése…",
+        "joiningWithPasswordTitle": "Csatlakozás jelszóval…",
         "knockButton": "Csatlakozási kérelem küldése",
         "knockTitle": "Valaki szeretne csatlakozni az értekezlethez",
         "nameField": "Adja meg a nevét",
@@ -529,6 +527,9 @@
     "lonelyMeetingExperience": {
         "button": "Mások meghívása",
         "youAreAlone": "Egyedül van ezen az értekezleten"
+    },
+    "lowBandwidthMode": {
+        "lowBandwidthMode": "Alacsony sávszélesség"
     },
     "me": "én",
     "notify": {
@@ -647,7 +648,7 @@
         "callMe": "Hívj fel",
         "callMeAtNumber": "Hívj fel ezen a számon:",
         "calling": "Hívás",
-        "configuringDevices": "Eszköz beállítás...",
+        "configuringDevices": "Eszköz beállítás…",
         "connectedWithAudioQ": "Csak hanggal szeretne csatlakozni?",
         "connection": {
             "good": "Az internet kapcsolat jónak tűnik!",
@@ -682,7 +683,6 @@
         "or": "vagy",
         "premeeting": "Csatlakozás előtt",
         "screenSharingError": "Képernyő megosztás hiba:",
-        "showScreen": "Csatlakozás előtti kamerakép",
         "startWithPhone": "Kezdés telefonhanggal",
         "videoOnlyError": "Videó hiba:",
         "videoTrackError": "Nem sikerült a videó megjelenítés.",
@@ -693,7 +693,7 @@
         "calling": "Hívás…",
         "connected": "Kapcsolódva",
         "connecting": "Kapcsolódás…",
-        "connecting2": "Kapcsolódás*...",
+        "connecting2": "Kapcsolódás*…",
         "disconnected": "Szétkapcsolva",
         "expired": "Lejárt",
         "ignored": "Figyelmen kívül hagyva",
@@ -725,7 +725,7 @@
         "localRecordingNoNotificationWarning": "A felvételt nem közöljük más résztvevőkkel. Értesítenie kell velük, hogy a találkozót rögzítették.",
         "localRecordingStartWarning": "A megbeszélésből való kilépés előtt feltétlenül állítsa le a felvételt, hogy elmentse azt.",
         "localRecordingStartWarningTitle": "Állítsa le a felvételt a mentéshez",
-        "localRecordingWarning": "Győződjön meg arról, hogy az aktuális lapot választotta a megfelelő videó és hang használatához. A felvétel jelenleg 1 GB-ra van korlátozva, ami körülbelül 100 perc.",
+        "localRecordingWarning": "Győződjön meg arról, hogy az aktuális lapot választotta a megfelelő videó és hang használatához.",
         "loggedIn": "Belépve mint {{userName}}",
         "off": "Felvétel leállítva",
         "offBy": "{{name}} leállította a felvételt",
@@ -847,7 +847,6 @@
         "Settings": "Beállítások",
         "accessibilityLabel": {
             "Settings": "Beállítások átváltása",
-            "audioOnly": "Csak a hang átváltása",
             "audioRoute": "Hangeszköz kijelölése",
             "boo": "Szomorú",
             "callQuality": "Videóminőség kezelése",
@@ -868,6 +867,7 @@
             "like": "Hüvelykujj fel",
             "localRecording": "Helyi felvétel vezérlőelemeinek átváltása",
             "lockRoom": "Értekezlet jelszavának átváltása",
+            "lowBandwidthMode": "Csak a hang átváltása",
             "moreActions": "További műveletek menü átváltása",
             "moreActionsMenu": "További műveletek menü",
             "moreOptions": "További beállítások megjelenítése",
@@ -899,8 +899,6 @@
             "videomute": "Videó letiltásának átváltása"
         },
         "addPeople": "Személy hozzáadása a híváshoz",
-        "audioOnlyOff": "Alacsony sávszélességű mód letiltása",
-        "audioOnlyOn": "Alacsony sávszélességű mód engedélyezése",
         "audioRoute": "Hangeszköz kijelölése",
         "audioSettings": "Hangbeállítások",
         "authenticate": "Hitelesítés",
@@ -928,6 +926,8 @@
         "like": "Hüvelykujj fel",
         "login": "Bejelentkezés",
         "logout": "Kijelentkezés",
+        "lowBandwidthModeOff": "Alacsony sávszélességű mód letiltása",
+        "lowBandwidthModeOn": "Alacsony sávszélességű mód engedélyezése",
         "lowerYourHand": "Kéz leengedése",
         "moreActions": "További műveletek",
         "moreOptions": "További beállítások",
@@ -989,16 +989,7 @@
         "tr": "Átirat"
     },
     "userMedia": {
-        "androidGrantPermissions": "Válaszd az <b><i>Engedélyezés</i></b> opciót, ha a böngésző engedélyt kér.",
-        "chromeGrantPermissions": "Válaszd az <b><i>Engedélyezés</i></b> opciót, ha a böngésző engedélyt kér.",
-        "edgeGrantPermissions": "Válaszd az <b><i>Igen</i></b> opciót, ha a böngésző hozzáférést kér.",
-        "electronGrantPermissions": "A kamera és a mikrofon használatát engedélyezni kell",
-        "firefoxGrantPermissions": "Válaszd <b><i>Kiválasztott eszköz megosztása</i></b> opciót, ha a böngésző hozzáférést kér.",
-        "iexplorerGrantPermissions": "Válaszd az <b><i>OK</i></b> opciót, ha a böngésző engedélyezést kér.",
-        "nwjsGrantPermissions": "A kamera és a mikrofon használatát engedélyezni kell",
-        "operaGrantPermissions": "Válaszd az <b><i>Engedélyezés</i></b> opciót, ha a böngésző engedélyt kér.",
-        "react-nativeGrantPermissions": "Válaszd az <b><i>Engedélyezés</i></b> opciót, ha a böngésző engedélyt kér.",
-        "safariGrantPermissions": "Válaszd az <b><i>OK</i></b> opciót, ha a böngésző engedélyezést kér."
+        "grantPermissions": "A kamera és a mikrofon használatát engedélyezni kell."
     },
     "videoSIPGW": {
         "busy": "Dolgozunk az erőforrások felszabadításán. Kísérelje meg újra néhány perc múlva.",
@@ -1012,8 +1003,6 @@
     },
     "videoStatus": {
         "adjustFor": "Igazítsa a legjobb:",
-        "audioOnly": "CsH",
-        "audioOnlyExpanded": "Jelenleg az alacsony sávszélességű mód az aktív, vagyis csak hangot lehet fogadni és képernyőmegosztást.",
         "bestPerformance": "Teljesítményhez",
         "callQuality": "Videominőség",
         "hd": "MF",
@@ -1021,9 +1010,11 @@
         "highDefinition": "Magas felbontású",
         "highestQuality": "Minőséghez",
         "labelTooiltipNoVideo": "Nincs videó",
-        "labelTooltipAudioOnly": "Alacsony sávszélességű mód aktiválva",
+        "labelTooltipLowBandwidthMode": "Alacsony sávszélességű mód aktiválva",
         "ld": "AF",
         "ldTooltip": "Alacsony felbontású videó",
+        "lowBandwidthMode": "CsH",
+        "lowBandwidthModeExpanded": "Jelenleg az alacsony sávszélességű mód az aktív, vagyis csak hangot lehet fogadni és képernyőmegosztást.",
         "lowDefinition": "Alacsony felbontású",
         "onlyAudioAvailable": "„Csak hang” mód elérhető",
         "onlyAudioSupported": "Csak a hang támogatott ebben a böngészőben.",
@@ -1063,7 +1054,7 @@
         "image6": "Erdő",
         "image7": "Napfelkelte",
         "none": "Nincs",
-        "pleaseWait": "Kérjük várjon...",
+        "pleaseWait": "Kérjük várjon…",
         "removeBackground": "Háttér eltávolítása",
         "slightBlur": "Enyhén elmosódott",
         "title": "Virtuális háttérképek",

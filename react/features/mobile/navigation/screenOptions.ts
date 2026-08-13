@@ -56,6 +56,11 @@ export const welcomeScreenOptions = {
 export const conferenceScreenOptions = fullScreenOptions;
 
 /**
+ * Screen options for visitors queue.
+ */
+export const visitorsScreenOptions = fullScreenOptions;
+
+/**
  * Tab bar options for chat screen.
  */
 export const chatTabBarOptions = {
@@ -138,6 +143,11 @@ export const securityScreenOptions = presentationScreenOptions;
  * Screen options for recording modal.
  */
 export const recordingScreenOptions = presentationScreenOptions;
+
+/**
+ * Screen options for the audio-translation language selector modal.
+ */
+export const audioTranslationScreenOptions = presentationScreenOptions;
 
 /**
  * Screen options for subtitles modal.

@@ -1,4 +1,4 @@
-import { throttle } from 'lodash';
+import { throttle } from 'lodash-es';
 
 import { IReduxState, IStore } from '../app/types';
 import { getParticipantCount } from '../base/participants/functions';
@@ -28,7 +28,7 @@ const checkToolboxOverlap = (clientHeight: number, store: IStore) => {
     if (!toolboxRect) {
         return;
     }
-    const tiles = document.querySelectorAll('span.videocontainer');
+    const tiles = document.querySelectorAll<HTMLSpanElement>('span.videocontainer');
 
     if (!tiles.length) {
         return;
@@ -50,13 +50,13 @@ const checkToolboxOverlap = (clientHeight: number, store: IStore) => {
 
     const rows = store.getState()['features/filmstrip'].tileViewDimensions?.gridDimensions?.rows;
     const noOfTilesToCheck = rows === 1 ? tiles.length : DEFAULT_MAX_COLUMNS - 1;
+    const limit = Math.min(noOfTilesToCheck, tiles.length);
 
-    for (let i = 1; i < Math.max(noOfTilesToCheck, tiles.length); i++) {
+    for (let i = 1; i <= limit; i++) {
         const tile = tiles[tiles.length - i];
         const indicatorsRect = tile?.querySelector('.bottom-indicators')?.getBoundingClientRect();
 
         if (!indicatorsRect) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -83,12 +83,12 @@ const throttledCheckOverlap = throttle(checkToolboxOverlap, 100, {
  */
 StateListenerRegistry.register(
     /* selector */ state => {
-        const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
+        const { clientHeight, videoSpaceWidth } = state['features/base/responsive-ui'];
 
         return {
             participantCount: getParticipantCount(state),
             clientHeight,
-            clientWidth,
+            clientWidth: videoSpaceWidth,
             isTileView: isLayoutTileView(state)
         };
     },

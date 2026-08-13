@@ -38,7 +38,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @returns {string}
      */
-    getPlaybackStatus() {
+    override getPlaybackStatus() {
         let status;
 
         if (!this.player) {
@@ -63,7 +63,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @returns {boolean}
      */
-    isMuted() {
+    override isMuted() {
         return this.player?.isMuted();
     }
 
@@ -72,7 +72,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @returns {number}
      */
-    getVolume() {
+    override getVolume() {
         return this.player?.getVolume();
     }
 
@@ -81,7 +81,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @returns {number}
      */
-    getTime() {
+    override getTime() {
         return this.player?.getCurrentTime();
     }
 
@@ -92,8 +92,13 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    seek(time: number) {
-        return this.player?.seekTo(time);
+    override seek(time: number) {
+        // allowSeekAhead, so a seek outside the buffered range is honoured
+        // instead of being deferred. A follower is the first caller to reach this
+        // on a player that has not started (opened while the meeting's video is
+        // paused), where the default would leave it on the thumbnail rather than
+        // at the shared position.
+        return this.player?.seekTo(time, true);
     }
 
     /**
@@ -101,7 +106,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    play() {
+    override play() {
         return this.player?.playVideo();
     }
 
@@ -110,7 +115,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    pause() {
+    override pause() {
         return this.player?.pauseVideo();
     }
 
@@ -119,7 +124,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    mute() {
+    override mute() {
         return this.player?.mute();
     }
 
@@ -128,7 +133,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    unMute() {
+    override unMute() {
         return this.player?.unMute();
     }
 
@@ -137,7 +142,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @returns {void}
      */
-    dispose() {
+    override dispose() {
         if (this.player) {
             this.player.destroy();
             this.player = null;
@@ -167,7 +172,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      * @returns {void}
      */
     onPlayerReady = (event: any) => {
-        const { _isOwner } = this.props;
+        const { _isOwner, follower } = this.props;
 
         this.player = event.target;
 
@@ -177,6 +182,15 @@ class YoutubeVideoManager extends AbstractVideoManager {
 
         if (_isOwner) {
             this.player.addEventListener('onVideoProgress', this.throttledFireUpdateSharedVideoEvent);
+        }
+
+        if (follower) {
+            // The player only exists now, so this is where a follower first
+            // gets to reconcile with the meeting's shared state; it also stays
+            // muted, since a follower plays no audio.
+            this.syncFollower();
+
+            return;
         }
 
         this.play();
@@ -189,7 +203,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
     };
 
     getPlayerOptions = () => {
-        const { _isOwner, videoId } = this.props;
+        const { _isOwner, follower, videoId } = this.props;
         const showControls = _isOwner ? 1 : 0;
 
         const options = {
@@ -202,7 +216,11 @@ class YoutubeVideoManager extends AbstractVideoManager {
                     'fs': '0',
                     'autoplay': 0,
                     'controls': showControls,
-                    'rel': 0
+                    'rel': 0,
+
+                    // A follower plays no audio; starting it muted also keeps
+                    // the browser from blocking its (scripted) playback.
+                    ...follower ? { 'mute': 1 } : {}
                 }
             },
             onError: (e: any) => this.onError(e),
@@ -219,7 +237,7 @@ class YoutubeVideoManager extends AbstractVideoManager {
      *
      * @inheritdoc
      */
-    render() {
+    override render() {
         return (
             <YouTube
                 { ...this.getPlayerOptions() } />

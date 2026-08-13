@@ -1,6 +1,7 @@
 import React, { Component, ReactElement } from 'react';
 
 import { IReduxState } from '../../app/types';
+import { getParticipantDisplayName } from '../../base/participants/functions';
 
 
 /**
@@ -38,7 +39,7 @@ export class AbstractCaptions<P extends IAbstractCaptionsProps> extends Componen
      * @inheritdoc
      * @returns {ReactElement}
      */
-    render(): any {
+    override render(): any {
         const { _displaySubtitles, _requestingSubtitles, _transcripts } = this.props;
 
         if (!_requestingSubtitles || !_displaySubtitles || !_transcripts || !_transcripts.size) {
@@ -100,7 +101,9 @@ function _constructTranscripts(state: IReduxState): Map<string, string> {
 
     for (const [ id, transcriptMessage ] of _transcriptMessages) {
         if (transcriptMessage) {
-            let text = `${transcriptMessage.participant.name}: `;
+            // Resolve the speaker name from the store (like the CC panel does) rather than relying on
+            // the name sent by the transcriber, which may be missing.
+            let text = `${getParticipantDisplayName(state, transcriptMessage.participant.id ?? '')}: `;
 
             if (transcriptMessage.final) {
                 text += transcriptMessage.final;

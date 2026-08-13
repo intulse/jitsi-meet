@@ -21,12 +21,15 @@
 #import "JitsiMeet+Private.h"
 #import "JitsiMeetConferenceOptions+Private.h"
 #import "JitsiMeetView+Private.h"
-#import "RCTBridgeWrapper.h"
 #import "ReactUtils.h"
-#import "RNSplashScreen.h"
 #import "ScheenshareEventEmiter.h"
 
 #import <react-native-webrtc/WebRTCModuleOptions.h>
+#import <RCTReactNativeFactory.h>
+#import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
+#import <React/RCTBundleURLProvider.h>
+#import <React/RCTRootView.h>
+#import "JitsiReactFactoryDelegate.h"
 
 #if !defined(JITSI_MEET_SDK_LITE)
 #import <RNGoogleSignin/RNGoogleSignin.h>
@@ -34,9 +37,10 @@
 #endif
 
 @implementation JitsiMeet {
-    RCTBridgeWrapper *_bridgeWrapper;
     NSDictionary *_launchOptions;
     ScheenshareEventEmiter *_screenshareEventEmiter;
+    RCTReactNativeFactory *_reactNativeFactory;
+    JitsiReactFactoryDelegate *_reactFactoryDelegate;
 }
 
 #pragma mak - This class is a singleton
@@ -54,15 +58,11 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-#if 0
-        // Initialize WebRTC options.
-        WebRTCModuleOptions *options = [WebRTCModuleOptions sharedInstance];
-        options.loggingSeverity = RTCLoggingSeverityInfo;
-#endif
-
-        // Initialize the one and only bridge for interfacing with React Native.
-        _bridgeWrapper = [[RCTBridgeWrapper alloc] init];
         
+        // Initialize WebRTC options.
+        self.rtcAudioDevice = nil;
+        self.webRtcLoggingSeverity = WebRTCLoggingSeverityNone;
+
         // Initialize the listener for handling start/stop screensharing notifications.
         _screenshareEventEmiter = [[ScheenshareEventEmiter alloc] init];
 
@@ -82,7 +82,7 @@
   didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     _launchOptions = [launchOptions copy];
-
+    
 #if !defined(JITSI_MEET_SDK_LITE)
     [Dropbox setAppKey];
 #endif
@@ -137,17 +137,32 @@
 
 #pragma mark - Utility methods
 
-- (void)instantiateReactNativeBridge {
-    if (_bridgeWrapper != nil) {
-        return;
-    };
-    
-    _bridgeWrapper = [[RCTBridgeWrapper alloc] init];
+- (void)createReactNativeFactory {
+    _reactFactoryDelegate = [[JitsiReactFactoryDelegate alloc] init];
+    id<RCTDependencyProvider> provider = [[RCTAppDependencyProvider alloc] init];
+    _reactFactoryDelegate.dependencyProvider = provider;
+    _reactNativeFactory = [[RCTReactNativeFactory alloc] initWithDelegate:_reactFactoryDelegate];
+    NSLog(@"ReactNativeFactory created: %@", _reactNativeFactory);
+
+    // Initialize WebRTC options.
+    WebRTCModuleOptions *options = [WebRTCModuleOptions sharedInstance];
+    options.audioDevice = _rtcAudioDevice;
+    options.loggingSeverity = (RTCLoggingSeverity)_webRtcLoggingSeverity;
 }
 
-- (void)destroyReactNativeBridge {
-    [_bridgeWrapper invalidate];
-    _bridgeWrapper = nil;
+- (void)instantiateReactNative {
+    if (_reactNativeFactory == nil) {
+        [self createReactNativeFactory];
+    }
+
+    [_reactNativeFactory.rootViewFactory initializeReactHostWithLaunchOptions:nil
+                                                          bundleConfiguration:_reactNativeFactory.bundleConfiguration
+                                                         devMenuConfiguration:_reactNativeFactory.devMenuConfiguration];
+}
+
+- (void)destroyReactNative {
+    _reactNativeFactory = nil;
+    _reactFactoryDelegate = nil;
 }
 
 - (JitsiMeetConferenceOptions *)getInitialConferenceOptions {
@@ -202,7 +217,7 @@
 
         if (contacts && (url = contacts.firstObject.personHandle.value)) {
             return [JitsiMeetConferenceOptions fromBuilder:^(JitsiMeetConferenceOptionsBuilder *builder) {
-                builder.audioOnly = audioOnly;
+                builder.lowBandwidthMode = audioOnly;
                 builder.room = url;
             }];
         }
@@ -220,8 +235,17 @@
     return nil;
 }
 
-- (void)showSplashScreen:(UIView*)rootView {
-    [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
+- (void)showSplashScreen {
+    Class splashClass = NSClassFromString(@"SplashView");
+    if (splashClass && [splashClass respondsToSelector:@selector(sharedInstance)]) {
+        id splashInstance = [splashClass performSelector:@selector(sharedInstance)];
+        if (splashInstance && [splashInstance respondsToSelector:@selector(showSplash)]) {
+            [splashInstance performSelector:@selector(showSplash)];
+            NSLog(@"Splash Screen Shown Successfully");
+        }
+    } else {
+        NSLog(@"SplashView module not found");
+    }
 }
 
 #pragma mark - Property getter / setters
@@ -231,7 +255,10 @@
 }
 
 - (void)setDefaultConferenceOptions:(JitsiMeetConferenceOptions *)defaultConferenceOptions {
-    if (defaultConferenceOptions != nil && _defaultConferenceOptions.room != nil) {
+    
+    // For testing configOverrides a room needs to be set,
+    // thus the following check needs to be commented out
+    if (defaultConferenceOptions != nil && defaultConferenceOptions.room != nil) {
         @throw [NSException exceptionWithName:@"RuntimeError"
                                        reason:@"'room' must be null in the default conference options"
                                      userInfo:nil];
@@ -245,12 +272,17 @@
     return _defaultConferenceOptions == nil ? @{} : [_defaultConferenceOptions asProps];
 }
 
-- (RCTBridge *)getReactBridge {
-    return _bridgeWrapper.bridge;
+- (RCTReactNativeFactory *)getReactNativeFactory {
+    if (_reactNativeFactory == nil) {
+        [self createReactNativeFactory];
+    }
+
+    return _reactNativeFactory;
 }
 
 - (ExternalAPI *)getExternalAPI {
-    return [_bridgeWrapper.bridge moduleForClass:ExternalAPI.class];
+    ExternalAPI *api = [ExternalAPI sharedInstance];
+    return api;
 }
 
 @end

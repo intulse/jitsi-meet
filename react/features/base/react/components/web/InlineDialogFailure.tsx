@@ -1,19 +1,20 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
-import { withPixelLineHeight } from '../../../styles/functions.web';
 import Button from '../../../ui/components/web/Button';
+import { getSupportUrl } from '../../functions';
 
 const useStyles = makeStyles()(theme => {
     return {
         dialog: {
-            backgroundColor: theme.palette.ui01,
-            border: `1px solid ${theme.palette.ui04}`,
+            backgroundColor: theme.palette.dialogBackground,
+            border: `1px solid ${theme.palette.inlineDialogBorder}`,
             borderRadius: `${Number(theme.shape.borderRadius)}px`,
             boxShadow: '0px 1px 2px rgba(41, 41, 41, 0.25)',
-            color: theme.palette.text01,
-            ...withPixelLineHeight(theme.typography.bodyShortRegular),
+            color: theme.palette.dialogText,
+            ...theme.typography.bodyShortRegular,
             padding: `${theme.spacing(3)} 10`,
             '& .retry-button': {
                 margin: '16px auto 0 auto'
@@ -50,7 +51,7 @@ const InlineDialogFailure = ({
     const { t } = useTranslation();
     const { classes } = useStyles();
 
-    const supportLink = interfaceConfig.SUPPORT_URL;
+    const supportLink = useSelector(getSupportUrl);
     const supportString = t('inlineDialogFailure.supportMsg');
     const supportLinkElem = supportLink && showSupportLink
         ? (

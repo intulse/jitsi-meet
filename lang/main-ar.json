@@ -36,9 +36,6 @@
         "phone": "هاتف",
         "speaker": "مكبر الصوت"
     },
-    "audioOnly": {
-        "audioOnly": "معدل تبادل البيانات منخفض"
-    },
     "breakoutRooms": {
         "actions": {
             "add": "أضف غرفة جانبية",
@@ -122,7 +119,7 @@
         "installExtensionText": "نزِّل الإضافة للدمج مع رزنامة غوغل ورزنامة أوفيس 365"
     },
     "connectingOverlay": {
-        "joiningRoom": "قيد وصلك بالإجتماع..."
+        "joiningRoom": "قيد وصلك بالإجتماع…"
     },
     "connection": {
         "ATTACHED": "رُبِط",
@@ -134,7 +131,7 @@
         "DISCONNECTED": "فُصِل",
         "DISCONNECTING": "قيد الفصل",
         "ERROR": "خطأ",
-        "FETCH_SESSION_ID": "قيد الحصول على مُعرِّف الجلسة...",
+        "FETCH_SESSION_ID": "قيد الحصول على مُعرِّف الجلسة…",
         "GET_SESSION_ID_ERROR": "خطأ في الحصول على مُعرِّف الجلسة: {{code}}",
         "GOT_SESSION_ID": "جرى الحصول على مُعرِّف الجلسة",
         "LOW_BANDWIDTH": "أوقف فيديو {{displayName}} لتوفير كمية البيانات المتبادلة"
@@ -189,7 +186,7 @@
         "ifHaveApp": "إن كان لديك التطبيق:",
         "joinInApp": "انضم للمُلتقى عبر تطبيق الجوال",
         "launchWebButton": "افتح تطبيق الويب",
-        "title": "قيد عقد مُلتقىك في {{app}}...",
+        "title": "قيد عقد مُلتقىك في {{app}}…",
         "tryAgainButton": "جرب مرة أخرى في تطبيق الحاسوب",
         "unsupportedBrowser": "يبدو أنك تستخدم متصفحًا لا ندعمه."
     },
@@ -222,7 +219,7 @@
         "Share": "شارك",
         "Submit": "أرسل",
         "WaitForHostMsg": "لم يبدأ المؤتمر بعد. إن كنت المضيف والراعي، فنرجو تأكيد ذلك عبر الاستيثاق أو انتظر وصول المضيف رجاءً. ",
-        "WaitingForHostTitle": "في انتظار المضيف ...",
+        "WaitingForHostTitle": "في انتظار المضيف…",
         "Yes": "نعم",
         "accessibilityLabel": {
             "liveStreaming": "بث حي مباشر"
@@ -244,9 +241,9 @@
         "cameraUnknownError": "يصعب استعمال الكاميرا لأسباب مجهولة.",
         "cameraUnsupportedResolutionError": "لا تدعم كاميرتك دقة الفيديو المطلوبة.",
         "close": "أغلق",
-        "conferenceDisconnectMsg": "قد تضطر للتحقق من اتصال الشبكة لديك. سيعاد الاتصال خلال {{seconds}} ثانية...",
+        "conferenceDisconnectMsg": "قد تضطر للتحقق من اتصال الشبكة لديك. سيعاد الاتصال خلال {{seconds}} ثانية…",
         "conferenceDisconnectTitle": "فُصِل الاتصال لديك.",
-        "conferenceReloadMsg": "نحاول إصلاح الأمر. سيعاد الاتصال خلال {{seconds}} ثانية...",
+        "conferenceReloadMsg": "نحاول إصلاح الأمر. سيعاد الاتصال خلال {{seconds}} ثانية…",
         "conferenceReloadTitle": "لم تسر الأمور على ما يرام، نأسف لذلك!",
         "confirm": "أكِّد",
         "confirmNo": "لا",
@@ -370,6 +367,7 @@
         "sendPrivateMessageTitle": "أترسل ردًا خاصًا؟",
         "serviceUnavailable": "الخدمة غير متاحة",
         "sessTerminated": "أُنهيَت المكالمة",
+        "sessTerminatedReason": "تم إنهاء الإجتماع",
         "sessionRestarted": "إعادة الاتصال من الجسر",
         "shareAudio": "استمر",
         "shareAudioTitle": "كيفية مشاركة الصوت",
@@ -531,14 +529,12 @@
         "errorLiveStreamNotEnabled": "البث الحي غير مفعَّل على على {{email}}. فعَّل البث الحي رجاءً، أو سجِّل الدخل إلى حسابٍ مُفعَّل فيه البث الحي",
         "expandedOff": "أُوقِف البث الحي",
         "expandedOn": "يجري بث المُلتقى على يوتيوب",
-        "expandedPending": "تبدأ عملية البث الحي...",
+        "expandedPending": "تبدأ عملية البث الحي…",
         "failedToStart": "فشلت عملية بدء البث الحي",
         "getStreamKeyManually": "لم نتمكن من الوصول إلى أي بث حي. جرب جلب مفتاح بث حي خاص بك من يوتيوب.",
         "googlePrivacyPolicy": "سياسية خصوصية غوغل",
         "inProgress": "البث المباشر غير ممكّن على {{email}}. يرجى تمكين البث المباشر أو تسجيل الدخول إلى حساب مع تمكين البث المباشر.",
         "invalidStreamKey": "يحتمل كون مفتاح البث الحي غير صحيح.",
-        "limitNotificationDescriptionNative": "سيقيَّد البث إلى {{limit}} د، ولكن إن أردت إجراء عملية بث غير محدودة، جرِّب  {{app}}.",
-        "limitNotificationDescriptionWeb": "نظرًا للضغط الكبير، سيقيَّد البث إلى {{limit}} د، ولكن إن أردت إجراء عملية بث غير محدودة، جرِّب  <a href={{url}} rel='noopener noreferrer' target='_blank'>{{app}}</a>.",
         "off": "أُوقِف البث الحي",
         "offBy": "أوقف {{name}} البث الحي",
         "on": "بث حي",
@@ -574,10 +570,10 @@
         "joinRejectedMessage": "رفض رئيس الجلسة منحك الإذن بالدخول إلى المُلتقى",
         "joinRejectedTitle": "تم رفض طلب الانضمام.",
         "joinTitle": "انضم للمُلتقى",
-        "joinWithPasswordMessage": "الرجاء الانتظار أثناء محاولة الدخول دون كلمة مرور...",
+        "joinWithPasswordMessage": "الرجاء الانتظار أثناء محاولة الدخول دون كلمة مرور…",
         "joiningMessage": "ستتمكن من الانضمام للمُلتقى بعد الموافقة على طلبك",
-        "joiningTitle": "يجري طلب إذنٍ للدخول...",
-        "joiningWithPasswordTitle": "الدخول مع كلمة مرور...",
+        "joiningTitle": "يجري طلب إذنٍ للدخول…",
+        "joiningWithPasswordTitle": "الدخول مع كلمة مرور…",
         "knockButton": "اطلب إذن الدخول",
         "knockTitle": "يريد أحدٌ الدخول إلى المُلتقى",
         "knockingParticipantList": "تنبيه قائمة المشاركين",
@@ -629,6 +625,9 @@
         "button": "ادعُ آخرين",
         "youAreAlone": "أنت بمفردك في المُلتقى"
     },
+    "lowBandwidthMode": {
+        "lowBandwidthMode": "معدل تبادل البيانات منخفض"
+    },
     "me": "أنا",
     "notify": {
         "OldElectronAPPTitle": "ثغرة أمنية!",
@@ -658,7 +657,7 @@
         "linkToSalesforceDescription": "يمكنك ربط ملخص الاجتماع بكائن Salesforce.",
         "linkToSalesforceError": "فشل ربط المُلتقى بـ Salesforce",
         "linkToSalesforceKey": "ربط هذا المُلتقى",
-        "linkToSalesforceProgress": "جارٍ ربط الاجتماع بـ Salesforce ...",
+        "linkToSalesforceProgress": "جارٍ ربط الاجتماع بـ Salesforce…",
         "linkToSalesforceSuccess": "تم ربط الاجتماع بـ Salesforce",
         "localRecordingStarted": "بدأ {{name}} تسجيلًا محليًا.",
         "localRecordingStopped": "أوقف {{name}} التسجيل المحلي.",
@@ -789,7 +788,7 @@
         "callMe": "اتصل بي",
         "callMeAtNumber": "اتصل بي على هذا الرقم:",
         "calling": "قيد الاتصال",
-        "configuringDevices": "يجري ضبط الأجهزة...",
+        "configuringDevices": "يجري ضبط الأجهزة…",
         "connectedWithAudioQ": "هل متصل بجهاز صوت؟",
         "connection": {
             "good": "اتصال الإنترنت لديك جيد!",
@@ -835,7 +834,6 @@
         "or": "أو",
         "premeeting": "ما قبل المُلتقى",
         "screenSharingError": "خطأ في مشاركة الشاشة:",
-        "showScreen": "تفعيل واجهة ما قبل المُلتقى",
         "startWithPhone": "البدء مع جهاز الصوت من الجوال",
         "videoOnlyError": "خطأ في الفيديو:",
         "videoTrackError": "لم نتمكن من إنشاء ملف الفيديو",
@@ -843,17 +841,17 @@
     },
     "presenceStatus": {
         "busy": "مشغول",
-        "calling": "يتحدث...",
+        "calling": "يتحدث…",
         "connected": "متصل",
-        "connecting": "يتصل...",
-        "connecting2": "يتصل...",
+        "connecting": "يتصل…",
+        "connecting2": "يتصل…",
         "disconnected": "غير الاتصال",
         "expired": "منتهي الصلاحية",
         "ignored": "مهمل",
-        "initializingCall": "تهيئة مكالمة...",
+        "initializingCall": "تهيئة مكالمة…",
         "invited": "مدعو",
         "rejected": "مرفوض",
-        "ringing": "يرن..."
+        "ringing": "يرن…"
     },
     "privacyView": {
         "title": "خصوصية"
@@ -890,7 +888,7 @@
         "errorFetchingLink": "خطأ في جلب رابط التسجيل.",
         "expandedOff": "أوقٍف التسجيل",
         "expandedOn": "يُسجَّل المُلتقى الآن",
-        "expandedPending": "بدء التسجيل...",
+        "expandedPending": "بدء التسجيل…",
         "failedToStart": "فشل بدء التسجيل",
         "fileSharingdescription": "شارك التسجيل مع المشاركين للمُلتقى",
         "highlight": "تسليط الضوء",
@@ -899,8 +897,6 @@
         "highlightMomentSuccess": "تم تمييز اللحظة",
         "highlightMomentSucessDescription": "ستتم إضافة اللحظة المميزة إلى ملخص المُلتقى.",
         "inProgress": "التسجيل أو البث المباشر قيد التقدم",
-        "limitNotificationDescriptionNative": "نظرًا للضغط الكبير، سيقيَّد التسجيل إلى {{limit}} د، ولكن إن أردت التسجيل لمدة مفتوحة، جرِّب <3>{{app}}</3>.",
-        "limitNotificationDescriptionWeb": "نظرًا للضغط الكبير، سيقيَّد التسجيل إلى {{limit}} د، ولكن إن أردت التسجيل لمدة مفتوحة، جرِّب <a href={{url}} rel='noopener noreferrer' target='_blank'>{{app}}</a>.",
         "linkGenerated": "لقد أنشأنا رابطًا لتسجيلك.",
         "live": "مباشر",
         "localRecordingNoNotificationWarning": "لن يتم الإعلان عن التسجيل للمشاركين الآخرين. ستحتاج إلى إخبارهم بأنه تم تسجيل الاجتماع.",
@@ -917,7 +913,7 @@
         "on": "تسجيل",
         "onBy": "بدأ {{name}} التسجيل",
         "onlyRecordSelf": "تسجيل فقط دفق الصوت والفيديو الخاصة بي",
-        "pending": "التحضير لتسجيل المُلتقى...",
+        "pending": "التحضير لتسجيل المُلتقى…",
         "rec": "تسجيل",
         "saveLocalRecording": "حفظ ملف التسجيل محليا",
         "serviceDescription": "ستحفظ خدمة التسجيل الفيديو المستجل",
@@ -944,6 +940,7 @@
         "title": "خيارات الأمان"
     },
     "settings": {
+        "audio": "الصوت",
         "buttonLabel": "إعدادات",
         "calendar": {
             "about": "تُستعمَل الرزنامة {{appName}} المدمجة للوصل بأمان إلى رزنامتك، لذا بالإمكان معرفة الأحداث القادمة.",
@@ -967,6 +964,7 @@
         "more": "المزيد",
         "name": "الاسم",
         "noDevice": "لا يوجد",
+        "notifications": "الإشعارات",
         "participantJoined": "انضم مشارك",
         "participantKnocking": "دخل المشارك في الردهة",
         "participantLeft": "غادر المشارك",
@@ -977,13 +975,15 @@
         "selectCamera": "الكاميرا",
         "selectMic": "المايكروفون",
         "selfView": "عرض ذاتي",
+        "shortcuts": "اختصارات لوحة المفاتيح",
         "sounds": "اصوات",
         "speakers": "المذياع (مكبر الصوت)",
         "startAudioMuted": "بدء الجميع مكتومي الصوت",
         "startReactionsMuted": "كتم رد فعل الصوت للجميع",
         "startVideoMuted": "بدء الجميع دون فيديو",
         "talkWhileMuted": "تحدث أثناء كتم الصوت",
-        "title": "الإعدادات"
+        "title": "الإعدادات",
+        "video": "الفيديو"
     },
     "settingsView": {
         "advanced": "إعدادات متقدمة",
@@ -1054,7 +1054,6 @@
         "Settings": "الإعدادات",
         "accessibilityLabel": {
             "Settings": "اظهِر/اخفِ الإعدادات",
-            "audioOnly": "بدل الصوت فقط",
             "audioRoute": "اختر جهاز الصوت",
             "boo": "Boo",
             "breakoutRoom": "الانضمام / مغادرة غرفة فرعية",
@@ -1084,6 +1083,7 @@
             "lobbyButton": "فعِّل/عطِّل وضع غرفة الانتظار",
             "localRecording": "اظهِر/اخفِ التحكم بالتسجيل المحلي",
             "lockRoom": "اظهِر/اخفِ كلمة مرور المُلتقى",
+            "lowBandwidthMode": "بدل الصوت فقط",
             "moreActions": "اظهِر/اخفِ قائمة المزيد من الإجراءات",
             "moreActionsMenu": "قائمة المزيد من الإجراءات",
             "moreOptions": "اظهر المزيد من الخيارت",
@@ -1121,8 +1121,6 @@
             "videomute": "بدِّل وضع اخفاء الفيديو"
         },
         "addPeople": "اضف أحدًا إلى المكالمة",
-        "audioOnlyOff": "عطِّل وضع معدَّل نقل البيانات المنخفص",
-        "audioOnlyOn": "فعِّل وضع نقل البيانات المنخفض",
         "audioRoute": "اختر جهاز الصوت",
         "audioSettings": "إعدادات الصوت",
         "authenticate": "اَجرِ عملية الاستيثاق",
@@ -1159,6 +1157,8 @@
         "lobbyButtonEnable": "فعِّل وضع غرفة الانتظار",
         "login": "ادخل",
         "logout": "اخرج",
+        "lowBandwidthModeOff": "عطِّل وضع معدَّل نقل البيانات المنخفص",
+        "lowBandwidthModeOn": "فعِّل وضع نقل البيانات المنخفض",
         "lowerYourHand": "اخفض يدك",
         "moreActions": "المزيد من الإجراءات",
         "moreOptions": "المزيد من الخيارات",
@@ -1215,7 +1215,7 @@
         "failedToStart": "فشلت عملية بدء الإذاعة",
         "labelToolTip": "يجري إذاعة المُلتقى",
         "off": "أوقفت الإذاعة",
-        "pending": "التحضير لإذاعة المُلتقى...",
+        "pending": "التحضير لإذاعة المُلتقى…",
         "start": "بدء إظهار الترجمة",
         "stop": "إيقاف عرض الترجمة",
         "subtitles": "ترجمات",
@@ -1223,16 +1223,7 @@
         "tr": "يذاع"
     },
     "userMedia": {
-        "androidGrantPermissions": "اختر <b><i>السماح</i></b> عندما يطلب المتصفح الأذونات.",
-        "chromeGrantPermissions": "اختر <b><i>السماح</i></b> عندما يطلب المتصفح الأذونات.",
-        "edgeGrantPermissions": "اختر <b><i>نعم</i></b> عندما يطلب المتصفح الأذونات.",
-        "electronGrantPermissions": "امنح إذنًا باستعمال الكاميرا والمايكروفون.",
-        "firefoxGrantPermissions": "اختر <b><i>مشاركة الجهاز المحدَّد</i></b> عندما يطل بالمتصفح الأذونات.",
-        "iexplorerGrantPermissions": "اختر <b><i>تمام</i></b> عندما يطلب المتصفح الأذونات.",
-        "nwjsGrantPermissions": "امنح إذنًا باستعمال الكاميرا والمايكروفون.",
-        "operaGrantPermissions": "اختر <b><i>السماح</i></b> عندما يطلب المتصفح الأذونات.",
-        "react-nativeGrantPermissions": "اختر <b><i>السماح</i></b> عندما يطلب المتصفح الأذونات.",
-        "safariGrantPermissions": "اختر <b><i>تمام</i></b> عندما يطلب المتصفح الأذونات."
+        "grantPermissions": "امنح إذنًا باستعمال الكاميرا والمايكروفون."
     },
     "videoSIPGW": {
         "busy": "نعمل على تحرير الموارد. حاول مرة أخرى لاحقًا بعد بضعة دقائق.",
@@ -1246,8 +1237,6 @@
     },
     "videoStatus": {
         "adjustFor": "ضبط ل:",
-        "audioOnly": "صوت",
-        "audioOnlyExpanded": "أنت في وضع معدَّل البيانات المتبادلة  المنخفض. الصوت ومشاركة الشاشة هو المتاح فقط في هذا الوضع.",
         "bestPerformance": "أفضل أداء",
         "callQuality": "جودة الفيديو",
         "hd": "دقة عالية",
@@ -1255,9 +1244,11 @@
         "highDefinition": "دقة عالية",
         "highestQuality": "اعلى جودة",
         "labelTooiltipNoVideo": "بلا فيديو",
-        "labelTooltipAudioOnly": "فعِّل وضع معدَّل البيانات المتبادلة المنخفض",
+        "labelTooltipLowBandwidthMode": "فعِّل وضع معدَّل البيانات المتبادلة المنخفض",
         "ld": "دقة منخفضة",
         "ldTooltip": "عرض فيديو بدقة منخفضة",
+        "lowBandwidthMode": "صوت",
+        "lowBandwidthModeExpanded": "أنت في وضع معدَّل البيانات المتبادلة  المنخفض. الصوت ومشاركة الشاشة هو المتاح فقط في هذا الوضع.",
         "lowDefinition": "دقة منخفضة",
         "performanceSettings": "إعدادات الأداء",
         "sd": "دقة قياسية",
@@ -1302,7 +1293,7 @@
         "image6": "غابة",
         "image7": "شروق الشمس",
         "none": "بدون",
-        "pleaseWait": "يرجى الانتظار...",
+        "pleaseWait": "يرجى الانتظار…",
         "removeBackground": "إزالة خلفية",
         "slightBlur": "طمس طفيف",
         "title": "خلفيات افتراضية",

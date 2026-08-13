@@ -1,13 +1,4 @@
 /**
- * The type of the Redux action which signals that the prompt for media
- * permission is visible or not.
- *
- * {
- *     type: MEDIA_PERMISSION_PROMPT_VISIBILITY_CHANGED,
- *     isVisible: {boolean},
- *     browser: {string}
- * }
- * @public
+ * The type of the Redux action which sends page reload log.
  */
-export const MEDIA_PERMISSION_PROMPT_VISIBILITY_CHANGED
-    = 'MEDIA_PERMISSION_PROMPT_VISIBILITY_CHANGED';
+export const PAGE_RELOAD_APPLICATION_LOG = 'PAGE_RELOAD_APPLICATION_LOG';

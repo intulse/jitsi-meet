@@ -8,12 +8,12 @@ export { JitsiMeetJS as default };
 // not confirmed the theory.
 export const analytics = JitsiMeetJS.analytics;
 export const browser = JitsiMeetJS.util.browser;
+export const JitsiAudioTranslationErrors = JitsiMeetJS.errors.audioTranslation;
 export const JitsiConferenceErrors = JitsiMeetJS.errors.conference;
 export const JitsiConferenceEvents = JitsiMeetJS.events.conference;
 export const JitsiConnectionErrors = JitsiMeetJS.errors.connection;
 export const JitsiConnectionEvents = JitsiMeetJS.events.connection;
-export const JitsiConnectionQualityEvents
-    = JitsiMeetJS.events.connectionQuality;
+export const JitsiConnectionQualityEvents = JitsiMeetJS.events.connectionQuality;
 export const JitsiDetectionEvents = JitsiMeetJS.events.detection;
 export const JitsiE2ePingEvents = JitsiMeetJS.events.e2eping;
 export const JitsiMediaDevicesEvents = JitsiMeetJS.events.mediaDevices;

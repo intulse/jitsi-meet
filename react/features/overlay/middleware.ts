@@ -1,13 +1,16 @@
 import { IStore } from '../app/types';
-import { JitsiConferenceErrors } from '../base/lib-jitsi-meet';
+import { getCurrentConference } from '../base/conference/functions';
+import { JitsiConferenceErrors, JitsiConnectionErrors } from '../base/lib-jitsi-meet';
 import {
     isFatalJitsiConferenceError,
     isFatalJitsiConnectionError
 } from '../base/lib-jitsi-meet/functions.any';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 
+import { PAGE_RELOAD_APPLICATION_LOG } from './actionTypes';
 import { openPageReloadDialog } from './actions';
-
+import logger from './logger';
 
 /**
  * Error type. Basically like Error, but augmented with a recoverable property.
@@ -34,10 +37,13 @@ type ErrorType = {
  * List of errors that are not fatal (or handled differently) so then the page reload dialog won't kick in.
  */
 const RN_NO_RELOAD_DIALOG_ERRORS = [
+    JitsiConnectionErrors.NOT_LIVE_ERROR,
+    JitsiConnectionErrors.SHARD_CHANGED_ERROR,
     JitsiConferenceErrors.CONFERENCE_ACCESS_DENIED,
     JitsiConferenceErrors.CONFERENCE_DESTROYED,
     JitsiConferenceErrors.CONNECTION_ERROR,
-    JitsiConferenceErrors.CONFERENCE_RESTARTED
+    JitsiConferenceErrors.CONFERENCE_RESTARTED,
+    JitsiConferenceErrors.DISPLAY_NAME_REQUIRED
 ];
 
 const ERROR_TYPES = {
@@ -94,11 +100,11 @@ StateListenerRegistry.register(
         return configError || connectionError || conferenceError;
     },
     /* listener */ (error: ErrorType, store: IStore) => {
-        const state = store.getState();
-
         if (!error) {
             return;
         }
+
+        const state = store.getState();
 
         // eslint-disable-next-line no-negated-condition
         if (typeof APP !== 'undefined') {
@@ -107,9 +113,44 @@ StateListenerRegistry.register(
                 ...getErrorExtraInfo(state, error)
             });
         } else if (RN_NO_RELOAD_DIALOG_ERRORS.indexOf(error.name) === -1 && typeof error.recoverable === 'undefined') {
+            const { error: conferenceError } = state['features/base/conference'];
+            const { error: configError } = state['features/base/config'];
+            const { error: connectionError } = state['features/base/connection'];
+            const conferenceState = state['features/base/conference'];
+
+            if (conferenceState.leaving) {
+                logger.info(`Ignoring ${error.name} while leaving conference`);
+
+                return;
+            }
+
             setTimeout(() => {
-                store.dispatch(openPageReloadDialog());
+                logger.info(`Reloading due to error: ${error.name}`, error);
+
+                store.dispatch(openPageReloadDialog(conferenceError, configError, connectionError));
             }, 500);
         }
     }
 );
+
+/**
+ * Middleware for overlay specific actions.
+ *
+ * @param {Store} store - The redux store.
+ * @returns {Function}
+ */
+MiddlewareRegistry.register(({ getState }) => next => action => {
+    const result = next(action);
+
+    if (action.type === PAGE_RELOAD_APPLICATION_LOG) {
+        const state = getState();
+        const conference = getCurrentConference(state) ?? state['features/base/conference']?.leaving;
+
+        conference?.sendApplicationLog(JSON.stringify({
+            name: 'page.reload',
+            label: action.reason
+        }));
+    }
+
+    return result;
+});

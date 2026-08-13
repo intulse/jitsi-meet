@@ -21,6 +21,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.net.URL;
+import java.util.ArrayList;
 
 
 /**
@@ -154,13 +155,13 @@ public class JitsiMeetConferenceOptions implements Parcelable {
         }
 
         /**
-         * Indicates the conference will be joined in audio-only mode. In this mode no video is
+         * Indicates the conference will be joined in low bandwidth mode. In this mode no video is
          * sent or received.
-         * @param audioOnly - Audio-mode indicator.
+         * @param lowBandwidthMode - Low-bandwidth-mode indicator.
          * @return - The {@link Builder} object itself so the method calls can be chained.
          */
-        public Builder setAudioOnly(boolean audioOnly) {
-            setConfigOverride("startAudioOnly", audioOnly);
+        public Builder setLowBandwidthMode(boolean lowBandwidthMode) {
+            setConfigOverride("startLowBandwidthMode", lowBandwidthMode);
 
             return this;
         }
@@ -229,6 +230,12 @@ public class JitsiMeetConferenceOptions implements Parcelable {
             return this;
         }
 
+        public Builder setConfigOverride(String config, ArrayList<Bundle> arrayList) {
+            this.config.putParcelableArrayList(config, arrayList);
+
+            return this;
+        }
+
         /**
          * Builds the immutable {@link JitsiMeetConferenceOptions} object with the configuration
          * that this {@link Builder} instance specified.
@@ -262,11 +269,6 @@ public class JitsiMeetConferenceOptions implements Parcelable {
 
     Bundle asProps() {
         Bundle props = new Bundle();
-
-        // Android always has the PiP flag set by default.
-        if (!featureFlags.containsKey("pip.enabled")) {
-            featureFlags.putBoolean("pip.enabled", true);
-        }
 
         props.putBundle("flags", featureFlags);
 

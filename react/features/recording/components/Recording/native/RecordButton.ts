@@ -2,25 +2,25 @@ import { Platform } from 'react-native';
 import { connect } from 'react-redux';
 
 import { IReduxState } from '../../../../app/types';
-import { openDialog } from '../../../../base/dialog/actions';
 import { IOS_RECORDING_ENABLED, RECORDING_ENABLED } from '../../../../base/flags/constants';
 import { getFeatureFlag } from '../../../../base/flags/functions';
 import { translate } from '../../../../base/i18n/functions';
 import { navigate }
     from '../../../../mobile/navigation/components/conference/ConferenceNavigationContainerRef';
 import { screen } from '../../../../mobile/navigation/routes';
-import { IProps, _mapStateToProps as abstractMapStateToProps } from '../../LiveStream/AbstractStartLiveStreamDialog';
+import {
+    IProps, _mapStateToProps as abstractStartLiveStreamDialogMapStateToProps
+} from '../../LiveStream/AbstractStartLiveStreamDialog';
 import AbstractRecordButton, {
     IProps as AbstractProps,
     _mapStateToProps as _abstractMapStateToProps
 } from '../AbstractRecordButton';
 
-import StopRecordingDialog from './StopRecordingDialog';
-
 type Props = IProps & AbstractProps;
 
 /**
- * Button for opening a screen where a recording session can be started.
+ * Button for opening the recording/transcription management screen.
+ * The screen handles both starting a new session and managing a running one.
  */
 class RecordButton extends AbstractRecordButton<Props> {
 
@@ -32,13 +32,7 @@ class RecordButton extends AbstractRecordButton<Props> {
      * @returns {void}
      */
     _onHandleClick() {
-        const { _isRecordingRunning, dispatch } = this.props;
-
-        if (_isRecordingRunning) {
-            dispatch(openDialog(StopRecordingDialog));
-        } else {
-            navigate(screen.conference.recording);
-        }
+        navigate(screen.conference.recording);
     }
 }
 
@@ -58,8 +52,8 @@ export function mapStateToProps(state: IReduxState) {
 
     return {
         ...abstractProps,
-        ...abstractMapStateToProps(state),
-        visible: enabled && iosEnabled && abstractProps.visible
+        ...abstractStartLiveStreamDialogMapStateToProps(state),
+        visible: Boolean(enabled && iosEnabled && abstractProps.visible)
     };
 }
 

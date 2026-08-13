@@ -19,19 +19,19 @@ export interface IParticipant {
     e2eeVerified?: boolean;
     email?: string;
     fakeParticipant?: FakeParticipant;
-    features?: {
-        'screen-sharing'?: boolean | string;
-    };
+    features?: IParticipantFeatures;
     getId?: Function;
     id: string;
     isJigasi?: boolean;
+    isPromoted?: boolean;
     isReplaced?: boolean;
     isReplacing?: number;
+    isSilent?: boolean;
     jwtId?: string;
     loadableAvatarUrl?: string;
     loadableAvatarUrlUseCORS?: boolean;
     local?: boolean;
-    localRecording?: string;
+    localRecording?: boolean;
     name?: string;
     pinned?: boolean;
     presence?: string;
@@ -41,6 +41,13 @@ export interface IParticipant {
     role?: string;
     sources?: Map<string, Map<string, ISourceInfo>>;
     supportsRemoteControl?: boolean;
+    userContext?: IUserContext;
+}
+
+export interface IUserContext {
+    [key: string]: any;
+    id?: string;
+    name?: string;
 }
 
 export interface ILocalParticipant extends IParticipant {
@@ -54,6 +61,28 @@ export interface ILocalParticipant extends IParticipant {
     userSelectedMicDeviceLabel?: string;
 }
 
+export interface IParticipantFeatures {
+    'branding'?: boolean | string;
+    'calendar'?: boolean | string;
+    'create-polls'?: boolean | string;
+    'file-upload'?: boolean | string;
+    'flip'?: boolean | string;
+    'inbound-call'?: boolean | string;
+    'list-visitors'?: boolean | string;
+    'live-translation'?: boolean | string;
+    'livestreaming'?: boolean | string;
+    'lobby'?: boolean | string;
+    'moderation'?: boolean | string;
+    'outbound-call'?: boolean | string;
+    'recording'?: boolean | string;
+    'room'?: boolean | string;
+    'screen-sharing'?: boolean | string;
+    'send-groupchat'?: boolean | string;
+    'sip-inbound-call'?: boolean | string;
+    'sip-outbound-call'?: boolean | string;
+    'transcription'?: boolean | string;
+}
+
 export interface ISourceInfo {
     muted: boolean;
     videoType: string;
@@ -63,7 +92,13 @@ export interface IJitsiParticipant {
     getDisplayName: () => string;
     getId: () => string;
     getJid: () => string;
+    getProperty: (name: string) => any;
     getRole: () => string;
     getSources: () => Map<string, Map<string, ISourceInfo>>;
+    isAudioMuted: () => boolean;
     isHidden: () => boolean;
+    isHiddenFromRecorder: () => boolean;
+    isVideoMuted: () => boolean;
 }
+
+export type ParticipantFeaturesKey = keyof IParticipantFeatures;

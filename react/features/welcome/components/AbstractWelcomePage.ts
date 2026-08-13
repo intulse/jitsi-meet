@@ -1,4 +1,3 @@
-// @ts-expect-error
 import { generateRoomWithoutSeparator } from '@jitsi/js-utils/random';
 import { Component } from 'react';
 import { WithTranslation } from 'react-i18next';
@@ -95,7 +94,7 @@ export class AbstractWelcomePage<P extends IProps> extends Component<P, IState> 
      * @property {number|null} updateTimeoutId - Identifier of the timeout
      * updating the generated room name.
      */
-    state: IState = {
+    override state: IState = {
         animateTimeoutId: undefined,
         generatedRoomName: '',
         generateRoomNames: undefined,
@@ -134,7 +133,7 @@ export class AbstractWelcomePage<P extends IProps> extends Component<P, IState> 
      *
      * @inheritdoc
      */
-    componentDidMount() {
+    override componentDidMount() {
         this._mounted = true;
         sendAnalytics(createWelcomePageEvent('viewed', undefined, { value: 1 }));
     }
@@ -145,7 +144,7 @@ export class AbstractWelcomePage<P extends IProps> extends Component<P, IState> 
      *
      * @inheritdoc
      */
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this._clearTimeouts();
         this._mounted = false;
     }
@@ -163,8 +162,7 @@ export class AbstractWelcomePage<P extends IProps> extends Component<P, IState> 
         const roomPlaceholder = this.state.roomPlaceholder + word.substr(0, 1);
 
         if (word.length > 1) {
-            animateTimeoutId
-                = window.setTimeout(
+            animateTimeoutId = window.setTimeout(
                     () => {
                         this._animateRoomNameChanging(
                             word.substring(1, word.length));
@@ -239,6 +237,8 @@ export class AbstractWelcomePage<P extends IProps> extends Component<P, IState> 
             room: value,
             insecureRoomName: Boolean(this.props._enableInsecureRoomNameWarning && value && isInsecureRoomName(value))
         });
+
+        if (!value) this._updateRoomName();
     }
 
     /**
@@ -267,13 +267,17 @@ export class AbstractWelcomePage<P extends IProps> extends Component<P, IState> 
         const updateTimeoutId = window.setTimeout(this._updateRoomName, 10000);
 
         this._clearTimeouts();
+
         this.setState(
             {
                 generatedRoomName,
                 roomPlaceholder,
                 updateTimeoutId
             },
-            () => this._animateRoomNameChanging(generatedRoomName));
+            () => {
+                if (this.state.room) this._clearTimeouts();
+                else this._animateRoomNameChanging(generatedRoomName);
+            });
     }
 }
 

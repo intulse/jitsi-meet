@@ -1,15 +1,15 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import { App } from './features/app/components/App.web';
 import { getLogger } from './features/base/logging/functions';
 import Platform from './features/base/react/Platform.web';
-import { getJitsiMeetGlobalNS } from './features/base/util/helpers';
+import { getJitsiMeetGlobalNS, getJitsiMeetGlobalNSConnectionTimes } from './features/base/util/helpers';
 import DialInSummaryApp from './features/invite/components/dial-in-summary/web/DialInSummaryApp';
 import PrejoinApp from './features/prejoin/components/web/PrejoinApp';
 import WhiteboardApp from './features/whiteboard/components/web/WhiteboardApp';
 
-const logger = getLogger('index.web');
+const logger = getLogger('app:index.web');
 
 // Add global loggers.
 window.addEventListener('error', ev => {
@@ -45,16 +45,23 @@ if (Platform.OS === 'ios') {
 }
 
 const globalNS = getJitsiMeetGlobalNS();
+const connectionTimes = getJitsiMeetGlobalNSConnectionTimes();
+
+// Used to check if the load event has been fired.
+globalNS.hasLoaded = false;
 
 // Used for automated performance tests.
-globalNS.connectionTimes = {
-    'index.loaded': window.indexLoadedTime
-};
+connectionTimes['index.loaded'] = window.indexLoadedTime;
+
+window.addEventListener('load', () => {
+    connectionTimes['window.loaded'] = window.loadedEventTime;
+    globalNS.hasLoaded = true;
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     const now = window.performance.now();
 
-    globalNS.connectionTimes['document.ready'] = now;
+    connectionTimes['document.ready'] = now;
     logger.log('(TIME) document ready:\t', now);
 });
 
@@ -65,13 +72,22 @@ globalNS.entryPoints = {
     WHITEBOARD: WhiteboardApp
 };
 
+/**
+ * React 18 concurrent mode allows only one root per DOM node. Cache roots by
+ * element ID so {@code renderEntryPoint} never calls {@code createRoot} twice
+ * on the same element.
+ */
+const _roots = new Map();
+
 globalNS.renderEntryPoint = ({
     Component,
     props = {},
     elementId = 'react'
 }) => {
-    ReactDOM.render(
-        <Component { ...props } />,
-        document.getElementById(elementId)
-    );
+    const element = document.getElementById(elementId);
+
+    if (!_roots.has(elementId)) {
+        _roots.set(elementId, createRoot(element));
+    }
+    _roots.get(elementId).render(<Component { ...props } />);
 };

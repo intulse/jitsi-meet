@@ -20,6 +20,8 @@ static NSString * const sendEventNotificationName = @"org.jitsi.meet.SendEvent";
 
 @interface ExternalAPI : RCTEventEmitter<RCTBridgeModule>
 
++ (ExternalAPI *)sharedInstance;
+
 - (void)sendHangUp;
 - (void)sendSetAudioMuted:(BOOL)muted;
 - (void)sendEndpointTextMessage:(NSString*)message :(NSString*)to;
@@ -27,9 +29,15 @@ static NSString * const sendEventNotificationName = @"org.jitsi.meet.SendEvent";
 - (void)retrieveParticipantsInfo:(void (^)(NSArray*))completion;
 - (void)openChat:(NSString*)to;
 - (void)closeChat;
-- (void)sendChatMessage:(NSString*)message :(NSString*)to ;
+- (void)sendChatMessage:(NSString*)message :(NSString*)to;
 - (void)sendSetVideoMuted:(BOOL)muted;
 - (void)sendSetClosedCaptionsEnabled:(BOOL)enabled;
 - (void)toggleCamera;
+- (void)showNotification:(NSString*)appearance :(NSString*)description :(NSString*)timeout :(NSString*)title :(NSString*)uid;
+- (void)hideNotification:(NSString*)uid;
+- (void)startRecording:(NSString*)mode :(NSString*)dropboxToken :(BOOL)shouldShare :(NSString*)rtmpStreamKey :(NSString*)rtmpBroadcastID :(NSString*)youtubeStreamKey :(NSString*)youtubeBroadcastID :(NSDictionary*)extraMetadata :(BOOL)transcription;
+- (void)stopRecording:(NSString*)mode :(BOOL)transcription;
+- (void)overwriteConfig:(NSDictionary*)config;
+- (void)sendCameraFacingModeMessage:(NSString*)to :(NSString*)facingMode;
 
 @end

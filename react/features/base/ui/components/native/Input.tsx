@@ -1,17 +1,22 @@
 import React, { forwardRef, useCallback, useState } from 'react';
 import {
+    BlurEvent,
+    FocusEvent,
     KeyboardTypeOptions,
-    NativeSyntheticEvent, ReturnKeyTypeOptions,
+    NativeSyntheticEvent,
+    ReturnKeyTypeOptions,
     StyleProp,
     Text,
     TextInput,
     TextInputChangeEventData,
-    TextInputFocusEventData, TextInputKeyPressEventData,
+    TextInputKeyPressEventData,
     TextInputSubmitEditingEventData,
+    TextStyle,
     TouchableOpacity,
     View,
     ViewStyle
 } from 'react-native';
+
 
 import Icon from '../../../icons/components/Icon';
 import { IconCloseCircle } from '../../../icons/svg';
@@ -25,15 +30,23 @@ interface IProps extends IInputProps {
     autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters' | undefined;
     autoFocus?: boolean;
     blurOnSubmit?: boolean | undefined;
+    bottomLabel?: string;
     customStyles?: ICustomStyles;
     editable?: boolean | undefined;
+
+    /**
+     * The id to set on the input element.
+     * This is required because we need it internally to tie the input to its
+     * info (label, error) so that screen reader users don't get lost.
+     */
+    id?: string;
     keyboardType?: KeyboardTypeOptions;
     maxLength?: number | undefined;
     minHeight?: number | string | undefined;
     multiline?: boolean | undefined;
     numberOfLines?: number | undefined;
-    onBlur?: ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void) | undefined;
-    onFocus?: ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void) | undefined;
+    onBlur?: ((e: BlurEvent) => void) | undefined;
+    onFocus?: ((e: FocusEvent) => void) | undefined;
     onKeyPress?: ((e: NativeSyntheticEvent<TextInputKeyPressEventData>) => void) | undefined;
     onSubmitEditing?: (value: string) => void;
     pointerEvents?: 'box-none' | 'none' | 'box-only' | 'auto' | undefined;
@@ -52,11 +65,13 @@ const Input = forwardRef<TextInput, IProps>(({
     autoCapitalize,
     autoFocus,
     blurOnSubmit,
+    bottomLabel,
     clearable,
     customStyles,
     disabled,
     error,
     icon,
+    id,
     keyboardType,
     label,
     maxLength,
@@ -86,12 +101,12 @@ const Input = forwardRef<TextInput, IProps>(({
         onChange?.('');
     }, [ onChange ]);
 
-    const handleBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const handleBlur = useCallback((e: BlurEvent) => {
         setFocused(false);
         onBlur?.(e);
     }, [ onBlur ]);
 
-    const handleFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const handleFocus = useCallback((e: FocusEvent) => {
         setFocused(true);
         onFocus?.(e);
     }, [ onFocus ]);
@@ -106,7 +121,7 @@ const Input = forwardRef<TextInput, IProps>(({
         onSubmitEditing?.(text);
     }, [ onSubmitEditing ]);
 
-    return (<View style = { [ styles.inputContainer, customStyles?.container ] }>
+    return (<View style = { [ styles.inputContainer, customStyles?.container ] as StyleProp<ViewStyle> }>
         {label && <Text style = { styles.label }>{ label }</Text>}
         <View style = { styles.fieldContainer as StyleProp<ViewStyle> }>
             {icon && <Icon
@@ -121,6 +136,7 @@ const Input = forwardRef<TextInput, IProps>(({
                 autoFocus = { autoFocus }
                 blurOnSubmit = { blurOnSubmit }
                 editable = { !disabled }
+                id = { id }
                 keyboardType = { keyboardType }
                 maxLength = { maxLength }
 
@@ -145,11 +161,12 @@ const Input = forwardRef<TextInput, IProps>(({
                     clearable && styles.clearableInput,
                     customStyles?.input,
                     disabled && styles.inputDisabled,
-                    error && styles.inputError,
-                    focused && styles.inputFocused,
                     icon && styles.iconInput,
-                    multiline && styles.inputMultiline
-                ] }
+                    multiline && styles.inputMultiline,
+                    focused && styles.inputFocused,
+                    error && styles.inputError
+                ] as StyleProp<TextStyle> }
+                testID = { id }
                 textContentType = { textContentType }
                 value = { typeof value === 'number' ? `${value}` : value } />
             { clearable && !disabled && value !== '' && (
@@ -163,6 +180,20 @@ const Input = forwardRef<TextInput, IProps>(({
                 </TouchableOpacity>
             )}
         </View>
+        {
+            bottomLabel && (
+                <View>
+                    <Text
+                        id = { `${id}-description` }
+                        style = { [
+                            styles.bottomLabel,
+                            error && styles.bottomLabelError
+                        ] }>
+                        { bottomLabel }
+                    </Text>
+                </View>
+            )
+        }
     </View>);
 });
 

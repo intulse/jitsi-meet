@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { find } from 'lodash-es';
 
 import { IStateful } from '../base/app/types';
 import { getCurrentConference } from '../base/conference/functions';
@@ -33,19 +33,31 @@ export const getBreakoutRooms = (stateful: IStateful): IRooms => toState(statefu
 export const getMainRoom = (stateful: IStateful) => {
     const rooms = getBreakoutRooms(stateful);
 
-    return _.find(rooms, room => Boolean(room.isMainRoom));
+    return find(rooms, room => Boolean(room.isMainRoom));
 };
 
 /**
  * Returns the rooms info.
  *
  * @param {IStateful} stateful - The redux store, the redux.
-
-* @returns {IRoomsInfo} The rooms info.
+ * @param {boolean} includeHidden - Whether to include hidden participants
+ * (e.g. Jibri, transcriber) in the result. Defaults to false.
+ * @returns {IRoomsInfo} The rooms info.
  */
-export const getRoomsInfo = (stateful: IStateful) => {
+export const getRoomsInfo = (stateful: IStateful, includeHidden = false) => {
+    const state = toState(stateful);
+    const localParticipant = getLocalParticipant(stateful);
+    const jwtUser = state['features/base/jwt']?.user;
+    const localUserContext = jwtUser ? {
+        id: jwtUser.id,
+        name: jwtUser.name
+    } : {
+        id: localParticipant?.jwtId,
+        name: localParticipant?.name
+    };
     const breakoutRooms = getBreakoutRooms(stateful);
     const conference = getCurrentConference(stateful);
+    const { iAmRecorder } = state['features/base/config'];
 
     const initialRoomsInfo = {
         rooms: []
@@ -55,9 +67,8 @@ export const getRoomsInfo = (stateful: IStateful) => {
     if (!breakoutRooms || Object.keys(breakoutRooms).length === 0) {
         // filter out hidden participants
         const conferenceParticipants = conference?.getParticipants()
-            .filter((participant: IJitsiParticipant) => !participant.isHidden());
+            .filter((participant: IJitsiParticipant) => includeHidden || !participant.isHidden());
 
-        const localParticipant = getLocalParticipant(stateful);
         let localParticipantInfo;
 
         if (localParticipant) {
@@ -65,7 +76,8 @@ export const getRoomsInfo = (stateful: IStateful) => {
                 role: localParticipant.role,
                 displayName: localParticipant.name,
                 avatarUrl: localParticipant.loadableAvatarUrl,
-                id: localParticipant.id
+                id: localParticipant.id,
+                userContext: localUserContext
             };
         }
 
@@ -86,7 +98,14 @@ export const getRoomsInfo = (stateful: IStateful) => {
                                 role: participantItem.getRole(),
                                 displayName: participantItem.getDisplayName(),
                                 avatarUrl: storeParticipant?.loadableAvatarUrl,
-                                id: participantItem.getId()
+                                id: participantItem.getId(),
+                                userContext: storeParticipant?.userContext,
+                                isJigasi: participantItem.getProperty('features_jigasi') === true,
+                                // A participant can be hidden because it's a transcriber or Jibri using
+                                // the hidden domain, or it can be a user hidden from the recorder.
+                                isHidden: participantItem.isHidden() || (iAmRecorder && participantItem.isHiddenFromRecorder()),
+                                audioMuted: participantItem.isAudioMuted(),
+                                videoMuted: participantItem.isVideoMuted()
                             } as IRoomInfoParticipant;
                         }) ]
                     : [ localParticipantInfo ]
@@ -110,13 +129,18 @@ export const getRoomsInfo = (stateful: IStateful) => {
                         const storeParticipant = getParticipantById(stateful,
                             ids.length > 1 ? ids[1] : participantItem.jid);
 
+                        // Check if this is the local participant
+                        const isLocal = storeParticipant?.id === localParticipant?.id;
+                        const userContext = isLocal ? localUserContext : (storeParticipant?.userContext || participantItem.userContext);
+
                         return {
                             jid: participantItem?.jid,
                             role: participantItem?.role,
                             displayName: participantItem?.displayName,
                             avatarUrl: storeParticipant?.loadableAvatarUrl,
                             id: storeParticipant ? storeParticipant.id
-                                : participantLongId
+                                : participantLongId,
+                            userContext
                         } as IRoomInfoParticipant;
                     }) : []
             } as IRoomInfo;
@@ -135,7 +159,7 @@ export const getRoomsInfo = (stateful: IStateful) => {
 export const getRoomByJid = (stateful: IStateful, roomJid: string) => {
     const rooms = getBreakoutRooms(stateful);
 
-    return _.find(rooms, (room: IRoom) => room.jid === roomJid);
+    return find(rooms, (room: IRoom) => room.jid === roomJid);
 };
 
 /**

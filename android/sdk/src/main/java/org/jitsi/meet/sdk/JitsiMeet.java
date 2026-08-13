@@ -16,13 +16,14 @@
 package org.jitsi.meet.sdk;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.ReactHost;
 
-import org.devio.rn.splashscreen.SplashScreen;
+import com.splashview.SplashView;
 import org.jitsi.meet.sdk.log.JitsiMeetLogger;
 
 public class JitsiMeet {
@@ -71,12 +72,31 @@ public class JitsiMeet {
      * Used in development mode. It displays the React Native development menu.
      */
     public static void showDevOptions() {
-        ReactInstanceManager reactInstanceManager
-            = ReactInstanceManagerHolder.getReactInstanceManager();
+        ReactHost reactHost = ReactHostHolder.getReactHost();
 
-        if (reactInstanceManager != null) {
-            reactInstanceManager.showDevOptionsDialog();
+        if (reactHost != null && reactHost.getDevSupportManager() != null) {
+            reactHost.getDevSupportManager().showDevOptionsDialog();
         }
+    }
+
+    /**
+     * Starts the React Native runtime if it's not already running. Optional
+     * warm-up after {@link #destroyReactNative()}; joining a conference also
+     * restarts it on demand.
+     *
+     * @param context - Any {@link Context}; its application context is used.
+     */
+    public static void instantiateReactNative(Context context) {
+        ReactHostHolder.initReactHost((Application) context.getApplicationContext());
+    }
+
+    /**
+     * Destroys the React Native runtime, freeing its resources. Teardown is
+     * asynchronous. Every {@link JitsiMeetView} must be disposed first; the
+     * next {@link JitsiMeetView} join() re-creates the runtime.
+     */
+    public static void destroyReactNative() {
+        ReactHostHolder.destroyReactHost();
     }
 
     public static boolean isCrashReportingDisabled(Context context) {
@@ -92,7 +112,7 @@ public class JitsiMeet {
      */
     public static void showSplashScreen(Activity activity) {
         try {
-            SplashScreen.show(activity);
+            SplashView.INSTANCE.showSplashView(activity);
         } catch (Exception e) {
             JitsiMeetLogger.e(e, "Failed to show splash screen");
         }

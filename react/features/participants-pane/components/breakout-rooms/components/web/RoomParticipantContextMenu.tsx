@@ -49,7 +49,7 @@ interface IProps {
 const useStyles = makeStyles()(theme => {
     return {
         text: {
-            color: theme.palette.text02,
+            color: theme.palette.participantSectionText,
             padding: '10px 16px',
             height: '40px',
             overflow: 'hidden',
@@ -108,10 +108,12 @@ export const RoomParticipantContextMenu = ({
 
     return isLocalModerator ? (
         <ContextMenu
+            activateFocusTrap = { true }
             entity = { entity }
             isDrawerOpen = { Boolean(entity) }
             offsetTarget = { offsetTarget }
             onClick = { lowerMenu }
+            onClickOutside = { lowerMenu }
             onDrawerClose = { onSelect }
             onMouseEnter = { onEnter }
             onMouseLeave = { onLeave }>

@@ -52,7 +52,7 @@ const hasCollabDetails = (state: IReduxState): boolean => Boolean(
  * @returns {boolean}
  */
 export const isWhiteboardEnabled = (state: IReduxState): boolean =>
-    (getWhiteboardConfig(state).enabled || hasCollabDetails(state))
+    (getWhiteboardConfig(state).enabled ?? hasCollabDetails(state))
     && getWhiteboardConfig(state).collabServerBaseUrl
     && getCurrentConference(state)?.getMetadataHandler()
 ?.isSupported();
@@ -63,7 +63,15 @@ export const isWhiteboardEnabled = (state: IReduxState): boolean =>
  * @param {IReduxState} state - The state from the Redux store.
  * @returns {boolean}
  */
-export const isWhiteboardOpen = (state: IReduxState): boolean => getWhiteboardState(state).isOpen;
+export const isWhiteboardOpen = (state: IReduxState): boolean => {
+    const { iAmRecorder, iAmSipGateway } = state['features/base/config'];
+
+    if (iAmRecorder || iAmSipGateway) {
+        return false;
+    }
+
+    return getWhiteboardState(state).isOpen;
+};
 
 /**
  * Indicates whether the whiteboard button is visible.
@@ -72,7 +80,8 @@ export const isWhiteboardOpen = (state: IReduxState): boolean => getWhiteboardSt
  * @returns {boolean}
  */
 export const isWhiteboardButtonVisible = (state: IReduxState): boolean =>
-    isWhiteboardEnabled(state) && (isLocalParticipantModerator(state) || isWhiteboardOpen(state));
+    isWhiteboardEnabled(state)
+    && (isLocalParticipantModerator(state) || isWhiteboardOpen(state) || hasCollabDetails(state));
 
 /**
  * Indicates whether the whiteboard is present as a meeting participant.
@@ -99,7 +108,7 @@ export const generateCollabServerUrl = (state: IReduxState): string | undefined 
     const inBreakoutRoom = isInBreakoutRoom(state);
     const roomId = getCurrentRoomId(state);
     const room = md5.hex(
-        `${locationURL?.origin}${getBackendSafePath(locationURL?.pathname)}${inBreakoutRoom ? `|${roomId}` : ''}`
+        `${getBackendSafePath(locationURL?.pathname)}${inBreakoutRoom ? `|${roomId}` : ''}`
     );
 
     return appendURLParam(collabServerBaseUrl, 'room', room);
@@ -113,6 +122,16 @@ export const generateCollabServerUrl = (state: IReduxState): string | undefined 
  */
 export const getCollabServerUrl = (state: IReduxState): string | undefined =>
     getWhiteboardState(state).collabServerUrl;
+
+/**
+ * Returns the storage backend URL for saving whiteboard scenes and images.
+ *
+ * @param {IReduxState} state - The state from the Redux store.
+ * @returns {string}
+ */
+export const getStorageBackendUrl = (state: IReduxState): string | undefined =>
+    getWhiteboardConfig(state).storageBackendUrl;
+
 
 /**
  * Whether the whiteboard is visible on stage.
@@ -158,6 +177,12 @@ export const shouldEnforceUserLimit = (state: IReduxState): boolean => {
  * @returns {boolean}
  */
 export const shouldNotifyUserLimit = (state: IReduxState): boolean => {
+    const { iAmRecorder, iAmSipGateway } = state['features/base/config'];
+
+    if (iAmRecorder || iAmSipGateway) {
+        return false;
+    }
+
     const userLimit = getWhiteboardUserLimit(state);
 
     if (userLimit === Infinity) {

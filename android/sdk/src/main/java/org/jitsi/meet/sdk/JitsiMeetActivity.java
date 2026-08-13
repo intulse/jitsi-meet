@@ -24,10 +24,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.facebook.react.modules.core.PermissionListener;
@@ -53,6 +60,8 @@ public class JitsiMeetActivity extends AppCompatActivity
 
     private static final String ACTION_JITSI_MEET_CONFERENCE = "org.jitsi.meet.CONFERENCE";
     private static final String JITSI_MEET_CONFERENCE_OPTIONS = "JitsiMeetConferenceOptions";
+
+    private boolean isReadyToClose;
 
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -85,6 +94,57 @@ public class JitsiMeetActivity extends AppCompatActivity
         launch(context, options);
     }
 
+    public static void addTopBottomInsets(@NonNull Window w, @NonNull View v) {
+
+        // Enable edge-to-edge mode
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(w, false);
+
+        // Make system bars transparent so content is visible underneath
+        w.setStatusBarColor(android.graphics.Color.TRANSPARENT);
+        w.setNavigationBarColor(android.graphics.Color.TRANSPARENT);
+
+        View decorView = w.getDecorView();
+
+        // Get display metrics for calculating density-independent caps
+        final android.util.DisplayMetrics metrics = v.getContext().getResources().getDisplayMetrics();
+        final int screenHeight = metrics.heightPixels;
+        final float density = metrics.density;
+
+        // Listen for window inset changes 
+        // when system bars visibility is toggled or when the device rotates
+        ViewCompat.setOnApplyWindowInsetsListener(decorView, (view, windowInsets) -> {
+
+            // Get the actual inset values reported by the system
+            int statusBarInset = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            int navBarInset = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+
+            // Calculate maximum allowed inset values to prevent device-specific bugs
+            final int maxTopInset = Math.min((int)(60 * density), (int)(screenHeight * 0.10));
+            final int maxBottomInset = Math.min((int)(120 * density), (int)(screenHeight * 0.10));
+
+            int topInset = Math.min(statusBarInset, maxTopInset);
+            int bottomInset = Math.min(navBarInset, maxBottomInset);
+
+            // Apply calculated insets
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+
+            // Update margins only if they've changed
+            if (params.topMargin != topInset || params.bottomMargin != bottomInset) {
+                params.topMargin = topInset;
+                params.bottomMargin = bottomInset;
+                v.setLayoutParams(params);
+            }
+
+            view.setBackgroundColor(JitsiMeetView.BACKGROUND_COLOR);
+
+            // Return CONSUMED to prevent double-application of margins
+            return WindowInsetsCompat.CONSUMED;
+        });
+
+        // Manually trigger the inset listener to apply margins immediately
+        ViewCompat.requestApplyInsets(decorView);
+    }
+
     // Overrides
     //
 
@@ -100,7 +160,18 @@ public class JitsiMeetActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // ReactInstanceManager is now initialized by JitsiInitializer during application startup
+        // Just call onHostResume since the manager is already ready
+        JitsiMeetActivityDelegate.onHostResume(this);
+
         setContentView(R.layout.activity_jitsi_meet);
+
+       
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM 
+        && getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            addTopBottomInsets(getWindow(), findViewById(android.R.id.content)); 
+            }
+
         this.jitsiView = findViewById(R.id.jitsiView);
 
         registerForBroadcastMessages();
@@ -124,6 +195,8 @@ public class JitsiMeetActivity extends AppCompatActivity
 
     @Override
     public void onDestroy() {
+        JitsiMeetLogger.i("onDestroy()");
+
         // Here we are trying to handle the following corner case: an application using the SDK
         // is using this Activity for displaying meetings, but there is another "main" Activity
         // with other content. If this Activity is "swiped out" from the recent list we will get
@@ -131,7 +204,10 @@ public class JitsiMeetActivity extends AppCompatActivity
         // current meeting, but when our view is detached from React the JS <-> Native bridge won't
         // be operational so the external API won't be able to notify the native side that the
         // conference terminated. Thus, try our best to clean up.
-        leave();
+        if (!isReadyToClose) {
+            JitsiMeetLogger.i("onDestroy(): leaving...");
+            leave();
+        }
 
         this.jitsiView = null;
 
@@ -149,8 +225,12 @@ public class JitsiMeetActivity extends AppCompatActivity
 
     @Override
     public void finish() {
-        leave();
+        if (!isReadyToClose) {
+            JitsiMeetLogger.i("finish(): leaving...");
+            leave();
+        }
 
+        JitsiMeetLogger.i("finish(): finishing...");
         super.finish();
     }
 
@@ -170,8 +250,8 @@ public class JitsiMeetActivity extends AppCompatActivity
     }
 
     public void join(JitsiMeetConferenceOptions options) {
-        if (this.jitsiView  != null) {
-            this.jitsiView .join(options);
+        if (this.jitsiView != null) {
+            this.jitsiView.join(options);
         } else {
             JitsiMeetLogger.w("Cannot join, view is null");
         }
@@ -252,6 +332,7 @@ public class JitsiMeetActivity extends AppCompatActivity
 
     protected void onReadyToClose() {
         JitsiMeetLogger.i("SDK is ready to close");
+        isReadyToClose = true;
         finish();
     }
 
@@ -259,9 +340,17 @@ public class JitsiMeetActivity extends AppCompatActivity
 //        JitsiMeetLogger.i("Transcription chunk received: " + extraData);
 //    }
 
-//    protected void onCustomOverflowMenuButtonPressed(HashMap<String, Object> extraData) {
-//        JitsiMeetLogger.i("Custom overflow menu button pressed: " + extraData);
-//    }
+//    protected void onCustomButtonPressed(HashMap<String, Object> extraData) {
+//         JitsiMeetLogger.i("Custom button pressed: " + extraData);
+//     }
+
+//     protected void onConferenceUniqueIdSet(HashMap<String, Object> extraData) {
+//         JitsiMeetLogger.i("Conference unique id set: " + extraData);
+//     }
+
+//     protected void onRecordingStatusChanged(HashMap<String, Object> extraData) {
+//       JitsiMeetLogger.i("Recording status changed: " + extraData);
+//     }
 
     // Activity lifecycle methods
     //
@@ -294,8 +383,8 @@ public class JitsiMeetActivity extends AppCompatActivity
 
     @Override
     protected void onUserLeaveHint() {
-        if (this.jitsiView  != null) {
-            this.jitsiView .enterPictureInPicture();
+        if (this.jitsiView != null) {
+            this.jitsiView.enterPictureInPicture();
         }
     }
 
@@ -346,12 +435,18 @@ public class JitsiMeetActivity extends AppCompatActivity
                 case READY_TO_CLOSE:
                     onReadyToClose();
                     break;
-//                case TRANSCRIPTION_CHUNK_RECEIVED:
-//                    onTranscriptionChunkReceived(event.getData());
-//                    break;
-//                case CUSTOM_OVERFLOW_MENU_BUTTON_PRESSED:
-//                    onCustomOverflowMenuButtonPressed(event.getData());
-//                    break;
+                // case TRANSCRIPTION_CHUNK_RECEIVED:
+                //    onTranscriptionChunkReceived(event.getData());
+                //    break;
+                // case CUSTOM_BUTTON_PRESSED:
+                //    onCustomButtonPressed(event.getData());
+                //    break;
+                // case CONFERENCE_UNIQUE_ID_SET:
+                //     onConferenceUniqueIdSet(event.getData());
+                //     break;
+                // case RECORDING_STATUS_CHANGED:
+                //     onRecordingStatusChanged(event.getData());
+                //     break;
             }
         }
     }

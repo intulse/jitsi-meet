@@ -1,3 +1,6 @@
+-- Records the timestamp (ms since epoch) when a MUC room first reaches two
+-- occupants and exposes it as the muc#roominfo_created_timestamp field in
+-- disco#info responses, so clients can display how long the conference has run.
 local it = require "util.iterators";
 local process_host_module = module:require "util".process_host_module;
 
@@ -25,7 +28,7 @@ function occupant_joined(event)
 
     if participant_count > 1 then
         if room.created_timestamp == nil then
-            room.created_timestamp = os.time() * 1000; -- Lua provides UTC time in seconds, so convert to milliseconds
+            room.created_timestamp = string.format('%i', os.time() * 1000); -- Lua provides UTC time in seconds, so convert to milliseconds
         end
     end
 end

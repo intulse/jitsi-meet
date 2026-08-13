@@ -21,13 +21,13 @@
 #import <WebRTC/WebRTC.h>
 
 #import "JitsiAudioSession+Private.h"
+#import "callkit/JMCallKitProxy.h"
 
 
 // Audio mode
 typedef enum {
     kAudioModeDefault,
-    kAudioModeAudioCall,
-    kAudioModeVideoCall
+    kAudioModeInCall
 } JitsiMeetAudioMode;
 
 // Events
@@ -51,9 +51,9 @@ static NSString * const kDeviceTypeUnknown    = @"UNKNOWN";
 @implementation AudioMode {
     JitsiMeetAudioMode activeMode;
     RTCAudioSessionConfiguration *defaultConfig;
-    RTCAudioSessionConfiguration *audioCallConfig;
-    RTCAudioSessionConfiguration *videoCallConfig;
+    RTCAudioSessionConfiguration *inCallConfig;
     RTCAudioSessionConfiguration *earpieceConfig;
+    BOOL audioDisabled;
     BOOL forceSpeaker;
     BOOL forceEarpiece;
     BOOL isSpeakerOn;
@@ -73,9 +73,8 @@ RCT_EXPORT_MODULE();
 - (NSDictionary *)constantsToExport {
     return @{
         @"DEVICE_CHANGE_EVENT": kDevicesChanged,
-        @"AUDIO_CALL" : [NSNumber numberWithInt: kAudioModeAudioCall],
-        @"DEFAULT"    : [NSNumber numberWithInt: kAudioModeDefault],
-        @"VIDEO_CALL" : [NSNumber numberWithInt: kAudioModeVideoCall]
+        @"DEFAULT" : [NSNumber numberWithInt: kAudioModeDefault],
+        @"IN_CALL" : [NSNumber numberWithInt: kAudioModeInCall]
     };
 };
 
@@ -93,15 +92,10 @@ RCT_EXPORT_MODULE();
         defaultConfig.categoryOptions = 0;
         defaultConfig.mode = AVAudioSessionModeDefault;
 
-        audioCallConfig = [[RTCAudioSessionConfiguration alloc] init];
-        audioCallConfig.category = AVAudioSessionCategoryPlayAndRecord;
-        audioCallConfig.categoryOptions = AVAudioSessionCategoryOptionAllowBluetooth | AVAudioSessionCategoryOptionDefaultToSpeaker;
-        audioCallConfig.mode = AVAudioSessionModeVoiceChat;
-
-        videoCallConfig = [[RTCAudioSessionConfiguration alloc] init];
-        videoCallConfig.category = AVAudioSessionCategoryPlayAndRecord;
-        videoCallConfig.categoryOptions = AVAudioSessionCategoryOptionAllowBluetooth;
-        videoCallConfig.mode = AVAudioSessionModeVideoChat;
+        inCallConfig = [[RTCAudioSessionConfiguration alloc] init];
+        inCallConfig.category = AVAudioSessionCategoryPlayAndRecord;
+        inCallConfig.categoryOptions = AVAudioSessionCategoryOptionAllowBluetooth;
+        inCallConfig.mode = AVAudioSessionModeVideoChat;
 
         // Manually routing audio to the earpiece doesn't quite work unless one disables BT (weird, I know).
         earpieceConfig = [[RTCAudioSessionConfiguration alloc] init];
@@ -146,9 +140,36 @@ RCT_EXPORT_MODULE();
 
 #pragma mark - Exported methods
 
+RCT_EXPORT_METHOD(setDisabled:(BOOL)disabled
+                  resolve:(RCTPromiseResolveBlock)resolve
+                   reject:(RCTPromiseRejectBlock)reject) {
+    if (audioDisabled == disabled) {
+        resolve(nil);
+        return;
+    }
+
+    RCTLogInfo(@"[AudioMode] audio disabled: %d", disabled);
+
+    audioDisabled = disabled;
+    JMCallKitProxy.enabled = !disabled;
+
+    RTCAudioSession *session = JitsiAudioSession.rtcAudioSession;
+    if (disabled) {
+        [session removeDelegate:self];
+    } else {
+        [session addDelegate:self];
+    }
+    session.useManualAudio = disabled;
+}
+
 RCT_EXPORT_METHOD(setMode:(int)mode
                   resolve:(RCTPromiseResolveBlock)resolve
                    reject:(RCTPromiseRejectBlock)reject) {
+    if (audioDisabled) {
+        resolve(nil);
+        return;
+    }
+
     RTCAudioSessionConfiguration *config = [self configForMode:mode];
     NSError *error;
 
@@ -177,6 +198,11 @@ RCT_EXPORT_METHOD(setMode:(int)mode
 RCT_EXPORT_METHOD(setAudioDevice:(NSString *)device
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject) {
+    if (audioDisabled) {
+        resolve(nil);
+        return;
+    }
+
     RCTLogInfo(@"[AudioMode] Selected device: %@", device);
     
     RTCAudioSession *session = JitsiAudioSession.rtcAudioSession;
@@ -239,6 +265,10 @@ RCT_EXPORT_METHOD(setAudioDevice:(NSString *)device
 }
 
 RCT_EXPORT_METHOD(updateDeviceList) {
+    if (audioDisabled) {
+        return;
+    }
+
     [self notifyDevicesChanged];
 }
 
@@ -298,12 +328,10 @@ RCT_EXPORT_METHOD(updateDeviceList) {
     }
 
     switch (mode) {
-        case kAudioModeAudioCall:
-            return audioCallConfig;
         case kAudioModeDefault:
             return defaultConfig;
-        case kAudioModeVideoCall:
-            return videoCallConfig;
+        case kAudioModeInCall:
+            return inCallConfig;
         default:
             return nil;
     }

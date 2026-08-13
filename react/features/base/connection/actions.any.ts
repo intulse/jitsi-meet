@@ -1,14 +1,16 @@
-import _ from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 import { IReduxState, IStore } from '../../app/types';
 import { conferenceLeft, conferenceWillLeave, redirect } from '../conference/actions';
 import { getCurrentConference } from '../conference/functions';
 import { IConfigState } from '../config/reducer';
 import JitsiMeetJS, { JitsiConnectionEvents } from '../lib-jitsi-meet';
+import { isEmbedded } from '../util/embedUtils';
 import { parseURLParams } from '../util/parseURLParams';
 import {
     appendURLParam,
-    getBackendSafeRoomName
+    getBackendSafeRoomName,
+    getNormalizedRoomName
 } from '../util/uri';
 
 import {
@@ -16,6 +18,7 @@ import {
     CONNECTION_ESTABLISHED,
     CONNECTION_FAILED,
     CONNECTION_PROPERTIES_UPDATED,
+    CONNECTION_TOKEN_EXPIRED,
     CONNECTION_WILL_CONNECT,
     SET_LOCATION_URL,
     SET_PREFER_VISITOR
@@ -113,25 +116,19 @@ export function connectionFailed(
 export function constructOptions(state: IReduxState) {
     // Deep clone the options to make sure we don't modify the object in the
     // redux store.
-    const options: IOptions = _.cloneDeep(state['features/base/config']);
+    const options: IOptions = cloneDeep(state['features/base/config']);
 
     const { locationURL, preferVisitor } = state['features/base/connection'];
     const params = parseURLParams(locationURL || '');
     const iceServersOverride = params['iceServers.replace'];
 
-    if (iceServersOverride) {
+    // Allow iceServersOverride only when jitsi-meet is in an iframe.
+    if (isEmbedded() && iceServersOverride) {
         options.iceServersOverride = iceServersOverride;
     }
 
     const { bosh, preferBosh, flags } = options;
     let { websocket } = options;
-
-    // TESTING: Only enable WebSocket for some percentage of users.
-    if (websocket && navigator.product === 'ReactNative') {
-        if ((Math.random() * 100) >= (options?.testing?.mobileXmppWsThreshold ?? 0)) {
-            websocket = undefined;
-        }
-    }
 
     if (preferBosh) {
         websocket = undefined;
@@ -146,7 +143,7 @@ export function constructOptions(state: IReduxState) {
     const { room } = state['features/base/conference'];
 
     if (serviceUrl && room) {
-        const roomName = getBackendSafeRoomName(room);
+        const roomName = getNormalizedRoomName(room);
 
         options.serviceUrl = appendURLParam(serviceUrl, 'room', roomName ?? '');
 
@@ -244,6 +241,9 @@ export function _connectInternal(id?: string, password?: string) {
             connection.addEventListener(
                 JitsiConnectionEvents.PROPERTIES_UPDATED,
                 _onPropertiesUpdate);
+            connection.addEventListener(
+                JitsiConnectionEvents.CONNECTION_TOKEN_EXPIRED,
+                _onTokenExpired);
 
             /**
              * Unsubscribe the connection instance from
@@ -329,6 +329,16 @@ export function _connectInternal(id?: string, password?: string) {
             }
 
             /**
+             * Connection will resume.
+             *
+             * @private
+             * @returns {void}
+             */
+            function _onTokenExpired(): void {
+                dispatch(_connectionTokenExpired(connection));
+            }
+
+            /**
              * Connection properties were updated.
              *
              * @param {Object} properties - The properties which were updated.
@@ -370,6 +380,23 @@ function _connectionWillConnect(connection: Object) {
 }
 
 /**
+ * Create an action for when a connection token is expired.
+ *
+ * @param {JitsiConnection} connection - The {@code JitsiConnection} token is expired.
+ * @private
+ * @returns {{
+ *     type: CONNECTION_TOKEN_EXPIRED,
+ *     connection: JitsiConnection
+ * }}
+ */
+function _connectionTokenExpired(connection: Object) {
+    return {
+        type: CONNECTION_TOKEN_EXPIRED,
+        connection
+    };
+}
+
+/**
  * Create an action for when connection properties are updated.
  *
  * @param {Object} properties - The properties which were updated.
@@ -390,10 +417,10 @@ function _propertiesUpdate(properties: object) {
  * Closes connection.
  *
  * @param {boolean} isRedirect - Indicates if the action has been dispatched as part of visitor promotion.
- *
+ * @param {boolean} shouldLeave - Indicates whether to call JitsiConference.leave().
  * @returns {Function}
  */
-export function disconnect(isRedirect?: boolean) {
+export function disconnect(isRedirect?: boolean, shouldLeave = true) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']): Promise<void> => {
         const state = getState();
 
@@ -412,20 +439,26 @@ export function disconnect(isRedirect?: boolean) {
             // intention to leave the conference.
             dispatch(conferenceWillLeave(conference_, isRedirect));
 
-            promise
-                = conference_.leave()
-                .catch((error: Error) => {
-                    logger.warn(
-                        'JitsiConference.leave() rejected with:',
-                        error);
+            if (!shouldLeave) {
+                // we are skipping JitsiConference.leave(), but will still dispatch the normal leave flow events
+                dispatch(conferenceLeft(conference_));
+                promise = Promise.resolve();
+            } else {
+                promise
+                    = conference_.leave()
+                    .catch((error: Error) => {
+                        logger.warn(
+                            'JitsiConference.leave() rejected with:',
+                            error);
 
-                    // The library lib-jitsi-meet failed to make the
-                    // JitsiConference leave. Which may be because
-                    // JitsiConference thinks it has already left.
-                    // Regardless of the failure reason, continue in
-                    // jitsi-meet as if the leave has succeeded.
-                    dispatch(conferenceLeft(conference_));
-                });
+                        // The library lib-jitsi-meet failed to make the
+                        // JitsiConference leave. Which may be because
+                        // JitsiConference thinks it has already left.
+                        // Regardless of the failure reason, continue in
+                        // jitsi-meet as if the leave has succeeded.
+                        dispatch(conferenceLeft(conference_));
+                    });
+            }
         } else {
             promise = Promise.resolve();
         }

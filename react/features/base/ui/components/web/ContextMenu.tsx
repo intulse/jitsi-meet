@@ -8,7 +8,6 @@ import Drawer from '../../../../toolbox/components/web/Drawer';
 import JitsiPortal from '../../../../toolbox/components/web/JitsiPortal';
 import { showOverflowDrawer } from '../../../../toolbox/functions.web';
 import participantsPaneTheme from '../../../components/themes/participantsPaneTheme.json';
-import { withPixelLineHeight } from '../../../styles/functions.web';
 import { spacing } from '../../Tokens';
 
 
@@ -99,6 +98,13 @@ interface IProps {
     onClick?: (e?: React.MouseEvent) => void;
 
     /**
+     * Callback invoked when a click occurs outside the menu (non-drawer path only).
+     * Prefer this over onDrawerClose for outside-click handling to avoid conflating
+     * the drawer-close and the click-outside concerns.
+     */
+    onClickOutside?: () => void;
+
+    /**
      * Callback for drawer close.
      */
     onDrawerClose?: (e?: React.MouseEvent) => void;
@@ -134,12 +140,12 @@ const MAX_HEIGHT = 400;
 const useStyles = makeStyles()(theme => {
     return {
         contextMenu: {
-            backgroundColor: theme.palette.ui01,
-            border: `1px solid ${theme.palette.ui04}`,
+            backgroundColor: theme.palette.overflowMenuBackground,
+            border: `1px solid ${theme.palette.overflowMenuBorder}`,
             borderRadius: `${Number(theme.shape.borderRadius)}px`,
             boxShadow: '0px 1px 2px rgba(41, 41, 41, 0.25)',
-            color: theme.palette.text01,
-            ...withPixelLineHeight(theme.typography.bodyShortRegular),
+            color: theme.palette.overflowMenuItemText,
+            ...theme.typography.bodyShortRegular,
             marginTop: '48px',
             position: 'absolute',
             right: `${participantsPaneTheme.panePadding}px`,
@@ -159,7 +165,7 @@ const useStyles = makeStyles()(theme => {
             paddingTop: '16px',
 
             '& > div': {
-                ...withPixelLineHeight(theme.typography.bodyShortRegularLarge),
+                ...theme.typography.bodyShortRegularLarge,
 
                 '& svg': {
                     fill: theme.palette.icon01
@@ -182,6 +188,7 @@ const ContextMenu = ({
     offsetTarget,
     onClick,
     onKeyDown,
+    onClickOutside,
     onDrawerClose,
     onMouseEnter,
     onMouseLeave,
@@ -244,9 +251,9 @@ const ContextMenu = ({
                 list: Element | null,
                 currentFocus: Element | null,
                 traversalFunction: (
-                list: Element | null,
-                currentFocus: Element | null
-            ) => Element | null
+                    list: Element | null,
+                    currentFocus: Element | null
+                ) => Element | null
         ) => {
             let wrappedOnce = false;
             let nextFocus = traversalFunction(list, currentFocus);
@@ -359,8 +366,8 @@ const ContextMenu = ({
     }, [ containerRef ]);
 
     const removeFocus = useCallback(() => {
-        onDrawerClose?.();
-    }, [ onMouseLeave ]);
+        (onClickOutside ?? onDrawerClose)?.();
+    }, [ onClickOutside, onDrawerClose ]);
 
     if (_overflowDrawer && inDrawer) {
         return (<div
@@ -388,8 +395,10 @@ const ContextMenu = ({
             // to prevent UI stutter on dialog appearance. It seems the focus guards generated annoy
             // our DialogPortal positioning calculations.
             enabled = { activateFocusTrap && !isHidden }
+            noIsolation = { true }
             onClickOutside = { removeFocus }
-            onEscapeKey = { removeFocus }>
+            onEscapeKey = { removeFocus }
+            scrollLock = { false }>
             <div
                 { ...aria }
                 aria-label = { accessibilityLabel }

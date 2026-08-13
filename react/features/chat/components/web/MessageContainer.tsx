@@ -1,12 +1,24 @@
-import throttle from 'lodash/throttle';
-import React, { RefObject } from 'react';
+import { throttle } from 'lodash-es';
+import React, { Component, RefObject } from 'react';
 import { scrollIntoView } from 'seamless-scroll-polyfill';
 
-import { MESSAGE_TYPE_REMOTE } from '../../constants';
-import AbstractMessageContainer, { IProps } from '../AbstractMessageContainer';
+import { groupMessagesBySender } from '../../../base/util/messageGrouping';
+import { MESSAGE_TYPE_LOCAL, MESSAGE_TYPE_REMOTE } from '../../constants';
+import { IMessage } from '../../types';
+
 
 import ChatMessageGroup from './ChatMessageGroup';
 import NewMessagesButton from './NewMessagesButton';
+
+interface IProps {
+
+    /**
+     * Whether the message container is currently visible to the user.
+     * Defaults to true when not provided.
+     */
+    isVisible?: boolean;
+    messages: IMessage[];
+}
 
 interface IState {
 
@@ -23,20 +35,20 @@ interface IState {
     /**
      * The id of the last read message.
      */
-    lastReadMessageId: string;
+    lastReadMessageId: string | null;
 }
 
 /**
  * Displays all received chat messages, grouped by sender.
  *
- * @augments AbstractMessageContainer
+ * @augments Component
  */
-export default class MessageContainer extends AbstractMessageContainer<IProps, IState> {
+export default class MessageContainer extends Component<IProps, IState> {
     /**
      * Component state used to decide when the hasNewMessages button to appear
      * and where to scroll when click on hasNewMessages button.
      */
-    state: IState = {
+    override state: IState = {
         hasNewMessages: false,
         isScrolledToBottom: true,
         lastReadMessageId: ''
@@ -60,6 +72,17 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
     _bottomListObserver: IntersectionObserver;
 
     /**
+     * Whether the component has performed its initial scroll to the bottom.
+     * Used to ensure we scroll on first visibility but preserve scroll position on subsequent tab switches.
+     */
+    _hasInitiallyScrolled: boolean;
+
+    static defaultProps = {
+        isVisible: true,
+        messages: [] as IMessage[]
+    };
+
+    /**
      * Initializes a new {@code MessageContainer} instance.
      *
      * @param {IProps} props - The React {@code Component} props to initialize
@@ -70,6 +93,7 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
 
         this._messageListRef = React.createRef<HTMLDivElement>();
         this._messagesListEndRef = React.createRef<HTMLDivElement>();
+        this._hasInitiallyScrolled = false;
 
         // Bind event handlers so they are only bound once for every instance.
         this._handleIntersectBottomList = this._handleIntersectBottomList.bind(this);
@@ -84,16 +108,17 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
      *
      * @inheritdoc
      */
-    render() {
+    override render() {
         const groupedMessages = this._getMessagesGroupedBySender();
-        const messages = groupedMessages.map((group, index) => {
-            const messageType = group[0]?.messageType;
+        const content = groupedMessages.map((group, index) => {
+            const { messages } = group;
+            const messageType = messages[0]?.messageType;
 
             return (
                 <ChatMessageGroup
                     className = { messageType || MESSAGE_TYPE_REMOTE }
                     key = { index }
-                    messages = { group } />
+                    messages = { messages } />
             );
         });
 
@@ -106,7 +131,7 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
                     ref = { this._messageListRef }
                     role = 'log'
                     tabIndex = { 0 }>
-                    { messages }
+                    { content }
 
                     { !this.state.isScrolledToBottom && this.state.hasNewMessages
                         && <NewMessagesButton
@@ -127,29 +152,49 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
      *
      * @inheritdoc
      */
-    componentDidMount() {
-        this.scrollToElement(false, null);
+    override componentDidMount() {
+        // Only scroll on mount if the component is visible, since scrollIntoView
+        // silently does nothing on hidden (display: none) elements. If hidden,
+        // componentDidUpdate will handle scrolling when the component first becomes visible.
+        if (this.props.isVisible) {
+            this._hasInitiallyScrolled = true;
+            requestAnimationFrame(() => {
+                this.scrollToElement(false, null);
+            });
+        }
+
         this._createBottomListObserver();
     }
 
     /**
      * Implements {@code Component#componentDidUpdate}.
-     * If the user receive a new message scroll automatically to the bottom if scroll position was at the bottom.
+     * If the user receive a new message or the local user send a new message,
+     * scroll automatically to the bottom if scroll position was at the bottom.
      * Otherwise update hasNewMessages from component state.
      *
      * @inheritdoc
      * @returns {void}
      */
-    componentDidUpdate(prevProps: IProps) {
-        const hasNewMessages = this.props.messages.length !== prevProps.messages.length;
+    override componentDidUpdate(prevProps: IProps) {
+        const newMessages = this.props.messages.filter(message => !prevProps.messages.includes(message));
+        const hasLocalMessage = newMessages.map(message => message.messageType).includes(MESSAGE_TYPE_LOCAL);
 
-        if (hasNewMessages) {
-            if (this.state.isScrolledToBottom) {
+        if (newMessages.length > 0) {
+            if (this.state.isScrolledToBottom || hasLocalMessage) {
                 this.scrollToElement(false, null);
             } else {
                 // eslint-disable-next-line react/no-did-update-set-state
                 this.setState({ hasNewMessages: true });
             }
+        }
+
+        // If the component was mounted while hidden, scrollIntoView was skipped.
+        // Scroll to the bottom the first time it becomes visible to show the latest messages.
+        if (this.props.isVisible && !prevProps.isVisible && !this._hasInitiallyScrolled) {
+            this._hasInitiallyScrolled = true;
+            requestAnimationFrame(() => {
+                this.scrollToElement(false, null);
+            });
         }
     }
 
@@ -159,7 +204,7 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
      *
      * @inheritdoc
      */
-    componentWillUnmount() {
+    override componentWillUnmount() {
         const target = document.querySelector('#messagesListEnd');
 
         this._bottomListObserver.unobserve(target as Element);
@@ -310,5 +355,15 @@ export default class MessageContainer extends AbstractMessageContainer<IProps, I
         }
 
         return false;
+    }
+
+    /**
+     * Returns an array of message groups, where each group is an array of messages
+     * grouped by the sender.
+     *
+     * @returns {Array<Array<Object>>}
+     */
+    _getMessagesGroupedBySender() {
+        return groupMessagesBySender(this.props.messages);
     }
 }

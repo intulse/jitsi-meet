@@ -16,7 +16,7 @@ import {
     isHighlightMeetingMomentDisabled
 } from '../../functions';
 
-import { StartRecordingDialog } from './index';
+import { RecordingTranscriptionDialog } from './index';
 
 export interface IProps extends WithTranslation {
 
@@ -77,12 +77,12 @@ export default class AbstractHighlightButton<P extends IProps, S={}> extends Com
                 titleKey: 'recording.highlightMoment',
                 uid: PROMPT_RECORDING_NOTIFICATION_ID,
                 customActionNameKey: [ 'localRecording.start' ],
-                customActionHandler: [ async () => {
+                customActionHandler: [ () => {
                     dispatch(hideNotification(PROMPT_RECORDING_NOTIFICATION_ID));
-                    const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(MEET_FEATURES.RECORDING));
+                    const dialogShown = dispatch(maybeShowPremiumFeatureDialog(MEET_FEATURES.RECORDING));
 
                     if (!dialogShown) {
-                        dispatch(openDialog(StartRecordingDialog));
+                        dispatch(openDialog('RecordingTranscriptionDialog', RecordingTranscriptionDialog));
                     }
                 } ],
                 appearance: NOTIFICATION_TYPE.NORMAL

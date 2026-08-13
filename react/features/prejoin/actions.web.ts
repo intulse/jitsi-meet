@@ -4,26 +4,21 @@ import { IStore } from '../app/types';
 import { updateConfig } from '../base/config/actions';
 import { getDialOutStatusUrl, getDialOutUrl } from '../base/config/functions';
 import { connect } from '../base/connection/actions';
-import { browser } from '../base/lib-jitsi-meet';
 import { createLocalTrack } from '../base/lib-jitsi-meet/functions';
-import { MEDIA_TYPE } from '../base/media/constants';
 import { isVideoMutedByUser } from '../base/media/functions';
 import { updateSettings } from '../base/settings/actions';
-import { replaceLocalTrack, trackAdded } from '../base/tracks/actions';
+import { replaceLocalTrack } from '../base/tracks/actions';
 import {
     createLocalTracksF,
     getLocalAudioTrack,
-    getLocalTracks,
     getLocalVideoTrack
 } from '../base/tracks/functions';
 import { openURLInBrowser } from '../base/util/openURLInBrowser';
 import { executeDialOutRequest, executeDialOutStatusRequest, getDialInfoPageURL } from '../invite/functions';
 import { showErrorNotification } from '../notifications/actions';
-import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 import { INotificationProps } from '../notifications/types';
 
 import {
-    PREJOIN_INITIALIZED,
     PREJOIN_JOINING_IN_PROGRESS,
     SET_DEVICE_STATUS,
     SET_DIALOUT_COUNTRY,
@@ -39,7 +34,7 @@ import {
     getDialOutCountry,
     getFullDialOutNumber,
     isJoinByPhoneDialogVisible
-} from './functions';
+} from './functions.any';
 import logger from './logger';
 
 const dialOutStatusToKeyMap = {
@@ -112,7 +107,7 @@ function pollForStatus(
             case DIAL_OUT_STATUS.DISCONNECTED: {
                 dispatch(showErrorNotification({
                     titleKey: 'prejoin.errorDialOutDisconnected'
-                }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+                }));
 
                 return onFail();
             }
@@ -120,7 +115,7 @@ function pollForStatus(
             case DIAL_OUT_STATUS.FAILED: {
                 dispatch(showErrorNotification({
                     titleKey: 'prejoin.errorDialOutFailed'
-                }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+                }));
 
                 return onFail();
             }
@@ -128,7 +123,7 @@ function pollForStatus(
         } catch (err) {
             dispatch(showErrorNotification({
                 titleKey: 'prejoin.errorDialOutStatus'
-            }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+            }));
             logger.error('Error getting dial out status', err);
             onFail();
         }
@@ -181,27 +176,10 @@ export function dialOut(onSuccess: Function, onFail: Function) {
                 }
             }
 
-            dispatch(showErrorNotification(notification, NOTIFICATION_TIMEOUT_TYPE.LONG));
+            dispatch(showErrorNotification(notification));
             logger.error('Error dialing out', err);
             onFail();
         }
-    };
-}
-
-/**
- * Adds all the newly created tracks to store on init.
- *
- * @param {Object[]} tracks - The newly created tracks.
- * @param {Object} errors - The errors from creating the tracks.
- *
- * @returns {Function}
- */
-export function initPrejoin(tracks: Object[], errors: Object) {
-    return async function(dispatch: IStore['dispatch']) {
-        dispatch(setPrejoinDeviceErrors(errors));
-        dispatch(prejoinInitialized());
-
-        tracks.forEach(track => dispatch(trackAdded(track)));
     };
 }
 
@@ -216,7 +194,7 @@ export function initPrejoin(tracks: Object[], errors: Object) {
  */
 export function joinConference(options?: Object, ignoreJoiningInProgress = false,
         jid?: string, password?: string) {
-    return async function(dispatch: IStore['dispatch'], getState: IStore['getState']) {
+    return function(dispatch: IStore['dispatch'], getState: IStore['getState']) {
         if (!ignoreJoiningInProgress) {
             const state = getState();
             const { joiningInProgress } = state['features/prejoin'];
@@ -230,35 +208,8 @@ export function joinConference(options?: Object, ignoreJoiningInProgress = false
 
         options && dispatch(updateConfig(options));
 
-        dispatch(connect(jid, password)).then(async () => {
-            // TODO keep this here till we move tracks and conference management from
-            // conference.js to react.
-            const state = getState();
-            let localTracks = getLocalTracks(state['features/base/tracks']);
-
-            // Do not signal audio/video tracks if the user joins muted.
-            for (const track of localTracks) {
-                // Always add the audio track on Safari because of a known issue where audio playout doesn't happen
-                // if the user joins audio and video muted.
-                if (track.muted && !(browser.isWebKitBased() && track.jitsiTrack
-                        && track.jitsiTrack.getType() === MEDIA_TYPE.AUDIO)) {
-                    try {
-                        await dispatch(replaceLocalTrack(track.jitsiTrack, null));
-                    } catch (error) {
-                        logger.error(`Failed to replace local track (${track.jitsiTrack}) with null: ${error}`);
-                    }
-                }
-            }
-
-            // Re-fetch the local tracks after muted tracks have been removed above.
-            // This is needed, because the tracks are effectively disposed by the replaceLocalTrack and should not be
-            // used anymore.
-            localTracks = getLocalTracks(getState()['features/base/tracks']);
-
-            const jitsiTracks = localTracks.map((t: any) => t.jitsiTrack);
-
-            APP.conference.startConference(jitsiTracks).catch(logger.error);
-        })
+        logger.info('Dispatching connect from joinConference.');
+        dispatch(connect(jid, password))
         .catch(() => {
             // There is nothing to do here. This is handled and dispatched in base/connection/actions.
         });
@@ -306,6 +257,8 @@ export function joinConferenceWithoutAudio() {
             }
         }
 
+        logger.info('Dispatching joinConference action with startSilent=true from joinConferenceWithoutAudio.');
+
         dispatch(joinConference({
             startSilent: true
         }, true));
@@ -322,17 +275,6 @@ export function openDialInPage() {
         const dialInPage = getDialInfoPageURL(getState());
 
         openURLInBrowser(dialInPage, true);
-    };
-}
-
-/**
- * Action used to signal that the prejoin page has been initialized.
- *
- * @returns {Object}
- */
-function prejoinInitialized() {
-    return {
-        type: PREJOIN_INITIALIZED
     };
 }
 

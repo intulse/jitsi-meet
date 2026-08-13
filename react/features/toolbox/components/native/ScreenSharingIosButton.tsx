@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { IReduxState } from '../../../app/types';
 import { IOS_SCREENSHARING_ENABLED } from '../../../base/flags/constants';
 import { getFeatureFlag } from '../../../base/flags/functions';
-import { translate } from '../../../base/i18n/functions';
+import { translate } from '../../../base/i18n/functions.native';
 import { IconScreenshare } from '../../../base/icons/svg';
 import AbstractButton, { IProps as AbstractButtonProps } from '../../../base/toolbox/components/AbstractButton';
 import { isLocalVideoTrackDesktop } from '../../../base/tracks/functions.native';
@@ -29,7 +29,9 @@ interface IProps extends AbstractButtonProps {
 
 const styles = {
     screenCapturePickerView: {
-        display: 'none'
+        position: 'absolute',
+        width: 0,
+        height: 0
     }
 };
 
@@ -39,10 +41,10 @@ const styles = {
 class ScreenSharingIosButton extends AbstractButton<IProps> {
     _nativeComponent: React.Component<any, any> | null;
 
-    accessibilityLabel = 'toolbar.accessibilityLabel.shareYourScreen';
-    icon = IconScreenshare;
-    label = 'toolbar.startScreenSharing';
-    toggledLabel = 'toolbar.stopScreenSharing';
+    override accessibilityLabel = 'toolbar.accessibilityLabel.shareYourScreen';
+    override icon = IconScreenshare;
+    override label = 'toolbar.startScreenSharing';
+    override toggledLabel = 'toolbar.stopScreenSharing';
 
     /**
    * Initializes a new {@code ScreenSharingIosButton} instance.
@@ -65,7 +67,7 @@ class ScreenSharingIosButton extends AbstractButton<IProps> {
      * @inheritdoc
      * @returns {React$Node}
      */
-    render() {
+    override render() {
         return (
             <>
                 { super.render() }
@@ -94,7 +96,7 @@ class ScreenSharingIosButton extends AbstractButton<IProps> {
    * @protected
    * @returns {void}
    */
-    _handleClick() {
+    override _handleClick() {
         const handle = findNodeHandle(this._nativeComponent);
 
         NativeModules.ScreenCapturePickerViewManager.show(handle);
@@ -117,7 +119,7 @@ class ScreenSharingIosButton extends AbstractButton<IProps> {
    * @protected
    * @returns {boolean}
    */
-    _isToggled() {
+    override _isToggled() {
         return this.props._screensharing;
     }
 }

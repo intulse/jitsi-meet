@@ -30,7 +30,7 @@ import './middleware.any';
  * @param {Store} store - The redux store.
  * @returns {Function}
  */
-MiddlewareRegistry.register((store: IStore) => (next: Function) => async (action: AnyAction) => {
+MiddlewareRegistry.register((store: IStore) => (next: Function) => (action: AnyAction) => {
     const { dispatch, getState } = store;
     const state = getState();
 
@@ -43,7 +43,7 @@ MiddlewareRegistry.register((store: IStore) => (next: Function) => async (action
 
         if (enforceUserLimit) {
             dispatch(restrictWhiteboard(false));
-            dispatch(openDialog(WhiteboardLimitDialog));
+            dispatch(openDialog('WhiteboardLimitDialog', WhiteboardLimitDialog));
 
             return next(action);
         }
@@ -60,7 +60,7 @@ MiddlewareRegistry.register((store: IStore) => (next: Function) => async (action
             }
 
             if (isDialogOpen(state, WhiteboardLimitDialog)) {
-                dispatch(hideDialog(WhiteboardLimitDialog));
+                dispatch(hideDialog('WhiteboardLimitDialog', WhiteboardLimitDialog));
             }
 
             const collabDetails = getCollabDetails(state);

@@ -6,6 +6,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import AudioTranslationDialog
+    from '../../../../../audio-translation/components/native/AudioTranslationDialog';
 import BreakoutRooms
 // @ts-ignore
     from '../../../../../breakout-rooms/components/native/BreakoutRooms';
@@ -28,9 +30,9 @@ import AddPeopleDialog
 import ParticipantsPane from '../../../../../participants-pane/components/native/ParticipantsPane';
 // @ts-ignore
 import StartLiveStreamDialog from '../../../../../recording/components/LiveStream/native/StartLiveStreamDialog';
-import StartRecordingDialog
+import RecordingTranscriptionDialog
 // @ts-ignore
-    from '../../../../../recording/components/Recording/native/StartRecordingDialog';
+    from '../../../../../recording/components/Recording/native/RecordingTranscriptionDialog';
 import SalesforceLinkDialog
 // @ts-ignore
     from '../../../../../salesforce/components/native/SalesforceLinkDialog';
@@ -43,10 +45,12 @@ import SpeakerStats
 import LanguageSelectorDialog
 // @ts-ignore
     from '../../../../../subtitles/components/native/LanguageSelectorDialog';
+import { isCCTabEnabled } from '../../../../../subtitles/functions.any';
 import Whiteboard from '../../../../../whiteboard/components/native/Whiteboard';
 // @ts-ignore
 import { screen } from '../../../routes';
 import {
+    audioTranslationScreenOptions,
     breakoutRoomsScreenOptions,
     carmodeScreenOptions,
     chatScreenOptions,
@@ -68,7 +72,7 @@ import {
     // @ts-ignore
 } from '../../../screenOptions';
 // @ts-ignore
-import ChatAndPollsNavigator from '../../chat/components/ChatAndPollsNavigator';
+import ChatNavigator from '../../chat/components/ChatNavigator';
 // @ts-ignore
 import LobbyNavigationContainer from '../../lobby/components/LobbyNavigationContainer';
 // @ts-ignore
@@ -84,20 +88,32 @@ const ConferenceStack = createStackNavigator();
 
 const ConferenceNavigationContainer = () => {
     const isPollsDisabled = useSelector(arePollsDisabled);
+    const _isPollsEnabled = !isPollsDisabled;
+    const _isCCTabEnabled = useSelector(isCCTabEnabled);
+    const { t } = useTranslation();
+
     let ChatScreen;
     let chatScreenName;
-    let chatTitleString;
+    let chatTitle;
 
     if (isPollsDisabled) {
         ChatScreen = Chat;
         chatScreenName = screen.conference.chat;
-        chatTitleString = 'chat.title';
     } else {
-        ChatScreen = ChatAndPollsNavigator;
-        chatScreenName = screen.conference.chatandpolls.main;
-        chatTitleString = 'chat.titleWithPolls';
+        ChatScreen = ChatNavigator;
+        chatScreenName = screen.conference.chatTabs.main;
     }
-    const { t } = useTranslation();
+
+    if (_isPollsEnabled || _isCCTabEnabled) {
+        const features = [
+            _isPollsEnabled ? t('chat.titleWithPolls') : '',
+            _isCCTabEnabled ? t('chat.titleWithCC') : ''
+        ].filter(Boolean);
+
+        chatTitle = `${t('chat.titleWithFeatures')} ${features.join(' and ')}`;
+    } else {
+        chatTitle = t('chat.title');
+    }
 
     return (
         <NavigationContainer
@@ -117,7 +133,7 @@ const ConferenceNavigationContainer = () => {
                     name = { chatScreenName }
                     options = {{
                         ...chatScreenOptions,
-                        title: t(chatTitleString)
+                        title: chatTitle
                     }} />
                 <ConferenceStack.Screen
                     component = { ParticipantsPane }
@@ -134,11 +150,11 @@ const ConferenceNavigationContainer = () => {
                         title: t('security.title')
                     }} />
                 <ConferenceStack.Screen
-                    component = { StartRecordingDialog }
+                    component = { RecordingTranscriptionDialog }
                     name = { screen.conference.recording }
                     options = {{
                         ...recordingScreenOptions,
-                        title: t('recording.title')
+                        title: t('dialog.recordAndTranscribe')
                     }} />
                 <ConferenceStack.Screen
                     component = { StartLiveStreamDialog }
@@ -208,6 +224,13 @@ const ConferenceNavigationContainer = () => {
                     options = {{
                         ...subtitlesScreenOptions,
                         title: t('transcribing.subtitles')
+                    }} />
+                <ConferenceStack.Screen
+                    component = { AudioTranslationDialog }
+                    name = { screen.conference.audioTranslation }
+                    options = {{
+                        ...audioTranslationScreenOptions,
+                        title: t('toolbar.audioTranslation')
                     }} />
                 <ConferenceStack.Screen
                     component = { BreakoutRooms }

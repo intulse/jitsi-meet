@@ -1,15 +1,20 @@
 import '../base/app/middleware';
+import '../base/jwt/middleware.web';
+import '../base/config/middleware';
 import '../base/connection/middleware';
 import '../base/devices/middleware';
 import '../base/media/middleware';
+import '../deep-linking/middleware.web';
 import '../dynamic-branding/middleware';
 import '../e2ee/middleware';
 import '../external-api/middleware';
 import '../keyboard-shortcuts/middleware';
+import '../multi-screen/middleware.web';
 import '../no-audio-signal/middleware';
 import '../notifications/middleware';
 import '../noise-detection/middleware';
 import '../old-client-notification/middleware';
+import '../pip/middleware';
 import '../power-monitor/middleware';
 import '../prejoin/middleware';
 import '../remote-control/middleware';
@@ -22,5 +27,7 @@ import '../toolbox/middleware';
 import '../face-landmarks/middleware';
 import '../gifs/middleware';
 import '../whiteboard/middleware.web';
+import '../file-sharing/middleware.web';
+import '../custom-panel/middleware.web';
 
 import './middlewares.any';

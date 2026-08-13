@@ -4,7 +4,7 @@
 import Logger from '@jitsi/logger';
 import $ from 'jquery';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import { browser } from '../../../react/features/base/lib-jitsi-meet';
 import { FILMSTRIP_BREAKPOINT } from '../../../react/features/filmstrip/constants';
@@ -24,7 +24,7 @@ export const VIDEO_CONTAINER_TYPE = 'camera';
 // Corresponds to animation duration from the animatedFadeIn and animatedFadeOut CSS classes.
 const FADE_DURATION_MS = 300;
 
-const logger = Logger.getLogger(__filename);
+const logger = Logger.getLogger('ui:VideoContainer');
 
 /**
  * List of container events that we are going to process for the large video.
@@ -219,6 +219,13 @@ export class VideoContainer extends LargeContainer {
          * @type {string|null}
          */
         this._backgroundOrientation = null;
+
+        /**
+         * The React root for the large video background component.
+         * @private
+         * @type {import('react-dom/client').Root|null}
+         */
+        this._backgroundRoot = null;
 
         /**
          * Flag indicates whether or not the background should be rendered.
@@ -501,8 +508,7 @@ export class VideoContainer extends LargeContainer {
      * @param {string} videoType video type
      */
     setStream(userID, stream, videoType) {
-        this.userId = userID;
-        if (this.stream === stream && !stream?.forceStreamToReattach) {
+        if (this.userId === userID && this.stream === stream && !stream?.forceStreamToReattach) {
             logger.debug(`SetStream on the large video for user ${userID} ignored: the stream is not changed!`);
 
             // Handles the use case for the remote participants when the
@@ -515,6 +521,8 @@ export class VideoContainer extends LargeContainer {
 
             return;
         }
+
+        this.userId = userID;
 
         if (stream?.forceStreamToReattach) {
             delete stream.forceStreamToReattach;
@@ -540,9 +548,8 @@ export class VideoContainer extends LargeContainer {
                 logger.error(`Attaching the remote track ${stream} to large video has failed with `, error);
             });
 
-            // Ensure large video gets play() called on it when a new stream is attached to it. This is necessary in the
-            // case of Safari as autoplay doesn't kick-in automatically on Safari 15 and newer versions.
-            browser.isWebKitBased() && this._play();
+            // Ensure large video gets play() called on it when a new stream is attached to it.
+            this._play();
 
             const flipX = stream.isLocal() && this.localFlipX && !this.isScreenSharing();
 
@@ -659,7 +666,28 @@ export class VideoContainer extends LargeContainer {
             return;
         }
 
-        ReactDOM.render(
+        const container = document.getElementById('largeVideoBackgroundContainer');
+
+        // LargeVideo's React subtree may not be mounted (e.g. between fade-out and
+        // fade-in, or during reduced-UI transitions). createRoot(null) would throw
+        // React error #200; bail out instead.
+        if (!container) {
+            return;
+        }
+
+        // If the LargeVideo subtree remounted, the cached root is bound to a now-detached
+        // node — subsequent renders would be invisible and leak. Drop the stale root so
+        // we re-create one against the live container.
+        if (this._backgroundRoot && this._backgroundContainer !== container) {
+            this._backgroundRoot.unmount();
+            this._backgroundRoot = null;
+        }
+
+        if (!this._backgroundRoot) {
+            this._backgroundRoot = createRoot(container);
+            this._backgroundContainer = container;
+        }
+        this._backgroundRoot.render(
             <LargeVideoBackground
                 hidden = { this._hideBackground || this._isHidden }
                 mirror = {
@@ -669,8 +697,7 @@ export class VideoContainer extends LargeContainer {
                 }
                 orientationFit = { this._backgroundOrientation }
                 videoElement = { this.video }
-                videoTrack = { this.stream } />,
-            document.getElementById('largeVideoBackgroundContainer')
+                videoTrack = { this.stream } />
         );
     }
 }

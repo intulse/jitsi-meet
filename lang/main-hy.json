@@ -23,9 +23,6 @@
         "phone": "Հեռախոս",
         "speaker": "Հռետոր"
     },
-    "audioOnly": {
-        "audioOnly": "Միայն ձայնը"
-    },
     "calendarSync": {
         "addMeetingURL": "",
         "confirmAddLink": "",
@@ -68,7 +65,7 @@
         "DISCONNECTED": "Անջատված է",
         "DISCONNECTING": "Անջատում…",
         "ERROR": "Սխալ",
-        "RECONNECTING": "Ցանցի խնդիր է տեղի ունեցել: Վերամիացում..."
+        "RECONNECTING": "Ցանցի խնդիր է տեղի ունեցել: Վերամիացում…"
     },
     "connectionindicator": {
         "address": "Հասցե։",
@@ -393,6 +390,9 @@
     },
     "lockRoomPassword": "Գաղտնաբառ",
     "lockRoomPasswordUppercase": "Գաղտնաբառ",
+    "lowBandwidthMode": {
+        "lowBandwidthMode": "Միայն ձայնը"
+    },
     "me": "ես",
     "notify": {
         "connectedOneMember": "",
@@ -438,7 +438,7 @@
         "calling": "",
         "connected": "Միացված է",
         "connecting": "Միանում է…",
-        "connecting2": "Միանում է...",
+        "connecting2": "Միանում է…",
         "disconnected": "Անջատված է",
         "expired": "",
         "ignored": "",
@@ -548,7 +548,6 @@
         "Settings": "Կարգավորումներ",
         "accessibilityLabel": {
             "Settings": "",
-            "audioOnly": "",
             "audioRoute": "",
             "callQuality": "",
             "cc": "",
@@ -561,6 +560,7 @@
             "kick": "",
             "localRecording": "",
             "lockRoom": "",
+            "lowBandwidthMode": "",
             "moreActions": "",
             "moreActionsMenu": "",
             "mute": "",
@@ -581,8 +581,6 @@
             "videomute": ""
         },
         "addPeople": "Ավելացնել մասնակից",
-        "audioOnlyOff": "",
-        "audioOnlyOn": "",
         "audioRoute": "",
         "authenticate": "Վավերացում",
         "callQuality": "Կարգավորել զանգի որակը",
@@ -599,6 +597,8 @@
         "invite": "",
         "login": "Մուտք",
         "logout": "Ելք",
+        "lowBandwidthModeOff": "",
+        "lowBandwidthModeOn": "",
         "lowerYourHand": "",
         "moreActions": "Ավելի շատ հնարավորություններ",
         "mute": "Միացնել/Անջատել ձայնը ",
@@ -636,16 +636,7 @@
         "tr": ""
     },
     "userMedia": {
-        "androidGrantPermissions": "Ընտրեք <b><i>Allow</i></b>, երբ բրաուզերը թույլտվություն հարցնի",
-        "chromeGrantPermissions": "Ընտրեք <b><i>Allow</i></b>, երբ բրաուզերը թույլտվություն հարցնի",
-        "edgeGrantPermissions": "Ընտրեք <b><i>Yes</i></b>, երբ ձեր բրաուզերը թույլտվություն հարցնի.",
-        "electronGrantPermissions": "Խնդրում ենք տրամադրել տեսախցիկը և խոսափողը օգտագործելու թույլտվություններ",
-        "firefoxGrantPermissions": "Երբ բրաուզերը թույլտվություն հարցնի, ընտրեք <b><i>Share Selected Device</i></b>",
-        "iexplorerGrantPermissions": "Ընտրեք <b><i>OK</i></b>, երբ բրաուզերը թույլտվություն հարցնի",
-        "nwjsGrantPermissions": "Խնդրում ենք տրամադրել տեսախցիկը և խոսափողը օգտագործելու թույլտվություններ",
-        "operaGrantPermissions": "Ընտրեք <b><i>Allow</i></b>, երբ բրաուզերը թույլտվություն հարցնի",
-        "react-nativeGrantPermissions": "Ընտրեք <b><i>Allow</i></b>, երբ բրաուզերը թույլտվություն հարցնի",
-        "safariGrantPermissions": "Ընտրեք <b><i>OK</i></b>, երբ բրաուզերը թույլտվություն հարցնի"
+        "grantPermissions": "Խնդրում ենք տրամադրել տեսախցիկը և խոսափողը օգտագործելու թույլտվություններ."
     },
     "videoSIPGW": {
         "busy": "",
@@ -658,14 +649,14 @@
         "pending": ""
     },
     "videoStatus": {
-        "audioOnly": "",
-        "audioOnlyExpanded": "",
         "callQuality": "",
         "hd": "",
         "highDefinition": "",
         "labelTooiltipNoVideo": "",
-        "labelTooltipAudioOnly": "",
+        "labelTooltipLowBandwidthMode": "",
         "ld": "",
+        "lowBandwidthMode": "",
+        "lowBandwidthModeExpanded": "",
         "lowDefinition": "",
         "onlyAudioAvailable": "",
         "onlyAudioSupported": "",

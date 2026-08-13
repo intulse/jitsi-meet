@@ -32,7 +32,7 @@ const useStyles = makeStyles()(theme => {
             borderRadius: '3px',
             overflow: 'hidden',
             marginBottom: theme.spacing(4),
-            backgroundColor: theme.palette.uiBackground
+            backgroundColor: theme.palette.deviceSelectorVideoPreview
         },
 
         video: {
@@ -42,7 +42,7 @@ const useStyles = makeStyles()(theme => {
         },
 
         errorText: {
-            color: theme.palette.text01,
+            color: theme.palette.deviceSelectorText,
             left: 0,
             position: 'absolute',
             right: 0,
@@ -59,6 +59,7 @@ const VideoInputPreview = ({ error, localFlipX, track }: IProps) => {
         <div className = { classes.container }>
             <Video
                 className = { cx(classes.video, localFlipX && 'flipVideoX') }
+                id = 'settings_video_input_preview'
                 playsinline = { true }
                 videoTrack = {{ jitsiTrack: track }} />
             {error && (

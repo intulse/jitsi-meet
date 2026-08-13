@@ -11,7 +11,7 @@ import Label from '../../../../base/label/components/web/Label';
 import Tooltip from '../../../../base/tooltip/components/Tooltip';
 import BaseTheme from '../../../../base/ui/components/BaseTheme.web';
 import { maybeShowPremiumFeatureDialog } from '../../../../jaas/actions';
-import StartRecordingDialog from '../../Recording/web/StartRecordingDialog';
+import RecordingTranscriptionDialog from '../../Recording/web/RecordingTranscriptionDialog';
 import AbstractHighlightButton, {
     IProps as AbstractProps,
     _abstractMapStateToProps
@@ -60,18 +60,18 @@ const styles = (theme: Theme) => {
             position: 'relative' as const
         },
         disabled: {
-            background: theme.palette.text02
+            background: theme.palette.recordingHighlightButtonDisabled
         },
         regular: {
-            background: theme.palette.ui10
+            background: theme.palette.recordingHighlightButton
         },
         highlightNotification: {
-            backgroundColor: theme.palette.ui10,
+            backgroundColor: theme.palette.recordingHighlightButton,
             borderRadius: '6px',
             boxShadow: '0px 6px 20px rgba(0, 0, 0, 0.25)',
             boxSizing: 'border-box' as const,
-            color: theme.palette.uiBackground,
-            fontSize: '14px',
+            color: theme.palette.recordingNotificationText,
+            fontSize: '0.875rem',
             fontWeight: 400,
             left: '4px',
             padding: '16px',
@@ -80,7 +80,7 @@ const styles = (theme: Theme) => {
             width: 320
         },
         highlightNotificationButton: {
-            color: theme.palette.action01,
+            color: theme.palette.recordingNotificationAction,
             cursor: 'pointer',
             fontWeight: 600,
             marginTop: '8px'
@@ -115,7 +115,7 @@ export class HighlightButton extends AbstractHighlightButton<IProps, IState> {
      *
      * @inheritdoc
      */
-    componentDidMount() {
+    override componentDidMount() {
         window.addEventListener('click', this._onWindowClickListener);
     }
 
@@ -124,7 +124,7 @@ export class HighlightButton extends AbstractHighlightButton<IProps, IState> {
      *
      * @inheritdoc
      */
-    componentWillUnmount() {
+    override componentWillUnmount() {
         window.removeEventListener('click', this._onWindowClickListener);
     }
 
@@ -133,12 +133,12 @@ export class HighlightButton extends AbstractHighlightButton<IProps, IState> {
     *
     * @returns {void}
     */
-    async _onOpenDialog() {
+    _onOpenDialog() {
         const { dispatch } = this.props;
-        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(MEET_FEATURES.RECORDING));
+        const dialogShown = dispatch(maybeShowPremiumFeatureDialog(MEET_FEATURES.RECORDING));
 
         if (!dialogShown) {
-            dispatch(openDialog(StartRecordingDialog));
+            dispatch(openDialog('RecordingTranscriptionDialog', RecordingTranscriptionDialog));
         }
     }
 
@@ -149,7 +149,7 @@ export class HighlightButton extends AbstractHighlightButton<IProps, IState> {
     * @param {Event} e - The click event.
     * @returns {void}
     */
-    _onClick(e?: React.MouseEvent) {
+    override _onClick(e?: React.MouseEvent) {
         e?.stopPropagation();
 
         const { _disabled } = this.props;
@@ -180,7 +180,7 @@ export class HighlightButton extends AbstractHighlightButton<IProps, IState> {
      * @inheritdoc
      * @returns {ReactElement}
      */
-    render() {
+    override render() {
         const {
             _disabled,
             _visible,
@@ -203,7 +203,7 @@ export class HighlightButton extends AbstractHighlightButton<IProps, IState> {
                     <Label
                         className = { className }
                         icon = { IconHighlight }
-                        iconColor = { _disabled ? BaseTheme.palette.text03 : BaseTheme.palette.field01 }
+                        iconColor = { _disabled ? BaseTheme.palette.recordingHighlightButtonIconDisabled : BaseTheme.palette.recordingHighlightButtonIcon }
                         id = 'highlightMeetingLabel'
                         onClick = { this._onClick } />
                 </Tooltip>

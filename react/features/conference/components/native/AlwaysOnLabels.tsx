@@ -2,19 +2,23 @@ import React, { useCallback } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { IReduxState } from '../../../app/types';
+import TranslationLabel from '../../../audio-translation/components/native/TranslationLabel';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
 import { openHighlightDialog } from '../../../recording/actions.native';
 import HighlightButton from '../../../recording/components/Recording/native/HighlightButton';
 import RecordingLabel from '../../../recording/components/native/RecordingLabel';
-import { getActiveSession } from '../../../recording/functions';
+import TranscribingLabel from '../../../recording/components/native/TranscribingLabel';
+import { isLiveStreamingRunning } from '../../../recording/functions';
 import VisitorsCountLabel from '../../../visitors/components/native/VisitorsCountLabel';
 
 import RaisedHandsCountLabel from './RaisedHandsCountLabel';
+import TimeTimerLabel from './TimeTimerLabel';
 import {
+    LABEL_ID_AUDIO_TRANSLATION,
     LABEL_ID_RAISED_HANDS_COUNT,
     LABEL_ID_RECORDING,
     LABEL_ID_STREAMING,
+    LABEL_ID_TRANSCRIBING,
     LABEL_ID_VISITORS_COUNT,
     LabelHitSlop
 } from './constants';
@@ -30,8 +34,7 @@ interface IProps {
 
 const AlwaysOnLabels = ({ createOnPress }: IProps) => {
     const dispatch = useDispatch();
-    const isStreaming = useSelector((state: IReduxState) =>
-        Boolean(getActiveSession(state, JitsiRecordingConstants.mode.STREAM)));
+    const isStreaming = useSelector(isLiveStreamingRunning);
     const openHighlightDialogCallback = useCallback(() =>
         dispatch(openHighlightDialog()), [ dispatch ]);
 
@@ -51,6 +54,12 @@ const AlwaysOnLabels = ({ createOnPress }: IProps) => {
         }
         <TouchableOpacity
             hitSlop = { LabelHitSlop }
+            onPress = { createOnPress(LABEL_ID_TRANSCRIBING) } >
+            <TranscribingLabel />
+        </TouchableOpacity>
+        <TimeTimerLabel />
+        <TouchableOpacity
+            hitSlop = { LabelHitSlop }
             onPress = { openHighlightDialogCallback }>
             <HighlightButton />
         </TouchableOpacity>
@@ -58,6 +67,11 @@ const AlwaysOnLabels = ({ createOnPress }: IProps) => {
             hitSlop = { LabelHitSlop }
             onPress = { createOnPress(LABEL_ID_RAISED_HANDS_COUNT) } >
             <RaisedHandsCountLabel />
+        </TouchableOpacity>
+        <TouchableOpacity
+            hitSlop = { LabelHitSlop }
+            onPress = { createOnPress(LABEL_ID_AUDIO_TRANSLATION) } >
+            <TranslationLabel />
         </TouchableOpacity>
         <TouchableOpacity
             hitSlop = { LabelHitSlop }

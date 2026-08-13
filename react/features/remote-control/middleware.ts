@@ -1,4 +1,3 @@
-// @ts-expect-error
 import { PostMessageTransportBackend, Transport } from '@jitsi/js-utils/transport';
 
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app/actionTypes';
@@ -19,7 +18,7 @@ import './subscriber';
  * @param {Store} store - The redux store.
  * @returns {Function}
  */
-MiddlewareRegistry.register(store => next => async action => {
+MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
     case APP_WILL_MOUNT: {
         const { dispatch } = store;

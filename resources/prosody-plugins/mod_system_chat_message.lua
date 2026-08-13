@@ -1,8 +1,36 @@
--- Module which can be used as an http endpoint to send system chat messages to meeting participants. The provided token
---- in the request is verified whether it has the right to do so. This module should be loaded under the virtual host.
+-- HTTP module that exposes a POST /send-system-chat-message endpoint for
+-- delivering private system chat messages to specific participants in a MUC
+-- room. Intended for internal system use (e.g. by a backend service), not for
+-- end-user clients.
+--
+-- Authentication uses a SEPARATE ASAP key pair from the one used for login
+-- tokens (mod_auth_token). The key server URL is read from
+-- prosody_password_public_key_repo_url (not asap_key_server), so login tokens
+-- are not accepted.
+--
+-- Request format:
+--   POST /send-system-chat-message
+--   Content-Type: application/json
+--   Authorization: Bearer <system-token>
+--   Body: {
+--     "room":           "<room-jid>",
+--     "connectionJIDs": ["<full-jid>", ...],
+--     "message":        "<text>",
+--     "displayName":    "<name>"           (optional)
+--   }
+--
+-- Each JID in connectionJIDs receives a private <message> stanza from the
+-- room JID containing a <json-message xmlns='http://jitsi.org/jitmeet'>
+-- payload of the form:
+--   { "type": "system_chat_message", "message": "...", "displayName": "..." }
+--
+-- Responses:
+--   200  Messages dispatched.
+--   400  Missing or invalid parameters / wrong Content-Type.
+--   401  Missing, malformed, or unverifiable token.
+--   404  Room not found.
+--
 -- Copyright (C) 2024-present 8x8, Inc.
-
--- curl https://{host}/send-system-message  -d '{"message": "testmessage", "to": "{connection_jid}", "room": "{room_jid}"}' -H "content-type: application/json" -H "authorization: Bearer {token}"
 
 local util = module:require "util";
 local token_util = module:require "token/util".new(module);
@@ -15,7 +43,6 @@ local get_room_from_jid = util.get_room_from_jid;
 local st = require "util.stanza";
 local json = require "cjson.safe";
 
-local muc_domain_base = module:get_option_string("muc_mapper_domain_base");
 local asapKeyServer = module:get_option_string("prosody_password_public_key_repo_url", "");
 
 if asapKeyServer then
@@ -60,11 +87,11 @@ function handle_send_system_message (event)
 
     local displayName = payload["displayName"];
     local message = payload["message"];
-    local to = payload["to"];
+    local connectionJIDs = payload["connectionJIDs"];
     local payload_room = payload["room"];
 
-    if not message or not to or not payload_room then
-        module:log("error", "One of [message, to, room] was not provided");
+    if not message or not connectionJIDs or not payload_room then
+        module:log("error", "One of [message, connectionJIDs, room] was not provided");
         return { status_code = 400; }
     end
 
@@ -99,15 +126,17 @@ function handle_send_system_message (event)
         message = message,
     };
 
-    local stanza = st.message({
-        from = room.jid,
-        to = to
-    })
-    :tag('json-message', { xmlns = 'http://jitsi.org/jitmeet' })
-    :text(json.encode(data))
-    :up();
+    for _, to in ipairs(connectionJIDs) do
+        local stanza = st.message({
+            from = room.jid,
+            to = to
+        })
+        :tag('json-message', { xmlns = 'http://jitsi.org/jitmeet' })
+        :text(json.encode(data))
+        :up();
 
-    room:route_stanza(stanza);
+        room:route_stanza(stanza);
+    end
 
     return { status_code = 200 };
 end

@@ -17,25 +17,59 @@
 
 #include <mach/mach_time.h>
 
+#import <UIKit/UIKit.h>
+
 #import "ExternalAPI.h"
 #import "JitsiMeet+Private.h"
 #import "JitsiMeetConferenceOptions+Private.h"
 #import "JitsiMeetView+Private.h"
 #import "ReactUtils.h"
-#import "RNRootView.h"
+#import <React/RCTRootView.h>
 
+
+#pragma mark UIColor helpers
+
+@interface UIColor (Hex)
+
++ (UIColor *)colorWithHex:(uint32_t)hex;
++ (UIColor *)colorWithHex:(uint32_t)hex alpha:(CGFloat)alpha;
+
+@end
+
+@implementation UIColor (Hex)
+
++ (UIColor *)colorWithHex:(uint32_t)hex {
+    return [self colorWithHex:hex alpha:1.0];
+}
+
++ (UIColor *)colorWithHex:(uint32_t)hex alpha:(CGFloat)alpha {
+    CGFloat red   = ((hex >> 16) & 0xFF) / 255.0;
+    CGFloat green = ((hex >> 8) & 0xFF) / 255.0;
+    CGFloat blue  = (hex & 0xFF) / 255.0;
+
+    return [UIColor colorWithRed:red green:green blue:blue alpha:alpha];
+}
+
+@end
+
+#pragma mark UIColor helpers end
 
 /**
  * Backwards compatibility: turn the boolean prop into a feature flag.
  */
 static NSString *const PiPEnabledFeatureFlag = @"pip.enabled";
 
+/**
+ * Forward declarations.
+ */
+static NSString *recordingModeToString(RecordingMode mode);
+
 
 @implementation JitsiMeetView {
     /**
      * React Native view where the entire content will be rendered.
      */
-    RNRootView *rootView;
+    RCTRootView *rootView;
 }
 
 #pragma mark Initializers
@@ -65,11 +99,8 @@ static NSString *const PiPEnabledFeatureFlag = @"pip.enabled";
  * - registers necessary observers
  */
 - (void)doInitialize {
-    // Set a background color which is in accord with the JavaScript and Android
-    // parts of the application and causes less perceived visual flicker than
-    // the default background color.
-    self.backgroundColor
-        = [UIColor colorWithRed:.07f green:.07f blue:.07f alpha:1];
+    // Set a background color which matches the one used in JS.
+    self.backgroundColor = [UIColor colorWithHex:0x040404 alpha:1];
     
     [self registerObservers];
 }
@@ -141,6 +172,36 @@ static NSString *const PiPEnabledFeatureFlag = @"pip.enabled";
 - (void)toggleCamera {
     ExternalAPI *externalAPI = [[JitsiMeet sharedInstance] getExternalAPI];
     [externalAPI toggleCamera];
+}
+
+- (void)showNotification:(NSString *)appearance :(NSString *)description :(NSString *)timeout :(NSString *)title :(NSString *)uid {
+    ExternalAPI *externalAPI = [[JitsiMeet sharedInstance] getExternalAPI];
+    [externalAPI showNotification:appearance :description :timeout :title :uid];
+}
+
+-(void)hideNotification:(NSString *)uid {
+    ExternalAPI *externalAPI = [[JitsiMeet sharedInstance] getExternalAPI];
+    [externalAPI hideNotification:uid];
+}
+
+- (void)startRecording:(RecordingMode)mode :(NSString * _Nullable)dropboxToken :(BOOL)shouldShare :(NSString * _Nullable)rtmpStreamKey :(NSString * _Nullable)rtmpBroadcastID :(NSString * _Nullable)youtubeStreamKey :(NSString * _Nullable)youtubeBroadcastID :(NSDictionary * _Nullable)extraMetadata :(BOOL)transcription {
+    ExternalAPI *externalAPI = [[JitsiMeet sharedInstance] getExternalAPI];
+    [externalAPI startRecording:recordingModeToString(mode) :dropboxToken :shouldShare :rtmpStreamKey :rtmpBroadcastID :youtubeStreamKey :youtubeBroadcastID :extraMetadata :transcription];
+}
+
+- (void)stopRecording:(RecordingMode)mode :(BOOL)transcription {
+    ExternalAPI *externalAPI = [[JitsiMeet sharedInstance] getExternalAPI];
+    [externalAPI stopRecording:recordingModeToString(mode) :transcription];
+}
+
+- (void)overwriteConfig:(NSDictionary * _Nonnull)config {
+    ExternalAPI *externalAPI = [[JitsiMeet sharedInstance] getExternalAPI];
+    [externalAPI overwriteConfig:config];
+}
+
+- (void)sendCameraFacingModeMessage:(NSString * _Nonnull)to :(NSString * _Nullable)facingMode {
+    ExternalAPI *externalAPI = [[JitsiMeet sharedInstance] getExternalAPI];
+    [externalAPI sendCameraFacingModeMessage:to :facingMode];
 }
 
 #pragma mark Private methods
@@ -220,11 +281,13 @@ static NSString *const PiPEnabledFeatureFlag = @"pip.enabled";
         // Update props with the new URL.
         rootView.appProperties = props;
     } else {
-        RCTBridge *bridge = [[JitsiMeet sharedInstance] getReactBridge];
-        rootView
-            = [[RNRootView alloc] initWithBridge:bridge
-                                      moduleName:@"App"
-                               initialProperties:props];
+        // Get the factory and use its rootViewFactory to create the view.
+        RCTReactNativeFactory *factory = [[JitsiMeet sharedInstance] getReactNativeFactory];        
+        rootView = (RCTRootView *)[factory.rootViewFactory viewWithModuleName:@"App"
+                                                            initialProperties:props];
+        
+        factory.bridge = rootView.bridge;
+        
         rootView.backgroundColor = self.backgroundColor;
 
         // Add rootView as a subview which completely covers this one.
@@ -237,3 +300,14 @@ static NSString *const PiPEnabledFeatureFlag = @"pip.enabled";
 }
 
 @end
+
+static NSString *recordingModeToString(RecordingMode mode) {
+    switch (mode) {
+        case RecordingModeFile:
+            return @"file";
+        case RecordingModeStream:
+            return @"stream";
+        default:
+            return nil;
+    }
+}

@@ -1,18 +1,10 @@
-import {
-    HIDDEN_PARTICIPANT_JOINED,
-    HIDDEN_PARTICIPANT_LEFT,
-    PARTICIPANT_UPDATED
-} from '../base/participants/actionTypes';
 import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { showErrorNotification } from '../notifications/actions';
+import { maybeNotifyRecordingStart, maybeNotifyRecordingStop } from '../recording/middleware';
+import { setSubtitlesError } from '../subtitles/actions.any';
 
-import {
-    potentialTranscriberJoined,
-    transcriberJoined,
-    transcriberLeft
-} from './actions';
+import { TRANSCRIBER_LEFT } from './actionTypes';
 import './subscriber';
-
-const TRANSCRIBER_DISPLAY_NAME = 'Transcriber';
 
 /**
  * Implements the middleware of the feature transcribing.
@@ -20,37 +12,34 @@ const TRANSCRIBER_DISPLAY_NAME = 'Transcriber';
  * @param {Store} store - The redux store.
  * @returns {Function}
  */
-// eslint-disable-next-line no-unused-vars
 MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
-    const {
-        transcriberJID,
-        potentialTranscriberJIDs
-    } = getState()['features/transcribing'];
-
     switch (action.type) {
-    case HIDDEN_PARTICIPANT_JOINED:
-        if (action.displayName === TRANSCRIBER_DISPLAY_NAME) {
-            dispatch(transcriberJoined(action.id));
-        } else {
-            dispatch(potentialTranscriberJoined(action.id));
-        }
+    case TRANSCRIBER_LEFT: {
+        if (action.abruptly) {
+            dispatch(showErrorNotification({
+                titleKey: 'transcribing.failed'
+            }));
 
-        break;
-    case HIDDEN_PARTICIPANT_LEFT:
-        if (action.id === transcriberJID) {
-            dispatch(transcriberLeft(action.id));
-        }
-        break;
-    case PARTICIPANT_UPDATED: {
-        const { participant } = action;
+            // TRANSCRIBER_LEFT resets subtitles state to default (_hasError: false).
+            // If we're in the coordinated start flow, we need _hasError = true
+            // so maybeNotifyRecordingStart sees transcription as resolved-failed.
+            const startIntent = getState()['features/recording'].startRecordingIntent;
 
-        if (potentialTranscriberJIDs.includes(participant.id) && participant.name === TRANSCRIBER_DISPLAY_NAME) {
-            dispatch(transcriberJoined(participant.id));
-        }
+            if (startIntent) {
+                dispatch(setSubtitlesError(true));
+                maybeNotifyRecordingStart(dispatch, getState);
+            }
 
+            // If we're in the coordinated stop flow, the transcriber leaving is
+            // the transcription resolution — re-evaluate.
+            const stopIntent = getState()['features/recording'].stopRecordingIntent;
+
+            if (stopIntent) {
+                maybeNotifyRecordingStop(dispatch, getState);
+            }
+        }
         break;
     }
-
     }
 
     return next(action);
