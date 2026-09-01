@@ -1140,18 +1140,18 @@ var config = {
 
         // Provides a way to set the codec preference on mobile devices, both on RN and mobile browser based
         // endpoints.
-        // mobileCodecPreferenceOrder: [ 'H264', 'VP8', 'VP9', 'AV1' ],
+        mobileCodecPreferenceOrder: [ 'H264', 'VP8', 'VP9', 'AV1' ],
         //
         // Provides a way to set the codec preference on desktop based endpoints.
-        // codecPreferenceOrder: [ 'AV1', 'VP9', 'VP8', 'H264 ],
+        codecPreferenceOrder: [ 'AV1', 'VP9', 'VP8', 'H264' ],
 
         // Provides a way to set the codec for screenshare.
-        // screenshareCodec: 'AV1',
-        // mobileScreenshareCodec: 'VP8',
+        screenshareCodec: 'AV1',
+        mobileScreenshareCodec: 'VP8',
 
         // How long we're going to wait, before going back to P2P after the 3rd
         // participant has left the conference (to filter out page reload).
-        // backToP2PDelay: 5,
+        backToP2PDelay: 5,
 
         // The STUN servers that will be used in the peer to peer connections
         stunServers: [
@@ -1159,6 +1159,7 @@ var config = {
             // { urls: 'stun:jitsi-meet.example.com:3478' },
             { urls: 'stun:meet-jit-si-turnrelay.jitsi.net:443' },
         ],
+
     },
 
     analytics: {
@@ -1607,9 +1608,9 @@ var config = {
     // a second display, in its own fullscreen window. Disabled by default; it is Chromium-only and
     // intended for managed/kiosk room appliances, which must also delegate `allow="window-management;
     // fullscreen"` to the iframe and grant the window-management + automatic-fullscreen permissions.
-    // secondScreen: {
-    //     enabled: false
-    // },
+    secondScreen: {
+        enabled: true
+    },
 
     // If true, the tiles will be displayed contained within the available space rather than enlarged to cover it,
     // with a 16:9 aspect ratio (old behaviour).
@@ -2028,6 +2029,168 @@ var config = {
     //     // Maximum file size limit (-1 value disables any file size limit check)
     //     maxFileSize: 50,
     // },
+
+    // =========================================================================
+    // >>>>> INTULSE
+    //
+    // Intulse deltas from upstream, kept in one block on purpose: this file is a
+    // fork of an upstream file, and a single contiguous hunk survives a rebase
+    // onto the next stable tag far better than uncommenting a dozen scattered
+    // defaults would.
+    //
+    // Settings whose upstream default already matches what Intulse wants are
+    // deliberately NOT repeated here -- enableNoAudioDetection,
+    // enableNoisyMicDetection, channelLastN, p2p.enabled and p2p.stunServers are
+    // all correct as shipped. See the port plan for the full audit.
+    //
+    // NOTE: the embedding application (IntulseMeetings2) also sends
+    // configOverwrite. For any key it sets, the embedder wins over this file.
+    // =========================================================================
+
+    // Branding for participants whose display name has not resolved yet.
+    defaultRemoteDisplayName: 'Intulse User',
+
+    // Logging
+    logging: {
+         // Default log level for the app and lib-jitsi-meet.
+         defaultLogLevel: 'trace',
+         // Option to disable LogCollector.
+         //disableLogCollector: true,
+         // Individual loggers are customizable.
+         loggers: {
+             // The following are too verbose in their logging with the default level.
+             'modules/RTC/TraceablePeerConnection.js': 'info',
+             'modules/xmpp/strophe.util.js': 'log',
+         },
+    },
+
+    // Simulcast on. Explicit because it is load-bearing for multi-party quality
+    // and should not silently change if the upstream default ever flips.
+    disableSimulcast: false,
+    videoQuality: {
+       // Provides a way to set the codec preference on desktop based endpoints.
+       codecPreferenceOrder: [ 'AV1', 'VP9', 'VP8', 'H264' ],
+        mobileCodecPreferenceOrder: [ 'VP8', 'VP9', 'H264' ],
+    
+       // Provides a way to set the codec for screenshare.
+       screenshareCodec: 'AV1',
+       mobileScreenshareCodec: 'VP8',
+    
+       // Enables the adaptive mode in the client that will make runtime adjustments to selected codecs and received
+       // videos for a better user experience. This mode will kick in only when CPU overuse is reported in the
+       // WebRTC statistics for the outbound video streams.
+       enableAdaptiveMode: false,
+    
+       // Codec specific settings for scalability modes and max bitrates.
+       av1: {
+         maxBitratesVideo: {
+             low: 100000,
+             standard: 300000,
+             high: 1000000,
+             fullHd: 2000000,
+             ultraHd: 4000000,
+             ssHigh: 2500000
+         },
+         scalabilityModeEnabled: true,
+         useSimulcast: false,
+         useKSVC: true
+       },
+       h264: {
+         maxBitratesVideo: {
+             low: 200000,
+             standard: 500000,
+             high: 1500000,
+             fullHd: 3000000,
+             ultraHd: 6000000,
+             ssHigh: 2500000
+         },
+         scalabilityModeEnabled: true
+       },
+       vp8: {
+         maxBitratesVideo: {
+             low: 200000,
+             standard: 500000,
+             high: 1500000,
+             fullHd: 3000000,
+             ultraHd: 6000000,
+             ssHigh: 2500000
+         },
+         scalabilityModeEnabled: false
+       },
+       vp9: {
+         maxBitratesVideo: {
+             low: 100000,
+             standard: 300000,
+             high: 1200000,
+             fullHd: 2500000,
+             ultraHd: 5000000,
+             ssHigh: 2500000
+         },
+         scalabilityModeEnabled: true,
+         useSimulcast: false,
+         useKSVC: true
+       },
+
+    // Invites are issued by the Intulse application, not from inside the
+    // meeting, so every in-meeting invite affordance is removed.
+    disableInviteFunctions: true,
+    hiddenPremeetingButtons: [ 'invite' ],
+
+    // Participants reach meetings through the Intulse Meetings web app, which
+    // embeds this in an iframe. The mobile-app interstitial would strand them.
+    deeplinking: {
+        disabled: true
+    },
+
+    welcomePage: {
+        disabled: false
+    },
+
+    e2eping: {
+        enabled: false
+    },
+
+    breakoutRooms: {
+        hideAddRoomButton: false,
+        hideAutoAssignButton: false,
+        hideJoinRoomButton: false
+    },
+
+    // Restrict UI-set room passwords to digits. The Intulse API currently
+    // receives a password change as a URL path segment, where '/', '?', '#' and
+    // '%' are either mangled or fail to route -- constraining the character set
+    // at the producing end sidesteps that entirely.
+    roomPasswordNumberOfDigits: 10,
+
+    // Buttons offered to moderators. The embedder sends its own, shorter list
+    // for non-moderators via configOverwrite; this is the moderator baseline.
+    toolbarButtons: [
+        'camera',
+        'chat',
+        'desktop',
+        'fullscreen',
+        'hangup',
+        'highlight',
+        'microphone',
+        'noisesuppression',
+        'participants-pane',
+        'profile',
+        'raisehand',
+        'recording',
+        'security',
+        'select-background',
+        'settings',
+        'shareaudio',
+        'sharedvideo',
+        'shortcuts',
+        'tileview',
+        'toggle-camera',
+        'videoquality',
+        'whiteboard'
+    ],
+
+    // <<<<< INTULSE
+
 };
 
 // Set the default values for JaaS customers
