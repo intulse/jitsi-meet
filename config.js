@@ -1141,6 +1141,7 @@ var config = {
         // Provides a way to set the codec preference on mobile devices, both on RN and mobile browser based
         // endpoints.
         mobileCodecPreferenceOrder: [ 'H264', 'VP8', 'VP9', 'AV1' ],
+
         //
         // Provides a way to set the codec preference on desktop based endpoints.
         codecPreferenceOrder: [ 'AV1', 'VP9', 'VP8', 'H264' ],
@@ -2052,84 +2053,88 @@ var config = {
 
     // Logging
     logging: {
-         // Default log level for the app and lib-jitsi-meet.
-         defaultLogLevel: 'trace',
-         // Option to disable LogCollector.
-         //disableLogCollector: true,
-         // Individual loggers are customizable.
-         loggers: {
-             // The following are too verbose in their logging with the default level.
-             'modules/RTC/TraceablePeerConnection.js': 'info',
-             'modules/xmpp/strophe.util.js': 'log',
-         },
+        // Default log level for the app and lib-jitsi-meet. 'trace' is useful while
+        // bringing a server up but far too noisy to leave on -- it logs from every
+        // client and ships the output to the log collector.
+        defaultLogLevel: 'info',
+
+        // Option to disable LogCollector.
+        // disableLogCollector: true,
+        // Individual loggers are customizable.
+        loggers: {
+            // The following are too verbose in their logging with the default level.
+            'modules/RTC/TraceablePeerConnection.js': 'info',
+            'modules/xmpp/strophe.util.js': 'log',
+        },
     },
 
     // Simulcast on. Explicit because it is load-bearing for multi-party quality
     // and should not silently change if the upstream default ever flips.
     disableSimulcast: false,
     videoQuality: {
-       // Provides a way to set the codec preference on desktop based endpoints.
-       codecPreferenceOrder: [ 'AV1', 'VP9', 'VP8', 'H264' ],
+        // Provides a way to set the codec preference on desktop based endpoints.
+        codecPreferenceOrder: [ 'AV1', 'VP9', 'VP8', 'H264' ],
         mobileCodecPreferenceOrder: [ 'VP8', 'VP9', 'H264' ],
-    
-       // Provides a way to set the codec for screenshare.
-       screenshareCodec: 'AV1',
-       mobileScreenshareCodec: 'VP8',
-    
-       // Enables the adaptive mode in the client that will make runtime adjustments to selected codecs and received
-       // videos for a better user experience. This mode will kick in only when CPU overuse is reported in the
-       // WebRTC statistics for the outbound video streams.
-       enableAdaptiveMode: false,
-    
-       // Codec specific settings for scalability modes and max bitrates.
-       av1: {
-         maxBitratesVideo: {
-             low: 100000,
-             standard: 300000,
-             high: 1000000,
-             fullHd: 2000000,
-             ultraHd: 4000000,
-             ssHigh: 2500000
-         },
-         scalabilityModeEnabled: true,
-         useSimulcast: false,
-         useKSVC: true
-       },
-       h264: {
-         maxBitratesVideo: {
-             low: 200000,
-             standard: 500000,
-             high: 1500000,
-             fullHd: 3000000,
-             ultraHd: 6000000,
-             ssHigh: 2500000
-         },
-         scalabilityModeEnabled: true
-       },
-       vp8: {
-         maxBitratesVideo: {
-             low: 200000,
-             standard: 500000,
-             high: 1500000,
-             fullHd: 3000000,
-             ultraHd: 6000000,
-             ssHigh: 2500000
-         },
-         scalabilityModeEnabled: false
-       },
-       vp9: {
-         maxBitratesVideo: {
-             low: 100000,
-             standard: 300000,
-             high: 1200000,
-             fullHd: 2500000,
-             ultraHd: 5000000,
-             ssHigh: 2500000
-         },
-         scalabilityModeEnabled: true,
-         useSimulcast: false,
-         useKSVC: true
-       },
+
+        // Provides a way to set the codec for screenshare.
+        screenshareCodec: 'AV1',
+        mobileScreenshareCodec: 'VP8',
+
+        // Enables the adaptive mode in the client that will make runtime adjustments to selected codecs and received
+        // videos for a better user experience. This mode will kick in only when CPU overuse is reported in the
+        // WebRTC statistics for the outbound video streams.
+        enableAdaptiveMode: false,
+
+        // Codec specific settings for scalability modes and max bitrates.
+        av1: {
+            maxBitratesVideo: {
+                low: 100000,
+                standard: 300000,
+                high: 1000000,
+                fullHd: 2000000,
+                ultraHd: 4000000,
+                ssHigh: 2500000
+            },
+            scalabilityModeEnabled: true,
+            useSimulcast: false,
+            useKSVC: true
+        },
+        h264: {
+            maxBitratesVideo: {
+                low: 200000,
+                standard: 500000,
+                high: 1500000,
+                fullHd: 3000000,
+                ultraHd: 6000000,
+                ssHigh: 2500000
+            },
+            scalabilityModeEnabled: true
+        },
+        vp8: {
+            maxBitratesVideo: {
+                low: 200000,
+                standard: 500000,
+                high: 1500000,
+                fullHd: 3000000,
+                ultraHd: 6000000,
+                ssHigh: 2500000
+            },
+            scalabilityModeEnabled: false
+        },
+        vp9: {
+            maxBitratesVideo: {
+                low: 100000,
+                standard: 300000,
+                high: 1200000,
+                fullHd: 2500000,
+                ultraHd: 5000000,
+                ssHigh: 2500000
+            },
+            scalabilityModeEnabled: true,
+            useSimulcast: false,
+            useKSVC: true
+        },
+    },
 
     // Invites are issued by the Intulse application, not from inside the
     // meeting, so every in-meeting invite affordance is removed.
