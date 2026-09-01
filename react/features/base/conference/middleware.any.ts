@@ -46,6 +46,7 @@ import StateListenerRegistry from '../redux/StateListenerRegistry';
 import { TRACK_ADDED, TRACK_REMOVED } from '../tracks/actionTypes';
 import { parseURIString } from '../util/uri';
 
+import './subscriber.intulse';
 import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,

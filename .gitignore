@@ -1,6 +1,11 @@
 *.swp
 .*.tmp
 deploy-local.sh
+
+# Intulse private helpers -- credential/room-password decryption.
+# Not tracked: this repo is a PUBLIC fork of jitsi/jitsi-meet. Place these on the
+# server by hand after pulling. See the deploy runbook.
+resources/prosody-plugins/intulse/
 libs/
 all.css
 *css.map

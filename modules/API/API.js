@@ -2113,6 +2113,19 @@ class API {
     }
 
     /**
+     * Notify external application that the meeting password has changed.
+     *
+     * @param {string} password - The new password.
+     * @returns {void}
+     */
+    notifyOnPasswordChanged(password) {
+        this._sendEvent({
+            name: 'password-changed',
+            password
+        });
+    }
+
+    /**
      * Notify external application of the current meeting requiring a password
      * to join.
      *

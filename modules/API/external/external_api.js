@@ -163,6 +163,7 @@ const events = {
     'participant-muted': 'participantMuted',
     'participant-role-changed': 'participantRoleChanged',
     'participants-pane-toggled': 'participantsPaneToggled',
+    'password-changed': 'passwordChanged',
     'password-required': 'passwordRequired',
     'peer-connection-failure': 'peerConnectionFailure',
     'prejoin-screen-loaded': 'prejoinScreenLoaded',

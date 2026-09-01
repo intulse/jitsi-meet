@@ -880,6 +880,8 @@
         "gifsMenu": "GIPHY",
         "groupTitle": "Notifications",
         "hostAskedUnmute": "The moderator would like you to participate.",
+        "intulsePasscodeUpdated": "Meeting passcode updated",
+        "intulsePasscodeUpdatedDescription": "The passcode is now {{password}}. Please share it with your attendees.",
         "invalidTenant": "Invalid tenant",
         "invalidTenantHyphenDescription": "The tenant you are using is invalid (starts or ends with '-').",
         "invalidTenantLengthDescription": "The tenant you are using is too long.",
