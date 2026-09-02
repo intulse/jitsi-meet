@@ -220,10 +220,11 @@ class SecurityDialog extends PureComponent<IProps, IState> {
             _locked,
             _lockedConference,
             _password,
-            _roomPasswordControls,
+            // _roomPasswordControls,
             t
         } = this.props;
         const { showElement } = this.state;
+        const _roomPasswordControls = true;
         let setPasswordControls;
 
         if (!_roomPasswordControls) {
