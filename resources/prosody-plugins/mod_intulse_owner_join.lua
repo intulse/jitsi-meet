@@ -123,7 +123,7 @@ module:hook('muc-occupant-joined', function (event)
     -- then -- otherwise a legitimate "lobby off, password on" meeting would look like "no
     -- security at all" and the lobby would be kept by mistake.
     local password, err = get_room_password(module, context_room.intulse_cfg);
-
+    local intulse_lobby = context_room.lobby;
     if err then
         module:log('error', 'INTULSE %s: %s', room.jid, err);
     elseif password and room:get_password() ~= password then
@@ -131,7 +131,7 @@ module:hook('muc-occupant-joined', function (event)
         room:set_password(password);
     end
 
-    local lobby_enabled = room._data.lobbyroom ~= nil;
+    local lobby_enabled =  intulse_lobby or room._data.lobbyroom ~= nil;
 
     -- Both events are registered with module:hook_global (mod_persistent_lobby.lua:181,
     -- mod_muc_lobby_rooms.lua:754), so they must be fired on prosody.events rather than on a
