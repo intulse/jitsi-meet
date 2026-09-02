@@ -1,10 +1,19 @@
 <script>
     // >>>>> INTULSE
     // meet-dev.intul.se is being retired in favor of meet.intulse.dev. Anyone who still has
-    // the old host bookmarked, linked, or embedded is sent to the new one, with the room
-    // name and any query/hash preserved. Exact hostname match only -- this file is deployed
-    // unchanged to every domain, so the check itself is what keeps this a no-op everywhere
-    // else, prod included.
+    // the old host bookmarked or linked is sent to the new one, with the room name and any
+    // query/hash preserved. Exact hostname match only -- this file is deployed unchanged to
+    // every domain, so the check itself is what keeps this a no-op everywhere else, prod
+    // included.
+    //
+    // TOP-LEVEL ONLY. index.html is also what external_api.js loads into the conference
+    // iframe, and inside that iframe location.hostname IS the old host -- so without this
+    // guard the redirect fires in-frame and navigates the meeting off jitsi. It does not
+    // even fail cleanly: the new host's client routes /:meetingId to a component that
+    // builds another iframe against the old host, so it recurses.
+    //
+    // Unknown framing state is treated as framed. A human who misses the redirect just
+    // sees raw jitsi; a redirect inside the iframe breaks every meeting on the server.
     //
     // replace() rather than assigning .href: the old URL never enters session history, so
     // Back does not bounce the user right back into the redirect.
@@ -12,7 +21,15 @@
         var OLD_HOST = 'meet-dev.intul.se';
         var NEW_HOST = 'meet.intulse.dev';
 
-        if (window.location.hostname.toLowerCase() === OLD_HOST) {
+        var isTopLevel;
+
+        try {
+            isTopLevel = window.top === window.self;
+        } catch (e) {
+            isTopLevel = false;
+        }
+
+        if (isTopLevel && window.location.hostname.toLowerCase() === OLD_HOST) {
             window.location.replace(
                 window.location.protocol + '//' + NEW_HOST
                     + window.location.pathname + window.location.search + window.location.hash
