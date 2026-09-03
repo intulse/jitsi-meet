@@ -1609,9 +1609,9 @@ var config = {
     // a second display, in its own fullscreen window. Disabled by default; it is Chromium-only and
     // intended for managed/kiosk room appliances, which must also delegate `allow="window-management;
     // fullscreen"` to the iframe and grant the window-management + automatic-fullscreen permissions.
-    secondScreen: {
-        enabled: true
-    },
+    // secondScreen: {
+    //     enabled: true
+    // },
 
     // If true, the tiles will be displayed contained within the available space rather than enlarged to cover it,
     // with a 16:9 aspect ratio (old behaviour).
@@ -2051,6 +2051,8 @@ var config = {
     // Branding for participants whose display name has not resolved yet.
     defaultRemoteDisplayName: 'Intulse User',
 
+    enableClosePage: true,
+
     // Logging
     logging: {
         // Default log level for the app and lib-jitsi-meet. 'trace' is useful while
@@ -2071,6 +2073,9 @@ var config = {
     // Simulcast on. Explicit because it is load-bearing for multi-party quality
     // and should not silently change if the upstream default ever flips.
     disableSimulcast: false,
+
+    resolution: 1080,
+
     videoQuality: {
         // Provides a way to set the codec preference on desktop based endpoints.
         codecPreferenceOrder: [ 'AV1', 'VP9', 'VP8', 'H264' ],
@@ -2135,7 +2140,23 @@ var config = {
             useKSVC: true
         },
     },
-
+    
+    screenShareSettings: {
+         // Show users the current tab is the preferred capture source, default: false.
+         desktopPreferCurrentTab: true,
+         // Allow users to select system audio, default: include.
+         desktopSystemAudio: 'include',
+         // Allow users to seamlessly switch which tab they are sharing without having to select the tab again.
+         desktopSurfaceSwitching: 'include',
+         // Allow a user to be shown a preference for what screen is to be captured, default: unset.
+        //  desktopDisplaySurface: undefined,
+         // Allow users to select the current tab as a capture source, default: exclude.
+        //  desktopSelfBrowserSurface: 'exclude'
+    },
+    
+    secondScreen: {
+        enabled: true
+    },
     // Invites are issued by the Intulse application, not from inside the
     // meeting, so every in-meeting invite affordance is removed.
     disableInviteFunctions: true,
@@ -2144,7 +2165,8 @@ var config = {
     // Participants reach meetings through the Intulse Meetings web app, which
     // embeds this in an iframe. The mobile-app interstitial would strand them.
     deeplinking: {
-        disabled: true
+        disabled: true,
+        hideLogo: true
     },
 
     welcomePage: {
@@ -2161,38 +2183,52 @@ var config = {
         hideJoinRoomButton: false
     },
 
+    // configuration for all things recording related. Existing settings will be migrated here in the future.
+    recordings: {
+       // IF true (default) recording audio and video is selected by default in the recording dialog.
+       recordAudioAndVideo: true,
+       // If true, shows a notification at the start of the meeting with a call to action button
+       // to start recording (for users who can do so).
+       suggestRecording: true,
+       // If true, shows a warning label in the prejoin screen to point out the possibility that
+       // the call you're joining might be recorded.
+       showPrejoinWarning: true,
+       // If true, the notification for recording start will display a link to download the cloud recording.
+       // showRecordingLink: true,
+       // If true, mutes audio and video when a recording begins and displays a dialog
+       // explaining the effect of unmuting.
+       requireConsent: true,
+       // If true consent will be skipped for users who are already in the meeting.
+    //    skipConsentInMeeting: true,
+       // Link for the recording consent dialog's "Learn more" link.
+       // consentLearnMoreLink: 'https://jitsi.org/meet/consent',
+    },
+
+    // Local recording configuration.
+    localRecording: {
+            // Whether to disable local recording or not.
+        disable: false,
+// 
+        // Whether to notify all participants when a participant is recording locally.
+        notifyAllParticipants: false,
+// 
+        // Whether to disable the self recording feature (only local participant streams).
+        // disableSelfRecording: false,
+    },
+
     // Restrict UI-set room passwords to digits. The Intulse API currently
     // receives a password change as a URL path segment, where '/', '?', '#' and
     // '%' are either mangled or fail to route -- constraining the character set
     // at the producing end sidesteps that entirely.
     roomPasswordNumberOfDigits: 10,
 
-    // Buttons offered to moderators. The embedder sends its own, shorter list
-    // for non-moderators via configOverwrite; this is the moderator baseline.
-    toolbarButtons: [
-        'camera',
-        'chat',
-        'desktop',
-        'fullscreen',
-        'hangup',
-        'highlight',
-        'microphone',
-        'noisesuppression',
-        'participants-pane',
-        'profile',
-        'raisehand',
-        'recording',
-        'security',
-        'select-background',
-        'settings',
-        'shareaudio',
-        'sharedvideo',
-        'shortcuts',
-        'tileview',
-        'toggle-camera',
-        'videoquality',
-        'whiteboard'
-    ],
+    conferenceInfo: {
+        alwaysVisible: [
+            'recording', 
+            'raised-hands-count', 
+            // 'time-timer'
+        ],
+    },
 
     // <<<<< INTULSE
 
