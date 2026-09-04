@@ -530,6 +530,22 @@ export interface IConfig {
     inviteAppName?: string | null;
     inviteServiceCallFlowsUrl?: string;
     inviteServiceUrl?: string;
+
+    /**
+     * Intulse-specific configuration. Deliberately kept out of configWhitelist.ts /
+     * extraConfigWhitelist.ts / isEmbeddedConfigWhitelist.ts so none of these keys
+     * can be overridden by the embedder's external_api configOverwrite -- the
+     * media server's config.js is the only valid source.
+     */
+    intulse?: {
+
+        /**
+         * Hostnames allowed to embed this deployment in an iframe, checked against
+         * the parent frame's hostname. Null, undefined, or an empty array means
+         * the check fails closed (embedding denied).
+         */
+        embedWhitelist?: string[];
+    };
     jaasActuatorUrl?: string;
     jaasConferenceCreatorUrl?: string;
     jaasFeedbackMetadataURL?: string;

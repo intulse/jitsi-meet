@@ -1,13 +1,14 @@
 import i18next from 'i18next';
 
 import { IReduxState, IStore } from '../app/types';
+import { IConfig } from '../base/config/configType';
 import { MEET_FEATURES } from '../base/jwt/constants';
 import { isJwtFeatureEnabled } from '../base/jwt/functions';
 import { JitsiRecordingConstants } from '../base/lib-jitsi-meet';
 import { getSoundFileSrc } from '../base/media/functions';
 import { getLocalParticipant, getRemoteParticipants } from '../base/participants/functions';
 import { registerSound, unregisterSound } from '../base/sounds/actions';
-import { isEmbedded, isEmbeddedFromSameDomain } from '../base/util/embedUtils';
+import { isEmbedded, isEmbeddedFromSameDomain, isEmbedWhitelisted } from '../base/util/embedUtils';
 import { isSpotTV } from '../base/util/spot';
 import { isInBreakoutRoom as isInBreakoutRoomF } from '../breakout-rooms/functions';
 import { isEnabled as isDropboxEnabled } from '../dropbox/functions';
@@ -159,10 +160,12 @@ export function getSessionStatusToShow(state: IReduxState, mode: string): string
 /**
  * Check if local recording is supported.
  *
+ * @param {IConfig} config - The app config.
  * @returns {boolean} - Whether local recording is supported or not.
  */
-export function supportsLocalRecording() {
-    return LocalRecordingManager.isSupported() && (!isEmbedded() || isEmbeddedFromSameDomain());
+export function supportsLocalRecording(config: IConfig) {
+    return LocalRecordingManager.isSupported()
+        && (!isEmbedded() || isEmbeddedFromSameDomain() || isEmbedWhitelisted(config));
 }
 
 /**
@@ -274,12 +277,13 @@ export function getRecordButtonProps(state: IReduxState) {
     // If the containing component provides the visible prop, that is one
     // above all, but if not, the button should be autonomus and decide on
     // its own to be visible or not.
+    const config = state['features/base/config'];
     const {
         recordingService,
         localRecording,
         transcription
-    } = state['features/base/config'];
-    const localRecordingEnabled = !localRecording?.disable && supportsLocalRecording();
+    } = config;
+    const localRecordingEnabled = !localRecording?.disable && supportsLocalRecording(config);
 
     const dropboxEnabled = isDropboxEnabled(state);
     const recordingEnabled = recordingService?.enabled || dropboxEnabled;

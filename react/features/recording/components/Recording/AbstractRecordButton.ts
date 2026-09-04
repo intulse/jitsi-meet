@@ -144,8 +144,9 @@ export function _mapStateToProps(state: IReduxState) {
         tooltip: _tooltip,
         visible
     } = getRecordButtonProps(state);
-    const { localRecording } = state['features/base/config'];
-    const localRecordingEnabled = !localRecording?.disable && supportsLocalRecording();
+    const config = state['features/base/config'];
+    const { localRecording } = config;
+    const localRecordingEnabled = !localRecording?.disable && supportsLocalRecording(config);
     const isModerator = isLocalParticipantModerator(state);
     const hasRecordingJwt = isJwtFeatureEnabled(state, MEET_FEATURES.RECORDING, false);
 

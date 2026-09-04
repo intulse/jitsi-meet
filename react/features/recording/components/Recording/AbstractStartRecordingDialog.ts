@@ -99,6 +99,12 @@ export interface IProps extends WithTranslation {
     _localRecordingEnabled: boolean;
 
     /**
+     * Whether local recording is supported in the current environment (browser support, and
+     * either not embedded or embedded from a whitelisted parent).
+     */
+    _supportsLocalRecording: boolean;
+
+    /**
      * The dropbox refresh token.
      */
     _rToken: string;
@@ -239,12 +245,12 @@ class AbstractStartRecordingDialog extends Component<IProps, IState> {
         if (this.props._fileRecordingsServiceEnabled) {
             selectedRecordingService = RECORDING_TYPES.JITSI_REC_SERVICE;
         } else if (this._areIntegrationsEnabled()) {
-            if (props._localRecordingEnabled && supportsLocalRecording()) {
+            if (props._localRecordingEnabled && props._supportsLocalRecording) {
                 selectedRecordingService = RECORDING_TYPES.LOCAL;
             } else {
                 selectedRecordingService = RECORDING_TYPES.DROPBOX;
             }
-        } else if (props._localRecordingEnabled && supportsLocalRecording()) {
+        } else if (props._localRecordingEnabled && props._supportsLocalRecording) {
             selectedRecordingService = RECORDING_TYPES.LOCAL;
         }
         // If no service is available, selectedRecordingService stays '' and
@@ -665,6 +671,7 @@ export function mapStateToProps(state: IReduxState, _ownProps: any) {
         _isDropboxEnabled: isDropboxEnabled(state),
         _localRecording: Boolean(state['features/recording'].localRecordingRunning),
         _localRecordingEnabled: !localRecording?.disable,
+        _supportsLocalRecording: supportsLocalRecording(state['features/base/config']),
         _recordingRunning: canManageRecordingOrTranscription
             ? isRecordingRunning(state)
             : Boolean(state['features/recording'].localRecordingRunning),

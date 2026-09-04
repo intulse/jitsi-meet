@@ -2224,10 +2224,21 @@ var config = {
 
     conferenceInfo: {
         alwaysVisible: [
-            'recording', 
-            'raised-hands-count', 
+            'recording',
+            'raised-hands-count',
             // 'time-timer'
         ],
+    },
+
+    // Hostnames allowed to embed this deployment in an iframe, checked against
+    // the parent frame's hostname. Null, undefined, or an empty array means the
+    // check fails closed (embedding denied) -- fill in the real hostname(s) below.
+    // Not present in configWhitelist.ts / extraConfigWhitelist.ts /
+    // isEmbeddedConfigWhitelist.ts, so unlike the rest of this file it can NOT be
+    // overridden by the embedder's configOverwrite -- this file is the only valid
+    // source.
+    intulse: {
+        embedWhitelist: [],
     },
 
     // <<<<< INTULSE

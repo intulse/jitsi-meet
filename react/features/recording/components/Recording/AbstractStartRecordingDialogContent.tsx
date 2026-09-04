@@ -490,8 +490,9 @@ class AbstractStartRecordingDialogContent extends Component<IProps, IState> {
  * @returns {IProps}
  */
 export function mapStateToProps(state: IReduxState) {
-    const { localRecording, recordingService } = state['features/base/config'];
-    const _localRecordingAvailable = !localRecording?.disable && supportsLocalRecording();
+    const config = state['features/base/config'];
+    const { localRecording, recordingService } = config;
+    const _localRecordingAvailable = !localRecording?.disable && supportsLocalRecording(config);
     const canManageRecordingOrTranscription
         = isLocalParticipantModerator(state) || hasRecordingOrTranscriptionFeature(state);
 

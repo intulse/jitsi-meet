@@ -1,5 +1,7 @@
 import { getBundleId } from 'react-native-device-info';
 
+import { IConfig } from '../config/configType';
+
 /**
  * BUndle ids for the Jitsi Meet apps.
  */
@@ -32,5 +34,16 @@ export function isEmbedded(): boolean {
  * @returns {boolean} Always false in React Native.
  */
 export function isEmbeddedFromSameDomain(): boolean {
+    return false;
+}
+
+/**
+ * React Native has no concept of a parent frame hostname to check against
+ * config.intulse.embedWhitelist, so this always fails closed.
+ *
+ * @param {IConfig} _config - Unused; kept for API parity with the web implementation.
+ * @returns {boolean} Always false in React Native.
+ */
+export function isEmbedWhitelisted(_config: IConfig): boolean {
     return false;
 }
