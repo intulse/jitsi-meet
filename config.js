@@ -2199,7 +2199,7 @@ var config = {
        // explaining the effect of unmuting.
        requireConsent: true,
        // If true consent will be skipped for users who are already in the meeting.
-    //    skipConsentInMeeting: true,
+       skipConsentInMeeting: true,
        // Link for the recording consent dialog's "Learn more" link.
        // consentLearnMoreLink: 'https://jitsi.org/meet/consent',
     },
