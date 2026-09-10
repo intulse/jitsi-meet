@@ -29,6 +29,13 @@ interface ILocalRecordingManager {
     isSupported: () => boolean;
     mediaType: string;
     mixAudioStream: (stream: MediaStream) => void;
+
+    /**
+     * Chunks buffered in memory when showSaveFilePicker isn't usable (e.g. a cross-origin
+     * iframe), so they can be assembled into a single Blob and downloaded on stop. Undefined
+     * whenever writableStream is being used instead.
+     */
+    recordedChunks: Blob[] | undefined;
     recorder: MediaRecorder | undefined;
     roomName: string;
     selfRecording: ISelfRecording;
@@ -65,6 +72,7 @@ const LocalRecordingManager: ILocalRecordingManager = {
     },
     firstChunk: undefined,
     fileHandle: undefined,
+    recordedChunks: undefined,
     startTime: undefined,
     writableStream: undefined,
 
@@ -154,9 +162,20 @@ const LocalRecordingManager: ILocalRecordingManager = {
             suggestedName: `${this.getFilename()}.webm`,
         };
 
-        // @ts-expect-error
-        this.fileHandle = await window.showSaveFilePicker(options);
-        this.writableStream = await this.fileHandle?.createWritable();
+        try {
+            // @ts-expect-error
+            this.fileHandle = await window.showSaveFilePicker(options);
+            this.writableStream = await this.fileHandle?.createWritable();
+        } catch (err) {
+            // showSaveFilePicker is unconditionally blocked in cross-origin iframes (throws a
+            // SecurityError before any picker UI shows), and may simply not exist in some
+            // browsers. Fall back to buffering chunks in memory and triggering a normal browser
+            // download when the recording stops.
+            logger.warn('showSaveFilePicker unavailable, falling back to in-memory buffering', err);
+            this.fileHandle = undefined;
+            this.writableStream = undefined;
+            this.recordedChunks = [];
+        }
 
         const supportsCaptureHandle = !isEmbedded();
         const tabId = uuidV4();
@@ -264,6 +283,12 @@ const LocalRecordingManager: ILocalRecordingManager = {
             if (e.data && e.data.size > 0) {
                 const chunk = e.data;
 
+                if (this.recordedChunks) {
+                    this.recordedChunks.push(chunk);
+
+                    return;
+                }
+
                 writeQueue = writeQueue.then(async () => {
                     let data = chunk;
 
@@ -312,6 +337,18 @@ const LocalRecordingManager: ILocalRecordingManager = {
                     this.fileHandle = undefined;
                     this.writableStream = undefined;
                 }
+            } else if (this.recordedChunks?.length) {
+                try {
+                    const [ firstChunk, ...restChunks ] = this.recordedChunks;
+                    const fixedFirstChunk = await fixDuration(firstChunk, duration);
+                    const blob = new Blob([ fixedFirstChunk, ...restChunks ], { type: this.mediaType });
+
+                    downloadBlob(blob, `${this.getFilename()}.webm`);
+                } catch (e) {
+                    logger.error('Error while assembling the local recording file', e);
+                } finally {
+                    this.recordedChunks = undefined;
+                }
             }
         });
 
@@ -356,6 +393,29 @@ const LocalRecordingManager: ILocalRecordingManager = {
     }
 
 };
+
+/**
+ * Triggers a normal browser download for a Blob, used as the in-memory fallback when
+ * showSaveFilePicker isn't usable (e.g. a cross-origin iframe).
+ *
+ * @param {Blob} blob - The data to download.
+ * @param {string} filename - The suggested filename.
+ * @returns {void}
+ */
+function downloadBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    // Give the browser a moment to pick up the blob URL before revoking it.
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
 
 /**
  * Fixes the duration in the WebM container metadata.
