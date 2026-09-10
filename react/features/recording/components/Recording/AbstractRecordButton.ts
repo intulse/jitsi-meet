@@ -9,6 +9,7 @@ import { isLocalParticipantModerator } from '../../../base/participants/function
 import AbstractButton, { IProps as AbstractButtonProps } from '../../../base/toolbox/components/AbstractButton';
 import { maybeShowPremiumFeatureDialog } from '../../../jaas/actions';
 import { canAddTranscriber } from '../../../transcribing/functions';
+import { stopLocalVideoRecording } from '../../actions.any';
 import { canStopRecording, getRecordButtonProps, supportsLocalRecording } from '../../functions';
 
 /**
@@ -31,6 +32,13 @@ export interface IProps extends AbstractButtonProps {
      * True if there is a running active recording, false otherwise.
      */
     _isRecordingRunning: boolean;
+
+    /**
+     * True if a local (client-side) recording is currently running. Unlike cloud recording,
+     * which needs the management dialog to pick/stop the right session, a local recording can be
+     * stopped directly from the toolbar click.
+     */
+    _localRecordingRunning: boolean;
 
     /**
      * The tooltip to display when hovering over the button.
@@ -86,7 +94,7 @@ export default class AbstractRecordButton<P extends IProps> extends AbstractButt
      * @returns {void}
      */
     override _handleClick() {
-        const { _isRecordingRunning, dispatch } = this.props;
+        const { _isRecordingRunning, _localRecordingRunning, dispatch } = this.props;
 
         sendAnalytics(createToolbarEvent(
             'recording.button',
@@ -94,6 +102,15 @@ export default class AbstractRecordButton<P extends IProps> extends AbstractButt
                 'is_recording': _isRecordingRunning,
                 type: JitsiRecordingConstants.mode.FILE
             }));
+
+        if (_localRecordingRunning) {
+            // Local recording has no server-side session to pick between, so unlike cloud
+            // recording it doesn't need the management dialog -- the click can stop it directly.
+            dispatch(stopLocalVideoRecording());
+
+            return;
+        }
+
         const dialogShown = dispatch(maybeShowPremiumFeatureDialog(MEET_FEATURES.RECORDING));
 
         if (!dialogShown) {
@@ -154,6 +171,7 @@ export function _mapStateToProps(state: IReduxState) {
         _canTranscribe: canAddTranscriber(state),
         _disabled,
         _isRecordingRunning: canStopRecording(state),
+        _localRecordingRunning: Boolean(state['features/recording'].localRecordingRunning),
         _tooltip,
         visible: visible && (isModerator || localRecordingEnabled || hasRecordingJwt)
     };
