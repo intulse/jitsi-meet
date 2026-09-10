@@ -2241,6 +2241,20 @@ var config = {
         embedWhitelist: [],
     },
 
+    // Keeps "recording" in the main toolbar instead of the overflow "More" menu -- it's low in
+    // the default priority order (toolbox/constants.ts MAIN_TOOLBAR_BUTTONS_PRIORITY) so it's
+    // otherwise rarely shown. Each array below replaces the default bucket with the same number
+    // of buttons (matched by array length, not by the width value) -- see the commented
+    // mainToolbarButtons example above for the defaults these are based on. Narrower buckets than
+    // the 5-button one here still fall back to the defaults, so recording still moves to overflow
+    // on very small windows.
+    mainToolbarButtons: [
+        [ 'microphone', 'camera', 'recording', 'desktop', 'chat', 'raisehand', 'participants-pane', 'tileview' ],
+        [ 'microphone', 'camera', 'recording', 'desktop', 'chat', 'raisehand', 'participants-pane' ],
+        [ 'microphone', 'camera', 'recording', 'desktop', 'chat', 'participants-pane' ],
+        [ 'microphone', 'camera', 'recording', 'desktop', 'chat' ],
+    ],
+
     // <<<<< INTULSE
 
 };
