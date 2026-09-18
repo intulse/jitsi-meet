@@ -2142,16 +2142,26 @@ var config = {
     },
     
     screenShareSettings: {
-         // Show users the current tab is the preferred capture source, default: false.
-         desktopPreferCurrentTab: true,
-         // Allow users to select system audio, default: include.
-         desktopSystemAudio: 'include',
-         // Allow users to seamlessly switch which tab they are sharing without having to select the tab again.
-         desktopSurfaceSwitching: 'include',
-         // Allow a user to be shown a preference for what screen is to be captured, default: unset.
-        //  desktopDisplaySurface: undefined,
-         // Allow users to select the current tab as a capture source, default: exclude.
-        //  desktopSelfBrowserSurface: 'exclude'
+        // NOTE: do NOT set desktopPreferCurrentTab here. lib-jitsi-meet always sends
+        // selfBrowserSurface ('exclude' unless desktopSelfBrowserSurface says otherwise) and
+        // surfaceSwitching, and Chromium rejects getDisplayMedia outright when preferCurrentTab
+        // is combined with either -- "Self-contradictory configuration (preferCurrentTab and
+        // selfBrowserSurface=exclude)". lib-jitsi-meet reports that TypeError as
+        // SCREENSHARING_USER_CANCELED, which the app swallows without a notification, so screen
+        // sharing just silently does nothing. It is also the wrong default for an iframe embed:
+        // the "current tab" is the embedding Intulse Meetings page, not anything worth sharing.
+
+        // Allow users to select system audio, default: include.
+        desktopSystemAudio: 'include',
+
+        // Allow users to seamlessly switch which tab they are sharing without having to select
+        // the tab again.
+        desktopSurfaceSwitching: 'include',
+
+        // Allow a user to be shown a preference for what screen is to be captured, default: unset.
+        // desktopDisplaySurface: undefined,
+        // Allow users to select the current tab as a capture source, default: exclude.
+        // desktopSelfBrowserSurface: 'exclude'
     },
     
     secondScreen: {
